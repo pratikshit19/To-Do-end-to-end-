@@ -1,0 +1,55 @@
+import { useState } from "react";
+import "../Login.css";
+
+export default function Login({ setIsAuthenticated }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    const response = await fetch("http://localhost:5000/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      localStorage.setItem("token", data.token);
+      setIsAuthenticated(true);
+    } else {
+      alert(data.message || "Login failed");
+    }
+  };
+
+  return (
+    <div className="login-page">
+      <div className="login-card">
+        <h1 className="login-title">Welcome Back</h1>
+        <p className="login-subtitle">Login to manage your tasks</p>
+
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="login-input"
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="login-input"
+        />
+
+        <button onClick={handleLogin} className="login-button">
+          Login
+        </button>
+      </div>
+    </div>
+  );
+}
