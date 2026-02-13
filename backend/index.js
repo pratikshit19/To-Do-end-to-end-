@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const PORT = process.env.PORT || 5000;
+
 
 const app = express();
 
@@ -9,7 +12,7 @@ const { createTodo, updateTodo } = require("./types");
 const { todo, User } = require("./db");
 const { authMiddleware } = require("./middleware");
 
-const JWT_SECRET = "supersecretkey";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(express.json());
 app.use(cors());
@@ -166,6 +169,6 @@ app.put("/todos/:id", authMiddleware, async (req, res) => {
 
 
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
