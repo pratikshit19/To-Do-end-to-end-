@@ -4,7 +4,7 @@ export function Todos({ todos, fetchTodos }) {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/todos/${id}`, {
+      const response = await fetch(`https://to-do-app-616k.onrender.com/todos/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -23,7 +23,7 @@ export function Todos({ todos, fetchTodos }) {
 
   const handleToggleComplete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/todos/${id}`, {
+      const response = await fetch(`https://to-do-app-616k.onrender.com/todos/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

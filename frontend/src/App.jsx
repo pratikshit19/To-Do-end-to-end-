@@ -17,7 +17,7 @@ function App() {
   const fetchTodos = async () => {
     const token = localStorage.getItem("token");
 
-    const response = await fetch("http://localhost:5000/todos", {
+    const response = await fetch("https://to-do-app-616k.onrender.com/todos", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
