@@ -15,7 +15,10 @@ const { authMiddleware } = require("./middleware");
 const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "https://to-do-app-gilt-tau.vercel.app/"
+}));
+
 
 app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
