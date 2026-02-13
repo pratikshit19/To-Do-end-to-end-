@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CreateTodo } from "./components/createTodo";
+import { CreateTodo } from "./components/CreateTodo";
 import { Todos } from "./components/Todos";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
