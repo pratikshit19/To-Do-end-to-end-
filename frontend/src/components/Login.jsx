@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../Login.css";
 
-export default function Login({ setIsAuthenticated }) {
+export default function Login({ setIsAuthenticated , setIsLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -49,6 +49,15 @@ export default function Login({ setIsAuthenticated }) {
         <button onClick={handleLogin} className="login-button">
           Login
         </button>
+        <p style={{ fontSize: "0.85rem", marginTop: "1rem" }}>
+  Don’t have an account?{" "}
+  <span
+    style={{ color: "#3b82f6", cursor: "pointer" }}
+    onClick={() => setIsLogin(false)}
+  >
+    Sign Up
+  </span>
+</p>
       </div>
     </div>
   );

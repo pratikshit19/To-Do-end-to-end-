@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
-import { CreateTodo } from "./components/CreateTodo";
+import { CreateTodo } from "./components/createTodo";
 import { Todos } from "./components/Todos";
 import Login from "./components/Login";
+import Signup from "./components/Signup";
 import "./App.css";
+import Navbar from "./components/Navbar";
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("token")
   );
+  const [isLogin, setIsLogin] = useState(true);
+  const [showModal, setShowModal] = useState(false); // 👈 NEW
 
-  // 🔥 Fetch Todos (with token)
   const fetchTodos = async () => {
     const token = localStorage.getItem("token");
 
@@ -19,12 +22,6 @@ function App() {
         Authorization: `Bearer ${token}`,
       },
     });
-
-    if (!response.ok) {
-      console.log("Unauthorized");
-      setIsAuthenticated(false);
-      return;
-    }
 
     const data = await response.json();
     setTodos(data.todos);
@@ -41,16 +38,46 @@ function App() {
     setIsAuthenticated(false);
   };
 
-  // 🔐 If not logged in → show login page
   if (!isAuthenticated) {
-    return <Login setIsAuthenticated={setIsAuthenticated} />;
+    return isLogin ? (
+      <Login
+        setIsAuthenticated={setIsAuthenticated}
+        setIsLogin={setIsLogin}
+      />
+    ) : (
+      <Signup setIsLogin={setIsLogin} />
+    );
   }
 
   return (
     <>
-      <button onClick={handleLogout}>Logout</button>
-      <CreateTodo fetchTodos={fetchTodos} />
+      <Navbar onLogout={handleLogout} />
+
+      {/* Only show Todos */}
       <Todos todos={todos} fetchTodos={fetchTodos} />
+
+      {/* Floating Add Button */}
+      <button
+        className="floating-button"
+        onClick={() => setShowModal(true)}
+      >
+        + Add new task
+      </button>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <CreateTodo fetchTodos={fetchTodos} />
+            <button
+              onClick={() => setShowModal(false)}
+              style={{ marginTop: "10px" }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

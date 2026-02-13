@@ -101,25 +101,25 @@ app.get("/todos", authMiddleware, async (req, res) => {
   res.json({ todos });
 });
 
-app.put("/completed", authMiddleware, async (req, res) => {
-  const updatePayload = req.body;
-  const parsedPayload = updateTodo.safeParse(updatePayload);
+// app.put("/completed", authMiddleware, async (req, res) => {
+//   const updatePayload = req.body;
+//   const parsedPayload = updateTodo.safeParse(updatePayload);
 
-  if (!parsedPayload.success) {
-    return res.status(411).json({
-      message: "Wrong inputs"
-    });
-  }
+//   if (!parsedPayload.success) {
+//     return res.status(411).json({
+//       message: "Wrong inputs"
+//     });
+//   }
 
-  await todo.updateOne(
-    { _id: req.body.id, userId: req.userId }, // 🔥 Secure
-    { completed: true }
-  );
+//   await todo.updateOne(
+//     { _id: req.body.id, userId: req.userId }, // 🔥 Secure
+//     { completed: true }
+//   );
 
-  res.json({
-    message: "Marked as completed!"
-  });
-});
+//   res.json({
+//     message: "Marked as completed!"
+//   });
+// });
 
 app.delete("/todos/:id", authMiddleware, async (req, res) => {
   try {
@@ -138,6 +138,32 @@ app.delete("/todos/:id", authMiddleware, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+app.put("/todos/:id", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existingTodo = await todo.findOne({
+      _id: id,
+      userId: req.userId  // 🔥 Important for security
+    });
+
+    if (!existingTodo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    existingTodo.completed = !existingTodo.completed;
+    await existingTodo.save();
+
+    res.json({ message: "Todo updated successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 
 
 app.listen(5000, () => {

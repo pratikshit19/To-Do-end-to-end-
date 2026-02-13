@@ -11,7 +11,11 @@ mongoose.connect("mongodb+srv://admin:veKrvgqCnlWlRBYW@cluster0.926aoht.mongodb.
 const todoSchema = new mongoose.Schema({
   title: String,
   description: String,
-  completed: Boolean,
+  completed: {
+    default: false,
+    type: Boolean
+  },
+  
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"

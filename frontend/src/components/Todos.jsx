@@ -1,57 +1,75 @@
 export function Todos({ todos, fetchTodos }) {
 
-    const handleDelete = async (id) => {
+  const token = localStorage.getItem("token");
+
+  const handleDelete = async (id) => {
     try {
-        const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/todos/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const response = await fetch(`http://localhost:5000/todos/${id}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+      if (!response.ok) {
+        throw new Error("Failed to delete todo");
+      }
 
-        if (!response.ok) {
-            throw new Error("Failed to delete todo");
-        }
-
-        await fetchTodos();
-
+      await fetchTodos();
     } catch (err) {
-        console.error(err);
+      console.error(err);
     }
-};
+  };
 
+  const handleToggleComplete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/todos/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (!todos || todos.length === 0) {
-        return <p>No todos available.</p>;
+      if (!response.ok) {
+        throw new Error("Failed to update todo");
+      }
+
+      await fetchTodos();
+    } catch (err) {
+      console.error(err);
     }
+  };
 
-    return (
-        <div className="todo-container">
-            {todos.map((todo) => (
-                <div
-                    key={todo._id}
-                    className={`todo-card ${todo.completed ? "completed" : ""}`}
-                >
-                    {/* ❌ Delete Icon */}
-                    <span
-  className="delete-cross"
-  onClick={() => handleDelete(todo._id)}
->
-  ×
-</span>
+  if (!todos || todos.length === 0) {
+    return <p>No todos available.</p>;
+  }
 
-                    <div>
-                        <h2 className="todo-title">{todo.title}</h2>
-                        <p className="todo-description">{todo.description}</p>
-                    </div>
+  return (
+    <div className="todo-container">
+      {todos.map((todo) => (
+        <div
+          key={todo._id}
+          className={`todo-card ${todo.completed ? "completed" : ""}`}
+        >
+          <span
+            className="delete-cross"
+            onClick={() => handleDelete(todo._id)}
+          >
+            ×
+          </span>
 
-                    <button>
-                        {todo.completed ? "Completed" : "Mark as Completed"}
-                    </button>
-                </div>
-            ))}
+          <div>
+            <h2 className="todo-title">{todo.title}</h2>
+            <p className="todo-description">{todo.description}</p>
+          </div>
+
+          <button
+            onClick={() => handleToggleComplete(todo._id)}
+          >
+            {todo.completed ? "Completed ✓" : "Mark as Completed"}
+          </button>
         </div>
-    );
+      ))}
+    </div>
+  );
 }

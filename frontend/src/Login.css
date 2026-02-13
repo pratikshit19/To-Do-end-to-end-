@@ -1,15 +1,16 @@
 /* FULL PAGE BACKGROUND */
 .login-page {
-  height: 100vh;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  /* background: linear-gradient(135deg, #0f172a, #1e293b); */
 }
 
 /* GLASS CARD */
 .login-card {
+  
   width: 350px;
   padding: 2.5rem;
 
