@@ -61,20 +61,15 @@ function App() {
         className="floating-button"
         onClick={() => setShowModal(true)}
       >
-        + Add new task
+        Add new task
       </button>
 
       {/* Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <CreateTodo fetchTodos={fetchTodos} />
-            <button
-              onClick={() => setShowModal(false)}
-              style={{ marginTop: "10px" }}
-            >
-              Close
-            </button>
+            <CreateTodo fetchTodos={fetchTodos} closeModal={() => setShowModal(false)}/>
+            
           </div>
         </div>
       )}

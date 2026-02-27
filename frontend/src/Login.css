@@ -67,7 +67,7 @@
   border-radius: 12px;
   border: none;
 
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #6cbcd6);
   color: white;
   font-weight: 600;
   cursor: pointer;
@@ -76,7 +76,7 @@
 }
 
 .login-button:hover {
-  background: #2563eb;
+  /* background: #2563eb; */
   transform: translateY(-2px);
 }
 

@@ -1,15 +1,17 @@
 export function Todos({ todos, fetchTodos }) {
-
   const token = localStorage.getItem("token");
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`https://to-do-app-616k.onrender.com/todos/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `https://to-do-app-616k.onrender.com/todos/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to delete todo");
@@ -23,12 +25,15 @@ export function Todos({ todos, fetchTodos }) {
 
   const handleToggleComplete = async (id) => {
     try {
-      const response = await fetch(`https://to-do-app-616k.onrender.com/todos/${id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `https://to-do-app-616k.onrender.com/todos/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to update todo");
@@ -41,35 +46,49 @@ export function Todos({ todos, fetchTodos }) {
   };
 
   if (!todos || todos.length === 0) {
-    return <p>No todos available.</p>;
+    return <p className="empty-state">No tasks yet.</p>;
   }
 
   return (
-    <div className="todo-container">
-      {todos.map((todo) => (
-        <div
-          key={todo._id}
-          className={`todo-card ${todo.completed ? "completed" : ""}`}
-        >
-          <span
-            className="delete-cross"
-            onClick={() => handleDelete(todo._id)}
-          >
-            ×
-          </span>
+    <div className="mobile-container">
+      <div className="tasks-header">
+        <h1>My Tasks</h1>
+        <p>Create your tasks and track their status</p>
+      </div>
 
-          <div>
-            <h2 className="todo-title">{todo.title}</h2>
-            <p className="todo-description">{todo.description}</p>
+      <div className="task-card">
+        <p className="task-count">
+          {todos.filter((t) => t.completed).length} of {todos.length} Tasks Completed
+        </p>
+
+        {todos.map((todo) => (
+          <div key={todo._id} className="task-row">
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => handleToggleComplete(todo._id)}
+            />
+
+            <div className="task-text">
+              <span
+                className={`task-title ${
+                  todo.completed ? "completed-text" : ""
+                }`}
+              >
+                {todo.title}
+              </span>
+              <small>{todo.description}</small>
+            </div>
+
+            <span
+              className="delete-btn"
+              onClick={() => handleDelete(todo._id)}
+            >
+              ×
+            </span>
           </div>
-
-          <button
-            onClick={() => handleToggleComplete(todo._id)}
-          >
-            {todo.completed ? "Completed ✓" : "Mark as Completed"}
-          </button>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
