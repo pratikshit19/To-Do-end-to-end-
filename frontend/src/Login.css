@@ -1,38 +1,53 @@
 /* FULL PAGE BACKGROUND */
 .login-page {
-  height: 100%;
+  min-height: 100vh; /* FIXED */
   display: flex;
   justify-content: center;
   align-items: center;
 
-  /* background: linear-gradient(135deg, #0f172a, #1e293b); */
+  background: linear-gradient(135deg, #0f172a, #1e293b);
 }
 
 /* GLASS CARD */
 .login-card {
-  
-  width: 350px;
+  width: 100%;
+  max-width: 380px;
   padding: 2.5rem;
 
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(14px);
+  background: rgba(30, 41, 59, 0.65);
+  backdrop-filter: blur(16px);
 
   border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.15);
 
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
 
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
 
   text-align: center;
+
+  animation: fadeSlide 0.35s ease-out;
+}
+
+/* Smooth Entry Animation */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* TITLE */
 .login-title {
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   font-weight: 600;
+  color: white;
 }
 
 /* SUBTITLE */
@@ -45,10 +60,10 @@
 /* INPUT */
 .login-input {
   padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
 
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.85);
   color: white;
 
   outline: none;
@@ -56,8 +71,8 @@
 }
 
 .login-input:focus {
-  border: 1px solid #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
 /* BUTTON */
@@ -72,14 +87,14 @@
   font-weight: 600;
   cursor: pointer;
 
-  transition: all 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .login-button:hover {
-  /* background: #2563eb; */
   transform: translateY(-2px);
+  /* box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); */
 }
 
 .login-button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }

@@ -63,7 +63,7 @@ export default function Signup({ setIsLogin }) {
 
         {error && <p style={{ color: "#ef4444" }}>{error}</p>}
 
-        <p style={{ fontSize: "0.85rem", marginTop: "1rem" }}>
+        <p style={{ fontSize: "0.85rem", marginTop: "1rem", color:"#94a3b8" }}>
           Already have an account?{" "}
           <span
             style={{ color: "#3b82f6", cursor: "pointer" }}
