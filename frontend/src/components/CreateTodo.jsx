@@ -67,8 +67,8 @@ export function CreateTodo({ fetchTodos , closeModal }) {
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <button onClick={() => {
-    handleSubmit();
+        <button onClick={async() => {
+    await handleSubmit();
     setShowModal(false);
   }} disabled={loading}>
           {loading ? "Adding..." : "Add Task"}

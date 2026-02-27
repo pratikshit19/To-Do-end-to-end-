@@ -49,7 +49,7 @@ export default function Login({ setIsAuthenticated , setIsLogin }) {
         <button onClick={handleLogin} className="login-button">
           Login
         </button>
-        <p style={{ fontSize: "0.85rem", marginTop: "1rem" }}>
+        <p style={{ fontSize: "0.85rem", marginTop: "1rem", color:"#94a3b8" }}>
   Don’t have an account?{" "}
   <span
     style={{ color: "#3b82f6", cursor: "pointer" }}
