@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../CreateTodo.css";
 
-export function CreateTodo({ fetchTodos }) {
+export function CreateTodo({ fetchTodos , closeModal }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,9 +36,12 @@ export function CreateTodo({ fetchTodos }) {
       }
 
       await fetchTodos();
+      
+
 
       setTitle("");
       setDescription("");
+      closeModal();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -64,7 +67,10 @@ export function CreateTodo({ fetchTodos }) {
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <button onClick={handleSubmit} disabled={loading}>
+        <button onClick={() => {
+    handleSubmit();
+    setShowModal(false);
+  }} disabled={loading}>
           {loading ? "Adding..." : "Add Task"}
         </button>
 

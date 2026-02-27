@@ -1,127 +1,144 @@
-#root {
-  max-width: 1100px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 6rem 1.5rem 3rem;
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: #f2f4f8;
+  color: #111;
 }
 
-/* GRID CONTAINER */
-.todo-container {
-  display: grid;
-  gap: 1.5rem;
-  margin-top: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-/* TODO CARD */
-.todo-card {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  border-radius: 18px;
-  padding: 1.8rem;
-  transition: all 0.3s ease;
-  min-height: 200px;
-  position: relative; 
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.todo-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-}
-
-.todo-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.todo-description {
-  color: #94a3b8;
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-}
-
-/* Completed styling */
-.completed {
-  opacity: 0.7;
-}
-
-.completed .todo-title {
-  text-decoration: line-through;
-}
-
-.delete-cross {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-
-  font-size: 20px;
-  font-weight: bold;
-  color: #94a3b8;
-
-  cursor: pointer;
-  user-select: none;
-
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.delete-cross:hover {
-  color: #ef4444;
-  transform: scale(1.2);
-}.delete-cross {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-
-  font-size: 20px;
-  font-weight: bold;
-  color: #94a3b8;
-
-  cursor: pointer;
-  user-select: none;
-
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.delete-cross:hover {
-  color: #ef4444;
-  transform: scale(1.2);
-}
-
-.floating-button {
-  background-color: #3b82f6;
-  position: fixed;
-  bottom: 25px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 14px 24px;
-  border-radius: 30px;
-  cursor: pointer;
-  z-index: 1000;
-}
+/* ========================= */
+/* MODAL OVERLAY */
+/* ========================= */
 
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.55);
 
   display: flex;
   justify-content: center;
   align-items: center;
+
   z-index: 1000;
+
+  animation: fadeIn 0.2s ease-in;
 }
 
-.modal-content {
-  width: 90%;
-  max-width: 400px;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.floating-button:hover {
+
+/* Center mobile layout */
+.mobile-container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header */
+.tasks-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.tasks-header p {
+  margin-top: 4px;
+  color: gray;
+  font-size: 14px;
+}
+
+/* Main Card */
+.task-card {
+  border-radius: 20px;
+  padding: 20px 20px 20px 0;
+}
+
+.tasks-header{
+  margin-top: 80px;
+  font-size: 14px;
+  color: white;
+}
+
+.task-count {
+  margin-top: 5px;
+  font-size: 14px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+/* Task Row */
+.task-row {
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 20px;
+  background: rgba(59, 130, 246, 0.18);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.task-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.task-text {
+  color: azure;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-title {
+  font-weight: 500;
+}
+
+.completed-text {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-text small {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Delete button */
+.delete-btn {
+  color: azure;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+/* Floating Button */
+.floating-button {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
   transform: translateX(-50%);
-  background-color: #2563eb;
+  padding: 14px 22px;     /* instead of fixed width/height */
+  border-radius: 10px;    /* pill shape */
+  font-size: 16px;
+  border: none;
+  /* background: rgb(60, 88, 140); */
+  color: white;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: linear-gradient(135deg, #3b82f6, #6cbcd6);
+}
+
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  margin-top: 40px;
+  color: gray;
 }
