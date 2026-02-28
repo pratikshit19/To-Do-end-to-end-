@@ -46,8 +46,14 @@ export function Todos({ todos, fetchTodos }) {
   };
 
   if (!todos || todos.length === 0) {
-    return <p className="empty-state">No tasks yet.</p>;
+    return <p className="empty-state">No tasks yet.Your tasks will appear here!</p>;
   }
+
+  // ✅ Progress calculations
+  const completedCount = todos.filter((t) => t.completed).length;
+  const progressPercentage = Math.round(
+    (completedCount / todos.length) * 100
+  );
 
   return (
     <div className="mobile-container">
@@ -58,8 +64,16 @@ export function Todos({ todos, fetchTodos }) {
 
       <div className="task-card">
         <p className="task-count">
-          {todos.filter((t) => t.completed).length} of {todos.length} Tasks Completed
+          {completedCount} of {todos.length} Tasks Completed
         </p>
+
+        {/* ✅ Progress Bar */}
+        <div className="progress-bar">
+          <div
+            className="progress-fill"
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
 
         {todos.map((todo) => (
           <div key={todo._id} className="task-row">
