@@ -7,10 +7,14 @@
    padding: 0 20px 0 20px; 
   /* background: linear-gradient(135deg, #0f172a, #1e293b); */
   /* background: radial-gradient(135deg, #ffffff, #dbeafe); */
-  background: url('/bgimage.jpg');
+  /* background: url('/bgimage.jpg');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
+  background-repeat: no-repeat; */
+  background:
+    radial-gradient(circle at top left, rgba(255, 166, 136, 0.559), transparent 50%),
+    radial-gradient(circle at right, rgba(169, 214, 229, 0.498), transparent 50%),
+    #f8fafc;
 }
 
 /* GLASS CARD */
@@ -66,7 +70,7 @@
 .login-input {
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(159, 158, 158, 0.395);
 
   background: rgba(255, 255, 255, 0.85);
   color: rgb(101, 101, 101);
