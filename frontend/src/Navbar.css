@@ -13,6 +13,9 @@
     #111827,
     #081233
   ); */
+  justify-content: space-between;
+  align-items: center;
+  /* display: flex; */
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -33,7 +36,7 @@
 /* LOGO */
 .navbar-logo {
   font-size: 1.5rem;
-  font-weight: 400;
+  font-weight: 600;
   color: #000000;
   letter-spacing: 0.5px;
 }
