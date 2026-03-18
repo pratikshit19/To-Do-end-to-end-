@@ -4,10 +4,17 @@
   font-weight: 400;
 
   color: #e5e7eb;
-  background-color: #0f172a; /* deep modern dark */
-
+  /* background-color: #0f172a; deep modern dark */
+  /* background: url('/bgimage.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: 
+  radial-gradient(circle at top left, rgba(255, 166, 136, 0.244), transparent 50%),
+  radial-gradient(circle at right, rgba(169, 214, 229, 0.265), transparent 50%),
+  #f8fafc;
 }
 
 body {
@@ -27,9 +34,10 @@ button {
   border: none;
   padding: 0.6em 1.4em;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 300;
   font-family: inherit;
-  background: linear-gradient(135deg, #3b82f6, #6cbcd6);
+  /* background: linear-gradient(135deg, #3b82f6, #6cbcd6); */
+  background: #000000;
   color: white;
   cursor: pointer;
   transition: all 0.25s ease;
