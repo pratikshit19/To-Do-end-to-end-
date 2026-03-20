@@ -1,7 +1,10 @@
+import toast from "react-hot-toast";
+
 export function Todos({ todos, fetchTodos }) {
   const token = localStorage.getItem("token");
 
   const handleDelete = async (id) => {
+    const toastId = toast.loading("Deleting task...");
     try {
       const response = await fetch(
         `https://to-do-app-616k.onrender.com/todos/${id}`,
@@ -16,10 +19,11 @@ export function Todos({ todos, fetchTodos }) {
       if (!response.ok) {
         throw new Error("Failed to delete todo");
       }
-
       await fetchTodos();
+      toast.success("Task deleted", { id: toastId });
+
     } catch (err) {
-      console.error(err);
+      toast.error(err.message, { id: toastId });
     }
   };
 

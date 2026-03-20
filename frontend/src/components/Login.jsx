@@ -1,26 +1,36 @@
 import { useState } from "react";
 import "../Login.css";
+import toast from "react-hot-toast";
 
-export default function Login({ setIsAuthenticated , setIsLogin }) {
+export default function Login({ setIsAuthenticated, setIsLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    const response = await fetch("https://to-do-app-616k.onrender.com/signin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    const toastId = toast.loading("Logging in...");
 
-    const data = await response.json();
+    try {
+      const response = await fetch("https://to-do-app-616k.onrender.com/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (response.ok) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
       localStorage.setItem("token", data.token);
       setIsAuthenticated(true);
-    } else {
-      alert(data.message || "Login failed");
+
+      toast.success("Login successful 🎉", { id: toastId });
+
+    } catch (err) {
+      toast.error(err.message || "Login failed", { id: toastId });
     }
   };
 
@@ -49,15 +59,16 @@ export default function Login({ setIsAuthenticated , setIsLogin }) {
         <button onClick={handleLogin} className="login-button">
           Login
         </button>
+
         <p style={{ fontSize: "0.85rem", marginTop: "1rem", color:"#94a3b8" }}>
-  Don’t have an account?{" "}
-  <span
-    style={{ color: "#a15eff", cursor: "pointer" }}
-    onClick={() => setIsLogin(false)}
-  >
-    Sign Up
-  </span>
-</p>
+          Don’t have an account?{" "}
+          <span
+            style={{ color: "#a15eff", cursor: "pointer" }}
+            onClick={() => setIsLogin(false)}
+          >
+            Sign Up
+          </span>
+        </p>
       </div>
     </div>
   );
