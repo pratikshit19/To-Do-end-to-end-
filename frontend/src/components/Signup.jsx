@@ -66,7 +66,7 @@ export default function Signup({ setIsLogin }) {
         <p style={{ fontSize: "0.85rem", marginTop: "1rem", color:"#94a3b8" }}>
           Already have an account?{" "}
           <span
-            style={{ color: "#3b82f6", cursor: "pointer" }}
+            style={{ color: "#a15eff", cursor: "pointer" }}
             onClick={() => setIsLogin(true)}
           >
             Login

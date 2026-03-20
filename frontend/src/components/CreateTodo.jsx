@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../CreateTodo.css";
 
-export function CreateTodo({ fetchTodos , closeModal }) {
+export function CreateTodo({ fetchTodos, closeModal }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,10 +25,7 @@ export function CreateTodo({ fetchTodos , closeModal }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          title,
-          description,
-        }),
+        body: JSON.stringify({ title, description }),
       });
 
       if (!response.ok) {
@@ -36,12 +33,10 @@ export function CreateTodo({ fetchTodos , closeModal }) {
       }
 
       await fetchTodos();
-      
-
 
       setTitle("");
       setDescription("");
-      closeModal();
+      closeModal(); // ✅ correct
     } catch (err) {
       setError(err.message);
     } finally {
@@ -50,32 +45,28 @@ export function CreateTodo({ fetchTodos , closeModal }) {
   };
 
   return (
-    <div className="create-container">
-      <div className="create-card">
-        <h2 className="create-title">Add a Task</h2>
+    <div className="create-card">
+      <button className="close-btn" onClick={closeModal}>✕</button>
+      <h2 className="create-title">Add a Task</h2>
+      
+      <input
+        type="text"
+        placeholder="Enter title..."
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
 
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+      <textarea
+        placeholder="Enter description..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
 
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+      <button onClick={handleSubmit} disabled={loading}>
+        {loading ? "Adding..." : "Add Task"}
+      </button>
 
-        <button onClick={async() => {
-    await handleSubmit();
-    setShowModal(false);
-  }} disabled={loading}>
-          {loading ? "Adding..." : "Add Task"}
-        </button>
-
-        {error && <p className="error-text">{error}</p>}
-      </div>
+      {error && <p className="error-text">{error}</p>}
     </div>
   );
 }

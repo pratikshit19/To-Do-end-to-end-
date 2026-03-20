@@ -58,7 +58,6 @@ export function Todos({ todos, fetchTodos }) {
   return (
     <div className="mobile-container">
       <div className="tasks-header">
-        <h1>My Tasks</h1>
         <p>Create your tasks and track their status</p>
       </div>
 
