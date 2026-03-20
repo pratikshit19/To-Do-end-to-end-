@@ -1,16 +1,18 @@
 import { useState } from "react";
-import "../Login.css"; // reuse same styling
+import "../Login.css";
+import toast from "react-hot-toast";
 
 export default function Signup({ setIsLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   const handleSignup = async () => {
     if (!username.trim() || !password.trim()) {
-      setError("All fields are required");
+      toast.error("All fields are required");
       return;
     }
+
+    const toastId = toast.loading("Creating account...");
 
     try {
       const response = await fetch("https://to-do-app-616k.onrender.com/signup", {
@@ -27,11 +29,11 @@ export default function Signup({ setIsLogin }) {
         throw new Error(data.message || "Signup failed");
       }
 
-      alert("Signup successful! Please login.");
+      toast.success("Signup successful 🎉 Please login", { id: toastId });
       setIsLogin(true);
 
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || "Signup failed", { id: toastId });
     }
   };
 
@@ -60,8 +62,6 @@ export default function Signup({ setIsLogin }) {
         <button onClick={handleSignup} className="login-button">
           Sign Up
         </button>
-
-        {error && <p style={{ color: "#ef4444" }}>{error}</p>}
 
         <p style={{ fontSize: "0.85rem", marginTop: "1rem", color:"#94a3b8" }}>
           Already have an account?{" "}

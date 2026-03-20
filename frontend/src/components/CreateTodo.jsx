@@ -1,23 +1,24 @@
 import { useState } from "react";
 import "../CreateTodo.css";
+import toast from "react-hot-toast";
 
 export function CreateTodo({ fetchTodos, closeModal }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim()) {
-      setError("Title and Description cannot be empty.");
+      toast.error("Title and Description cannot be empty");
       return;
     }
 
+    const toastId = toast.loading("Adding task...");
+
     try {
       setLoading(true);
-      setError("");
 
       const response = await fetch("https://to-do-app-616k.onrender.com/todo", {
         method: "POST",
@@ -34,11 +35,14 @@ export function CreateTodo({ fetchTodos, closeModal }) {
 
       await fetchTodos();
 
+      toast.success("Task added successfully 🎉", { id: toastId });
+
       setTitle("");
       setDescription("");
-      closeModal(); // ✅ correct
+      closeModal();
+
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || "Something went wrong", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -47,8 +51,9 @@ export function CreateTodo({ fetchTodos, closeModal }) {
   return (
     <div className="create-card">
       <button className="close-btn" onClick={closeModal}>✕</button>
+
       <h2 className="create-title">Add a Task</h2>
-      
+
       <input
         type="text"
         placeholder="Enter title..."
@@ -65,8 +70,6 @@ export function CreateTodo({ fetchTodos, closeModal }) {
       <button onClick={handleSubmit} disabled={loading}>
         {loading ? "Adding..." : "Add Task"}
       </button>
-
-      {error && <p className="error-text">{error}</p>}
     </div>
   );
 }

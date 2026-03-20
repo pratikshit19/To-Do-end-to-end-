@@ -5,6 +5,7 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import "./App.css";
 import Navbar from "./components/Navbar";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -51,6 +52,7 @@ function App() {
 
   return (
     <>
+      <Toaster position="top-right" />
       <Navbar onLogout={handleLogout} onAddClick={() => setShowModal(true)} />
 
       {/* Only show Todos */}
