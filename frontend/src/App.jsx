@@ -51,7 +51,7 @@ function App() {
 
   return (
     <>
-      <Navbar onLogout={handleLogout} />
+      <Navbar onLogout={handleLogout} onAddClick={() => setShowModal(true)} />
 
       {/* Only show Todos */}
       <Todos todos={todos} fetchTodos={fetchTodos} />

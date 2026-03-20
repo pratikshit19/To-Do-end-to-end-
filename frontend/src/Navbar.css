@@ -4,18 +4,8 @@
   top: 0;
   left: 0;
   width: 100%;
-  /* background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(16px);
-  /* background: linear-gradient(90deg, #0f172a, #1e293b); */
-  /* border-bottom: 1px solid rgba(148, 163, 184, 0.08); */ 
-  /* background: linear-gradient(
-    90deg,
-    #111827,
-    #081233
-  ); */
   justify-content: space-between;
   align-items: center;
-  /* display: flex; */
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -27,7 +17,6 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 1rem 1rem;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -46,6 +35,49 @@
   display: flex;
   align-items: center;
 }
+
+.add-button {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 40px;        /* 👈 controls overall size */
+  height: 40px;
+
+  border-radius: 50%;
+  border: none;
+
+  background: linear-gradient(90deg, #6366f1, #ef79feec);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;    /* 👈 THIS increases the + size */
+  font-weight: 600;
+
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+
+  transition: all 0.2s ease;
+}
+
+.add-button span {
+  font-size: 48px;
+  line-height: 1;
+  font-weight: lighter;
+}
+
+.add-button:hover {
+  transform: translateX(-50%) scale(1.1);
+}
+
+.add-button:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
 
 /* CLEANER LOGOUT BUTTON */
 .logout-button {
@@ -69,4 +101,98 @@
 
 .logout-button:active {
   transform: scale(0.96);
+}
+
+/* HAMBURGER BUTTON */
+.menu-button {
+  padding-left: 0px;
+  font-size: 22px;
+  color: #000000;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.menu-button:hover {
+  background-color: transparent;
+}
+
+.cross-drawer {
+  background-color: transparent;
+  color: #000000;
+}
+
+.cross-drawer:hover {
+  background-color: transparent;
+
+}
+
+/* DRAWER */
+.drawer {
+  position: fixed;
+  top: 0;
+  left: -260px; /* hidden */
+  width: 260px;
+  height: 100%;
+
+  background: white;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+
+  z-index: 1200;
+  transition: left 0.3s ease;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer.open {
+  left: 0;
+}
+
+/* HEADER */
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+/* CONTENT */
+.drawer-content {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.drawer-content button {
+  padding: 12px;
+  margin: 5px 0;
+  color: #000000;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+.drawer-content button:hover {
+  background: #f1f5f9;
+}
+
+/* OVERLAY */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(3px);
+
+  z-index: 1100;
 }
