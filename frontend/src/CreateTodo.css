@@ -1,25 +1,17 @@
 /* CARD */
 .create-card {
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
   padding: 1.5rem;
-  /* margin: 0 auto; */
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--card);   /* flat dark */
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
   backdrop-filter: blur(14px);
-
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.08),
-    0 20px 60px rgba(0, 0, 0, 0.08);
-
   display: flex;
   flex-direction: column;
   gap: 1rem;
-
   animation: modalPop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-
   position: relative;
   overflow: hidden;
 }
@@ -28,9 +20,9 @@
 .create-card::before {
   content: "";
   position: absolute;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(99,102,241,0.12), transparent 60%);
+  width: 400%;
+  height: 400%;
+  /* background: radial-gradient(circle, rgba(99,102,241,0.12), transparent 60%); */
   top: -50%;
   left: -50%;
   z-index: 0;
@@ -46,7 +38,7 @@
   font-size: 1.6rem;
   font-weight: 600;
   text-align: center;
-  color: #0f172a;
+  /* color: #0f172a; */
 }
 
 /* INPUTS */
@@ -55,10 +47,9 @@
   padding: 0.85rem 1rem;
 
   border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-
-  background: rgba(255, 255, 255, 0.9);
-  color: #1e293b;
+  border: none;
+  background: var(--border);
+  color: var(--text);
 
   font-size: 0.95rem;
 
@@ -80,66 +71,11 @@
 /* FOCUS */
 .create-card input:focus,
 .create-card textarea:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
   transform: scale(1.01);
 }
 
 /* BUTTON */
-.create-card button {
-  margin-top: 0.5rem;
-  padding: 0.85rem;
 
-  border-radius: 12px;
-  border: none;
-
-  /* background: linear-gradient(135deg, #6366f1, #8b5cf6); */
-  color: white;
-
-  font-weight: 500;
-  font-size: 0.95rem;
-
-  cursor: pointer;
-  transition: all 0.25s ease;
-
-  position: relative;
-  overflow: hidden;
-}
-
-/* shine effect */
-.create-card button::after {
-  content: "";
-  position: absolute;
-  width: 200%;
-  height: 100%;
-  left: -100%;
-  top: 0;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255,255,255,0.4),
-    transparent
-  );
-  transition: 0.5s;
-}
-
-.create-card button:hover::after {
-  left: 100%;
-}
-
-.create-card button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.35);
-}
-
-.create-card button:active {
-  transform: scale(0.96);
-}
-
-.create-card button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
 /* ERROR */
 .error-text {
@@ -174,9 +110,8 @@
 }
 
 .close-btn:hover {
-  background: #ef4444;
   color: white;
-  transform: rotate(90deg);
+  background-color: transparent;
 }
 
 

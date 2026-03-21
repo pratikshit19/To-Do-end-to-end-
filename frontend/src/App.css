@@ -1,13 +1,6 @@
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
-
-  /* Premium soft background */
-  /* background:
-    radial-gradient(circle at top left, rgba(255, 166, 136, 0.304), transparent 50%),
-    radial-gradient(circle at right, rgba(169, 214, 229, 0.393), transparent 50%),
-    #f8fafc; */
-
+  font-family: monospace;
   color: #0f172a;
 }
 
@@ -22,7 +15,7 @@ body {
   width: 100%;
   height: 100%;
 
-  background: rgba(0, 0, 0, 0.3);
+  /* background: rgba(0, 0, 0, 0.3); */
   backdrop-filter: blur(6px);
 
   display: flex;
@@ -106,12 +99,17 @@ body {
 
   border-radius: 14px;
 
-  /* Glassmorphism */
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,0.4);
+  background: var(--card);   /* flat dark */
+  border: 1px solid var(--border);
 
-  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
+
+  /* Glassmorphism */
+  /* background: rgba(255, 255, 255, 0.65); */
+  backdrop-filter: blur(14px);
+  /* border: 1px solid rgba(255,255,255,0.4); */
+
+  /* box-shadow: 0 10px 25px rgba(0,0,0,0.06); */
 
   transition: all 0.2s ease;
 }
@@ -125,7 +123,7 @@ body {
   margin-right: 12px;
   width: 20px;
   height: 20px;
-  accent-color: #6366f1;
+  accent-color: #46e0ff;
 }
 
 .task-row.completed {
@@ -163,8 +161,8 @@ body {
 /* ========================= */
 
 .delete-btn {
-  color: #1e293b;
-  font-size: 18px;
+  color: #4b4b4b;
+  font-size: 28px;
   cursor: pointer;
   margin-left: 10px;
   transition: 0.2s;
@@ -184,17 +182,16 @@ body {
   bottom: 30px;
   right: 30px;  /* ⬅️ moved from center to right */
 
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  color: white;
+  /* background: linear-gradient(135deg, #3decff, #121d1f); */
+  color: #2dd3ee;
 
   border: none;
-  border-radius: 50px;
+  border-radius: 10px;
   padding: 14px 22px;
 
   font-size: 14px;
   font-weight: 600;
 
-  box-shadow: 0 10px 25px rgba(99,102,241,0.3);
   cursor: pointer;
   /* animation: modalPop 0.28s cubic-bezier(0.22, 1, 0.36, 1); */
   transition: all 0.2s ease;
@@ -221,7 +218,7 @@ body {
 .progress-bar {
   height: 8px;
   width: 100%;
-  background: #e2e8f0;
+  background: #1c1c1c;
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 24px;
@@ -229,7 +226,7 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #ef79feec);
+  background: linear-gradient(90deg, #04d9ff, #015363);
   border-radius: 10px;
   transition: width 0.4s ease;
 }

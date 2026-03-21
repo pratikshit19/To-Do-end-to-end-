@@ -18,27 +18,20 @@
 
 /* GLASS CARD */
 .login-card {
+  background: var(--card);   /* flat dark */
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
   width: 100%;
   max-width: 400px;
   padding: 2.2rem;
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(14px);
-
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.08),
-    0 20px 60px rgba(0, 0, 0, 0.08);
-
   display: flex;
   flex-direction: column;
   gap: 1rem;
-
   text-align: center;
-
   animation: fadeSlide 0.35s ease-out;
 }
 
@@ -73,7 +66,6 @@
 .login-title {
   font-size: 1.8rem;
   font-weight: 600;
-  color: #0f172a;
 }
 
 /* SUBTITLE */
@@ -87,14 +79,12 @@
 .login-input {
   padding: 12px 14px;
   border-radius: 12px;
+  /* border: var(--border); */
+  /* border: 1px solid rgba(148, 163, 184, 0.4); */
+  background: rgba(31, 31, 31, 0.9);
 
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(255, 255, 255, 0.9);
-
-  color: #1e293b;
   font-size: 0.95rem;
 
-  outline: none;
   transition: all 0.25s ease;
 }
 
@@ -104,13 +94,13 @@
 
 /* INPUT FOCUS */
 .login-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  border-color: #63d0f1;
   transform: scale(1.02);
 }
 
 /* BUTTON */
 .login-button {
+  font-weight: 400;
   position: relative;
   overflow: hidden;
 }
@@ -123,12 +113,7 @@
   height: 100%;
   top: 0;
   left: -100%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(216, 158, 255, 0.4),
-    transparent
-  );
+ 
   transition: 0.5s;
 }
 
@@ -143,13 +128,4 @@
 }
 
 /* OPTIONAL: SMALL TEXT (signup/login switch) */
-.login-footer {
-  font-size: 0.85rem;
-  color: #64748b;
-}
 
-.login-footer span {
-  color: #6366f1;
-  cursor: pointer;
-  font-weight: 500;
-}

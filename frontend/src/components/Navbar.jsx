@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../Navbar.css";
+import { LogOut } from "lucide-react";
 
 export default function Navbar({ onLogout, onAddClick }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +23,7 @@ export default function Navbar({ onLogout, onAddClick }) {
 
           {/* RIGHT */}
           <button className="logout-button" onClick={onLogout}>
-            Logout
+            <LogOut size={20} />
           </button>
 
         </div>
@@ -40,6 +41,7 @@ export default function Navbar({ onLogout, onAddClick }) {
           <button>📋 My Tasks</button>
           <button>⚙️ Settings</button>
         </div>
+        
       </div>
 
       {/* OVERLAY */}

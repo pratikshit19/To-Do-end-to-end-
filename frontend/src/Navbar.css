@@ -6,7 +6,7 @@
   width: 100%;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 20px rgba(33, 89, 109, 0.15);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   z-index: 1000;
@@ -26,7 +26,7 @@
 .navbar-logo {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #000000;
+  /* color: #000000; */
   letter-spacing: 0.5px;
 }
 
@@ -36,56 +36,13 @@
   align-items: center;
 }
 
-.add-button {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-
-  width: 40px;        /* 👈 controls overall size */
-  height: 40px;
-
-  border-radius: 50%;
-  border: none;
-
-  background: linear-gradient(90deg, #6366f1, #ef79feec);
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 32px;    /* 👈 THIS increases the + size */
-  font-weight: 600;
-
-  cursor: pointer;
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-
-  transition: all 0.2s ease;
-}
-
-.add-button span {
-  font-size: 48px;
-  line-height: 1;
-  font-weight: lighter;
-}
-
-.add-button:hover {
-  transform: translateX(-50%) scale(1.1);
-}
-
-.add-button:active {
-  transform: translateX(-50%) scale(0.95);
-}
-
 
 /* CLEANER LOGOUT BUTTON */
 .logout-button {
   padding: 7px 16px;
   border-radius: 8px;
 
-  background: transparent;
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(255, 0, 0, 0.139);
 
   color: #ef4444;
   font-weight: 500;
@@ -95,7 +52,7 @@
 }
 
 .logout-button:hover {
-  background: #ef4444;
+  background: #3f3f3f;
   color: white;
 }
 
@@ -107,23 +64,27 @@
 .menu-button {
   padding-left: 0px;
   font-size: 22px;
-  color: #000000;
+  color: #ececec;
   background: none;
   border: none;
   cursor: pointer;
 }
 
 .menu-button:hover {
+  color: var(--accent);
   background-color: transparent;
 }
 
 .cross-drawer {
   background-color: transparent;
-  color: #000000;
+  color: #adadad;
+  font-size: large;
 }
 
 .cross-drawer:hover {
-  background-color: transparent;
+  cursor: pointer;
+  background-color: var(--border);
+  color: #adadad;
 
 }
 
@@ -135,7 +96,7 @@
   width: 260px;
   height: 100%;
 
-  background: white;
+  background: var(--card);
   box-shadow: 4px 0 20px rgba(0,0,0,0.15);
 
   z-index: 1200;
@@ -156,7 +117,7 @@
   align-items: center;
 
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
 }
 
 /* CONTENT */
@@ -169,7 +130,7 @@
 .drawer-content button {
   padding: 12px;
   margin: 5px 0;
-  color: #000000;
+  color: var(--text);
   border: none;
   background: none;
   text-align: left;
@@ -180,7 +141,8 @@
 }
 
 .drawer-content button:hover {
-  background: #f1f5f9;
+  background: var(--border);
+  color: #adadad;
 }
 
 /* OVERLAY */
