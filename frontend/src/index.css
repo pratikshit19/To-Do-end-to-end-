@@ -7,7 +7,7 @@
  
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: rgb(10, 10, 12) ;
+  /* background-color: rgb(10, 10, 12) ; */
   /* --bg: #0e0e0e;          */
   /* --bg: rgb(10, 10, 12);  */
   --bg:radial-gradient(circle at 20% 30%, rgba(45, 167, 238, 0.15), transparent 0%),
