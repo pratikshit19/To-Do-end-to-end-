@@ -3,6 +3,7 @@ import { CreateTodo } from "./components/CreateTodo";
 import { Todos } from "./components/Todos";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
+import Footer from "./components/Footer";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
@@ -75,6 +76,7 @@ function App() {
           </div>
         </div>
       )}
+      {/* <Footer /> */}
     </>
   );
 }
