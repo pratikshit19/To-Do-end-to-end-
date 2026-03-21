@@ -50,7 +50,7 @@ export function Todos({ todos, fetchTodos }) {
   };
 
   if (!todos || todos.length === 0) {
-    return <p className="empty-state">No tasks yet.Your tasks will appear here!</p>;
+    return <div className="empty-state"><p >No tasks yet.Your tasks will appear here!</p></div>;
   }
 
   // ✅ Progress calculations

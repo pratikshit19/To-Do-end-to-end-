@@ -206,9 +206,15 @@ body {
 /* ========================= */
 
 .empty-state {
+
+  align-items: center;
   text-align: center;
-  margin-top: 100px;
+  /* margin-top: 100px; */
   color: #64748b;
+}
+
+.empty-state p {
+  margin-top: 50%;
 }
 
 /* ========================= */
