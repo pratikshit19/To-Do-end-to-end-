@@ -4,6 +4,7 @@ import { Todos } from "./components/Todos";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Footer from "./components/Footer";
+import Profile from "./components/Profile";   // 👈 NEW
 import "./App.css";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
@@ -14,7 +15,8 @@ function App() {
     !!localStorage.getItem("token")
   );
   const [isLogin, setIsLogin] = useState(true);
-  const [showModal, setShowModal] = useState(false); // 👈 NEW
+  const [showModal, setShowModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState("home"); // 👈 NEW
 
   const fetchTodos = async () => {
     const token = localStorage.getItem("token");
@@ -37,6 +39,7 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("username");
     setIsAuthenticated(false);
   };
 
@@ -55,28 +58,40 @@ function App() {
     <>
       <Toaster position="top-right" />
 
-      {/* Only show Todos */}
-      <Todos todos={todos} fetchTodos={fetchTodos} />
+      {/* Render Based On Page */}
+      {currentPage === "home" && (
+        <>
+          <Todos todos={todos} fetchTodos={fetchTodos} />
 
-      {/* Floating Add Button */}
-      <button
-        className="floating-button"
-        onClick={() => setShowModal(true)}
-      >
-        +
-      </button>
-            <Navbar onLogout={handleLogout} onAddClick={() => setShowModal(true)} />
+          <button
+            className="floating-button"
+            onClick={() => setShowModal(true)}
+          >
+            +
+          </button>
+        </>
+      )}
 
+      {currentPage === "profile" && (
+        <Profile onLogout={handleLogout} />
+      )}
 
-      {/* Modal */}
+      <Navbar
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
+
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <CreateTodo fetchTodos={fetchTodos} closeModal={() => setShowModal(false)}/>
-            
+            <CreateTodo
+              fetchTodos={fetchTodos}
+              closeModal={() => setShowModal(false)}
+            />
           </div>
         </div>
       )}
+
       <Footer />
     </>
   );

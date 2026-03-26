@@ -16,7 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(express.json());
 app.use(cors({
-  origin: "https://to-do-app-gilt-tau.vercel.app"
+  origin: ["http://localhost:5173","https://to-do-app-gilt-tau.vercel.app"],
 }));
 
 
