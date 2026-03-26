@@ -1,7 +1,28 @@
 import toast from "react-hot-toast";
+import { useEffect, useState, useRef } from "react";
 
 export function Todos({ todos, fetchTodos }) {
   const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
+  
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleDelete = async (id) => {
     const toastId = toast.loading("Deleting task...");
@@ -68,7 +89,21 @@ export function Todos({ todos, fetchTodos }) {
   <div className="app-wrapper">
     {/* HEADER */}
     <div className="today-header">
-      <div className="avatar-circle">👤</div>
+      <div className="avatar-wrapper" ref={menuRef}>
+  <div
+    className="avatar-circle"
+    onClick={() => setShowMenu(!showMenu)}
+  >
+    {username?.charAt(0).toUpperCase() || "U"}
+  </div>
+
+  {showMenu && (
+    <div className="profile-dropdown">
+      <p className="dropdown-user">{username}</p>
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+  )}
+</div>
       <div className="today-text">Today</div>
       <div className="settings-icon">⚙</div>
     </div>

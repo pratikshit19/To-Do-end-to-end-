@@ -23,8 +23,9 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }
-
+      localStorage.setItem("username", data.username);
       localStorage.setItem("token", data.token);
+      
       setIsAuthenticated(true);
 
       toast.success("Login successful 🎉", { id: toastId });

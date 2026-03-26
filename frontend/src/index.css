@@ -71,13 +71,7 @@ input:focus {
 button {
   border: none;
   background: #2da1ee3d;
-  /* background: linear-gradient(
-    180deg,
-    #5ed4e4 0%,
-    #1dabc1 60%,
-    #337e8b 100%
-  ); */
-  /* border: 1px solid var(--accent); */
+ 
   color: #2daaee;
   font-weight: 300;
   border-radius: 10px;

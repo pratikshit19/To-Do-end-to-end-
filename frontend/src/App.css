@@ -136,12 +136,23 @@ body {
 }
 
 .task-card-modern {
-  display: flex;
+  /* display: flex;
   gap: 12px;
-  background: #141e2b;
+  background: rgba(16, 16, 20, 0.9);
   padding: 16px;
   border-radius: 18px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); */
+  gap: 12px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--card);   /* flat dark */
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
+  backdrop-filter: blur(14px);
+  transition: all 0.2s ease;
 }
 
 .checkbox-wrapper input {
