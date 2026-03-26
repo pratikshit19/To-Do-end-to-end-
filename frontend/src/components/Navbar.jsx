@@ -1,56 +1,28 @@
-import { useState } from "react";
+import { Home, Calendar, LineChart, User } from "lucide-react";
 import "../Navbar.css";
-import { LogOut } from "lucide-react";
 
-export default function Navbar({ onLogout, onAddClick }) {
-  const [isOpen, setIsOpen] = useState(false);
-
+export default function Navbar() {
   return (
-    <>
-      <nav className="navbar">
-        <div className="navbar-container">
-
-          {/* LEFT: Hamburger */}
-          <button 
-            className="menu-button"
-            onClick={() => setIsOpen(true)}
-          >
-            ☰
-          </button>
-
-          {/* LOGO */}
-          <h2 className="navbar-logo">TaskFlow</h2>
-
-          {/* RIGHT */}
-          <button className="logout-button" onClick={onLogout}>
-            <LogOut size={20} />
-          </button>
-
-        </div>
-      </nav>
-
-      {/* DRAWER */}
-      <div className={`drawer ${isOpen ? "open" : ""}`}>
-        <div className="drawer-header">
-          <h3>Menu</h3>
-          <button className="cross-drawer" onClick={() => setIsOpen(false)}>✕</button>
-        </div>
-
-        <div className="drawer-content">
-          <button onClick={onAddClick}>➕ Add Task</button>
-          <button>📋 My Tasks</button>
-          <button>⚙️ Settings</button>
-        </div>
-        
+    <div className="bottom-nav">
+      <div className="nav-item active">
+        <Home size={22} />
+        <span>Today</span>
       </div>
 
-      {/* OVERLAY */}
-      {isOpen && (
-        <div 
-          className="drawer-overlay"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </>
+      <div className="nav-item">
+        <Calendar size={22} />
+        <span>Schedule</span>
+      </div>
+
+      <div className="nav-item">
+        <LineChart size={22} />
+        <span>Insights</span>
+      </div>
+
+      <div className="nav-item">
+        <User size={22} />
+        <span>Profile</span>
+      </div>
+    </div>
   );
 }

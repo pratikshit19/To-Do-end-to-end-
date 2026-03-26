@@ -91,7 +91,8 @@ app.post("/todo", authMiddleware, async (req, res) => {
     title: createPayload.title,
     description: createPayload.description,
     completed: false,
-    userId: req.userId      // 🔥 IMPORTANT
+    priority: createPayload.priority || "medium",
+    userId: req.userId    
   });
 
   res.json({
@@ -103,29 +104,10 @@ app.get("/todos", authMiddleware, async (req, res) => {
   const todos = await todo.find({
     userId: req.userId      // 🔥 Only this user's todos
   });
-
+  console.log("TODOS FROM DB:", todos);
   res.json({ todos });
 });
 
-// app.put("/completed", authMiddleware, async (req, res) => {
-//   const updatePayload = req.body;
-//   const parsedPayload = updateTodo.safeParse(updatePayload);
-
-//   if (!parsedPayload.success) {
-//     return res.status(411).json({
-//       message: "Wrong inputs"
-//     });
-//   }
-
-//   await todo.updateOne(
-//     { _id: req.body.id, userId: req.userId }, // 🔥 Secure
-//     { completed: true }
-//   );
-
-//   res.json({
-//     message: "Marked as completed!"
-//   });
-// });
 
 app.delete("/todos/:id", authMiddleware, async (req, res) => {
   try {
@@ -145,30 +127,60 @@ app.delete("/todos/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// app.put("/todos/:id", authMiddleware, async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { completed, priority } = req.body;
+
+//     const existingTodo = await todo.findOne({
+//       _id: id,
+//       userId: req.userId
+//     });
+
+//     if (!existingTodo) {
+//       return res.status(404).json({ message: "Todo not found" });
+//     }
+
+//     // Update only if provided
+//     if (typeof completed !== "undefined") {
+//       existingTodo.completed = completed;
+//     }
+
+//     if (priority) {
+//       existingTodo.priority = priority;
+//     }
+
+//     await existingTodo.save();
+
+//     res.json({
+//       message: "Todo updated successfully",
+//       todo: existingTodo
+//     });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
 app.put("/todos/:id", authMiddleware, async (req, res) => {
   try {
-    const { id } = req.params;
+    const updated = await todo.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
+      req.body,
+      { new: true }
+    );
 
-    const existingTodo = await todo.findOne({
-      _id: id,
-      userId: req.userId  // 🔥 Important for security
-    });
-
-    if (!existingTodo) {
+    if (!updated) {
       return res.status(404).json({ message: "Todo not found" });
     }
 
-    existingTodo.completed = !existingTodo.completed;
-    await existingTodo.save();
-
-    res.json({ message: "Todo updated successfully" });
+    res.json(updated);
 
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 
 

@@ -27,27 +27,32 @@ export function Todos({ todos, fetchTodos }) {
     }
   };
 
-  const handleToggleComplete = async (id) => {
-    try {
-      const response = await fetch(
-        `https://to-do-app-616k.onrender.com/todos/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update todo");
+ const handleToggleComplete = async (todo) => {
+  try {
+    const response = await fetch(
+      `https://to-do-app-616k.onrender.com/todos/${todo._id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          completed: !todo.completed,
+          priority: todo.priority
+        }),
       }
+    );
 
-      await fetchTodos();
-    } catch (err) {
-      console.error(err);
+    if (!response.ok) {
+      throw new Error("Failed to update todo");
     }
-  };
+
+    await fetchTodos();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   if (!todos || todos.length === 0) {
     return <div className="empty-state"><p >No tasks yet.Your tasks will appear here!</p></div>;
@@ -60,52 +65,73 @@ export function Todos({ todos, fetchTodos }) {
   );
 
   return (
-    <div className="mobile-container">
-      <div className="tasks-header">
-        <p>Create your tasks and track their status</p>
+  <div className="app-wrapper">
+    {/* HEADER */}
+    <div className="today-header">
+      <div className="avatar-circle">👤</div>
+      <div className="today-text">Today</div>
+      <div className="settings-icon">⚙</div>
+    </div>
+
+    {/* PROGRESS SECTION */}
+    <div className="progress-container">
+      <p className="progress-sub">Daily Progress</p>
+
+      <div className="progress-row">
+        <h2>
+          {completedCount} of {todos.length} <span>Tasks</span>
+        </h2>
+        <span className="percent">{progressPercentage}%</span>
       </div>
 
-      <div className="task-card">
-        <p className="task-count">
-          {completedCount} of {todos.length} Tasks Completed
-        </p>
+      <div className="progress-bar-modern">
+        <div
+          className="progress-fill-modern"
+          style={{ width: `${progressPercentage}%` }}
+        />
+      </div>
+    </div>
 
-        {/* ✅ Progress Bar */}
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
-        </div>
+    {/* FILTER PILLS */}
+    <div className="filter-pills">
+      <button className="pill active">Focused</button>
+      <button className="pill">Upcoming</button>
+      <button className="pill">Completed</button>
+    </div>
 
-        {todos.map((todo) => (
-          <div key={todo._id} className="task-row">
+    {/* TASKS */}
+    <div className="task-list-modern">
+      {todos.map((todo) => (
+        <div key={todo._id} className="task-card-modern">
+          <div className="checkbox-wrapper">
             <input
               type="checkbox"
               checked={todo.completed}
-              onChange={() => handleToggleComplete(todo._id)}
+              onChange={() => handleToggleComplete(todo)}
             />
-
-            <div className="task-text">
-              <span
-                className={`task-title ${
-                  todo.completed ? "completed-text" : ""
-                }`}
-              >
-                {todo.title}
-              </span>
-              <small>{todo.description}</small>
-            </div>
-
-            <span
-              className="delete-btn"
-              onClick={() => handleDelete(todo._id)}
-            >
-              ×
-            </span>
           </div>
-        ))}
-      </div>
+
+          <div className="task-content">
+            <div className="task-top">
+              <h3 className={todo.completed ? "completed-text" : ""}>
+                {todo.title}
+              </h3>
+              <span className={`tag priority-${todo.priority || "medium"}`}>
+  {(todo.priority || "medium").toUpperCase()}
+</span>
+            </div>
+            <p>{todo.description}</p>
+          </div>
+
+          <button
+            className="delete-modern"
+            onClick={() => handleDelete(todo._id)}
+          >
+            ✕
+          </button>
+        </div>
+      ))}
     </div>
-  );
+  </div>
+);
 }

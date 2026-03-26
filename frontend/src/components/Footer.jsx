@@ -1,17 +1,11 @@
-import React from "react";
-import "../Footer.css";
-
 function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-content">
-        <p>© 2026 TaskFlow by Pratikshit.</p>
-        <div className="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Contact</a>
-        </div>
-      </div>
-    </footer>
+    <div className="footer">
+      <div>🏠 Today</div>
+      <div>📅 Schedule</div>
+      <div>📊 Insights</div>
+      <div>👤 Profile</div>
+    </div>
   );
 }
 

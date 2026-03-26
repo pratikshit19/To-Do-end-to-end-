@@ -54,7 +54,6 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
-      <Navbar onLogout={handleLogout} onAddClick={() => setShowModal(true)} />
 
       {/* Only show Todos */}
       <Todos todos={todos} fetchTodos={fetchTodos} />
@@ -64,8 +63,10 @@ function App() {
         className="floating-button"
         onClick={() => setShowModal(true)}
       >
-        Add new task
+        +
       </button>
+            <Navbar onLogout={handleLogout} onAddClick={() => setShowModal(true)} />
+
 
       {/* Modal */}
       {showModal && (
@@ -76,7 +77,7 @@ function App() {
           </div>
         </div>
       )}
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }
