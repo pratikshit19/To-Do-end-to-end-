@@ -2,24 +2,28 @@
   justify-content: center;
   align-items: center;
 }
-
-
-/* GLOBAL */
-body {
-  overflow-x: hidden;
+html, body {
+  height: 100%;
   margin: 0;
+  overflow-x: hidden;
   font-family: "Inter", sans-serif;
   background: linear-gradient(180deg, #05080f 0%, #0d1622 100%);
   color: #fff;
 }
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+  margin: 20px 0;
+}
 
 /* WRAPPER */
 .app-wrapper {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  box-sizing: border-box;
+  /* width: 100%;
+  max-width: 1200px; */
+  /* margin: 0 auto; */
+  padding: 25px;
+  overflow-y: auto;
+  /* box-sizing: border-box; */
 }
 
 /* HEADER */
@@ -51,7 +55,8 @@ body {
 
 /* PROGRESS */
 .progress-container {
-  margin-top: 30px;
+  margin-top: 15px;
+  border-top: solid 1px #88888831;
 }
 
 .progress-sub {

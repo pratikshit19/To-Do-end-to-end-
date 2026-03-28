@@ -7,68 +7,84 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+    if (!username || !password) {
+      return toast.error("Please enter username and password");
+    }
+
     const toastId = toast.loading("Logging in...");
-//https://to-do-app-616k.onrender.com/signin
+
     try {
-      const response = await fetch("https://to-do-app-616k.onrender.com/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await fetch(
+        "https://to-do-app-616k.onrender.com/signin",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }
+
       localStorage.setItem("username", data.username);
       localStorage.setItem("token", data.token);
-      
+
       setIsAuthenticated(true);
-
       toast.success("Login successful 🎉", { id: toastId });
-
     } catch (err) {
       toast.error(err.message || "Login failed", { id: toastId });
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleLogin();
+    }
+  };
+
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <h1 className="login-title">Welcome Back</h1>
-        <p className="login-subtitle">Login to manage your tasks</p>
+    <div className="auth-wrapper">
+      {/* Left Branding Panel */}
+      <div className="auth-hero">
+        <h1>TaskFlow</h1>
+        <p>Organize your day. Focus on what matters.</p>
+      </div>
 
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="login-input"
-        />
+      {/* Right Login Panel */}
+      <div className="auth-card">
+        <h2 className="auth-title">Welcome Back</h2>
+        <p className="auth-subtitle">Sign in to continue</p>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="login-input"
-        />
+        <div className="auth-form">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={handleKeyPress}
+            className="auth-input"
+          />
 
-        <button onClick={handleLogin} className="login-button">
-          Login
-        </button>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyPress}
+            className="auth-input"
+          />
 
-        <p style={{ fontSize: "0.85rem", marginTop: "1rem", color:"#94a3b8" }}>
-          Don’t have an account?{" "}
-          <span
-            style={{ color: "#2daaee", cursor: "pointer" }}
-            onClick={() => setIsLogin(false)}
-          >
-            Sign Up
-          </span>
+          <button onClick={handleLogin} className="auth-button">
+            Sign In
+          </button>
+        </div>
+
+        <p className="auth-switch">
+          Don’t have an account?
+          <span onClick={() => setIsLogin(false)}> Create Account</span>
         </p>
       </div>
     </div>

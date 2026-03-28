@@ -24,7 +24,7 @@
 }
 
 .profile-container {
-  padding: 40px 16px;
+  /* padding: 40px 16px; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -146,9 +146,17 @@
 
 @media (max-width: 480px) {
   .profile-container {
-    padding: 30px 50px;
+    padding: 15px 30px;
+  }
+  .profile-title{
+    font-size: 26px;
+    font-weight: 600;
   }
 
+  .logout-btn-modern {
+    margin-top:150px;
+
+  }
   .profile-card-modern {
     padding: 20px;
     border-radius: 20px;

@@ -5,11 +5,11 @@ export default function Profile({ onLogout }) {
   const username = localStorage.getItem("username");
 
   return (
+    
     <div className="profile-container">
-
+<p className="profile-title">Profile page</p>
       {/* Profile Card */}
       <div className="profile-card-modern">
-
         <div className="profile-header">
           <div className="avatar-large">
             {username?.charAt(0).toUpperCase()}

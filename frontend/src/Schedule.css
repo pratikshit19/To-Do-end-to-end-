@@ -1,9 +1,9 @@
 .schedule-container {
   background: var(--bg);
   color: white;
-  padding: 20px;
+  padding: 25px;
   min-height: 100vh;
-  overflow-y: hidden;
+  /* overflow-y: hidden; */
 }
 
 /* Top header */
