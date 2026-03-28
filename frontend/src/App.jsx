@@ -3,105 +3,96 @@ import { CreateTodo } from "./components/CreateTodo";
 import { Todos } from "./components/Todos";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
+import ForgotPassword from "./components/ForgotPassword";
 import Footer from "./components/Footer";
-import Profile from "./components/Profile";   // 👈 NEW
-import Schedule from "./components/Schedule";   // 👈 NEW
-import "./App.css";
+import Profile from "./components/Profile";
+import Schedule from "./components/Schedule";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
+import "./App.css";
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("token")
+    !!(localStorage.getItem("token") || sessionStorage.getItem("token"))
   );
   const [isLogin, setIsLogin] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState("home"); // 👈 NEW
+  const [currentPage, setCurrentPage] = useState("home");
+
+  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const fetchTodos = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
+    if (!token) return; // no token, don't fetch
 
-    const response = await fetch("https://to-do-app-616k.onrender.com/todos", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const response = await fetch("https://to-do-app-616k.onrender.com/todos", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const data = await response.json();
-    setTodos(data.todos);
-  };
+      if (response.status === 403) {
+        // token invalid/expired
+        handleLogout();
+        return;
+      }
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchTodos();
+      const data = await response.json();
+      setTodos(data.todos || []);
+    } catch (err) {
+      console.error("Failed to fetch todos:", err);
     }
-  }, [isAuthenticated]);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("username");
     setIsAuthenticated(false);
   };
 
+  useEffect(() => {
+    if (isAuthenticated) fetchTodos();
+  }, [isAuthenticated]);
+
   if (!isAuthenticated) {
-    return isLogin ? (
-      <Login
-        setIsAuthenticated={setIsAuthenticated}
-        setIsLogin={setIsLogin}
-      />
-    ) : (
-      <Signup setIsLogin={setIsLogin} />
-    );
-  }
+  return isLogin === true ? (
+    <Login setIsAuthenticated={setIsAuthenticated} setIsLogin={setIsLogin} />
+  ) : isLogin === false ? (
+    <Signup setIsLogin={setIsLogin} />
+  ) : (
+    <ForgotPassword setIsLogin={setIsLogin} />
+  );
+}
 
   return (
-  <>
-    <Toaster position="top-right" />
+    <>
+      <Toaster position="top-right" />
 
-    {/* PAGE CONTENT */}
-    {currentPage === "home" && (
-      <>
-        <Todos todos={todos} fetchTodos={fetchTodos} />
+      {currentPage === "home" && (
+        <>
+          <Todos todos={todos} fetchTodos={fetchTodos} onLogout={handleLogout} />
+          <button className="floating-button" onClick={() => setShowModal(true)}>+</button>
+        </>
+      )}
 
-        <button
-          className="floating-button"
-          onClick={() => setShowModal(true)}
-        >
-          +
-        </button>
-      </>
-    )}
+      {currentPage === "profile" && <Profile onLogout={handleLogout} />}
+      {currentPage === "schedule" && <Schedule todos={todos} />}
 
-    {currentPage === "profile" && (
-      <Profile onLogout={handleLogout} />
-    )}
+      <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
-    {currentPage === "schedule" && (
-      <Schedule todos={todos} />
-    )}
-
-    {/* Bottom Navigation */}
-    <Navbar
-      currentPage={currentPage}
-      setCurrentPage={setCurrentPage}
-    />
-
-    {/* Modal */}
-    {showModal && (
-      <div className="modal-overlay">
-        <div className="modal-content">
-          <CreateTodo
-            fetchTodos={fetchTodos}
-            closeModal={() => setShowModal(false)}
-          />
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <CreateTodo fetchTodos={fetchTodos} closeModal={() => setShowModal(false)} />
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
-    <Footer />
-  </>
-);
+      <Footer />
+    </>
+  );
 }
 
 export default App;

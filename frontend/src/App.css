@@ -5,6 +5,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
+  margin-top: 50px;
+  background-color: var(--border);
+  border-radius: 20px;
+  /* width: fit-content; */
 }
 html, body {
   height: 100%;

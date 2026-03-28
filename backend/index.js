@@ -16,7 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(express.json());
 app.use(cors({
-  origin: ["http://localhost:5173","https://to-do-app-gilt-tau.vercel.app"],
+  origin: ["http://localhost:5173","https://to-do-app-gilt-tau.vercel.app"], credentials: true
 }));
 
 
@@ -50,7 +50,7 @@ app.post("/signin", async (req, res) => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      return res.status(403).json({ message: "User not found" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -204,6 +204,26 @@ app.put("/todos/:id", authMiddleware, async (req, res) => {
 
     res.json(updated);
 
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/reset-password", async (req, res) => {
+  const { username, newPassword } = req.body;
+
+  if (!username || !newPassword)
+    return res.status(400).json({ message: "Username and password required" });
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: "Password reset successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

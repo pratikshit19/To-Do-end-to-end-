@@ -16,7 +16,7 @@
   color: white;
   width: 100%;
   max-width: 420px;
-  margin: 0 auto;
+  margin: auto auto;
   padding: 24px;
   box-sizing: border-box;
 }
@@ -147,6 +147,7 @@
   margin-left: 10px;
   margin-bottom: 10px;
   align-items: right;
+  color: white;
 }
 
 .datetime-row label{

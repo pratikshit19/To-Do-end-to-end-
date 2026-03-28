@@ -11,9 +11,15 @@ export function CreateTodo({ fetchTodos, closeModal }) {
   const [dueDate, setDueDate] = useState(today);
   const [dueTime, setDueTime] = useState("");
 
-  const token = localStorage.getItem("token");
+  const token =
+  localStorage.getItem("token") ||
+  sessionStorage.getItem("token");
 
   const handleSubmit = async (e) => {
+    if (!token) {
+  toast.error("Please login first");
+  return;
+}
     e.preventDefault();
     const toastId = toast.loading("Creating task...");
 
@@ -35,6 +41,14 @@ export function CreateTodo({ fetchTodos, closeModal }) {
           }),
         }
       );
+      if (response.status === 403) {
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+  toast.error("Session expired. Please login again.", { id: toastId });
+
+  window.location.reload(); // or redirect to login state
+  return;
+}
 
       if (!response.ok) throw new Error("Failed to create task");
 
