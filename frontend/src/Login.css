@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box;
+}
 html, body {
   height: 100%;
   margin: 0;
@@ -174,16 +177,20 @@ html, body {
   }
   .auth-wrapper {
     padding: 30px;
+    
     /* min-height: 100dvh; */
     
   }
   .auth-card {
     padding: 0rem 0rem;
     margin: 0;
+   
+
   }
 
   .auth-title {
     font-size: 2rem;
+    align-items: center;
   }
 
   .auth-hero h1 {

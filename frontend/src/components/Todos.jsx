@@ -176,6 +176,12 @@ export function Todos({ todos = [], fetchTodos }) {
       {/* FILTER PILLS */}
       <div className="filter-pills">
         <button
+  className={`pill ${activeFilter === "all" ? "active" : ""}`}
+  onClick={() => setActiveFilter("all")}
+>
+  All
+</button>
+        <button
           className={`pill ${
             activeFilter === "focused" ? "active" : ""
           }`}
@@ -206,7 +212,11 @@ export function Todos({ todos = [], fetchTodos }) {
       {/* EMPTY STATE PER FILTER */}
       {filteredTodos.length === 0 ? (
         <div className="empty-state">
-          <p>No tasks Today are completed!</p>
+          <p>
+  {activeFilter === "focused" && "No tasks for today 🎉"}
+  {activeFilter === "upcoming" && "No upcoming tasks"}
+  {activeFilter === "completed" && "No completed tasks yet"}
+</p>
         </div>
       ) : (
         <div className="task-list-modern">

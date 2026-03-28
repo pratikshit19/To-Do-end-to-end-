@@ -1,4 +1,6 @@
-
+* {
+  box-sizing: border-box;
+}
 .profile-dropdown {
   position: absolute;
   top: 55px;
@@ -34,7 +36,7 @@
 .profile-card-modern {
   width: 100%;
   max-width: 350px;
-  padding: 24px;
+  /* padding: 24px; */
   border-radius: 24px;
 
   backdrop-filter: blur(25px);
@@ -146,7 +148,7 @@
 
 @media (max-width: 480px) {
   .profile-container {
-    padding: 15px 30px;
+    padding: 0px 30px;
   }
   .profile-title{
     font-size: 26px;
