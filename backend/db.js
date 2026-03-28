@@ -11,22 +11,34 @@ mongoose.connect(process.env.MONGO_URL)
 const todoSchema = new mongoose.Schema({
   title: String,
   description: String,
+
   completed: {
     type: Boolean,
     default: false
   },
 
   priority: {
-  type: String,
-  enum: ["low", "medium", "high"],
-  default: "medium"
-},
+    type: String,
+    enum: ["low", "medium", "high"],
+    default: "medium"
+  },
+
+  // ✅ ADD THIS
+  dueDate: {
+    type: Date,
+    required: true
+  },
+
+  // ✅ OPTIONAL TIME (for time display)
+  dueTime: {
+    type: String
+  },
 
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }
-});
+}, { timestamps: true });  // good practice
 
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true },

@@ -5,6 +5,7 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Footer from "./components/Footer";
 import Profile from "./components/Profile";   // 👈 NEW
+import Schedule from "./components/Schedule";   // 👈 NEW
 import "./App.css";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
@@ -55,46 +56,52 @@ function App() {
   }
 
   return (
-    <>
-      <Toaster position="top-right" />
+  <>
+    <Toaster position="top-right" />
 
-      {/* Render Based On Page */}
-      {currentPage === "home" && (
-        <>
-          <Todos todos={todos} fetchTodos={fetchTodos} />
+    {/* PAGE CONTENT */}
+    {currentPage === "home" && (
+      <>
+        <Todos todos={todos} fetchTodos={fetchTodos} />
 
-          <button
-            className="floating-button"
-            onClick={() => setShowModal(true)}
-          >
-            +
-          </button>
-        </>
-      )}
+        <button
+          className="floating-button"
+          onClick={() => setShowModal(true)}
+        >
+          +
+        </button>
+      </>
+    )}
 
-      {currentPage === "profile" && (
-        <Profile onLogout={handleLogout} />
-      )}
+    {currentPage === "profile" && (
+      <Profile onLogout={handleLogout} />
+    )}
 
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-      />
+    {currentPage === "schedule" && (
+      <Schedule todos={todos} />
+    )}
 
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <CreateTodo
-              fetchTodos={fetchTodos}
-              closeModal={() => setShowModal(false)}
-            />
-          </div>
+    {/* Bottom Navigation */}
+    <Navbar
+      currentPage={currentPage}
+      setCurrentPage={setCurrentPage}
+    />
+
+    {/* Modal */}
+    {showModal && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <CreateTodo
+            fetchTodos={fetchTodos}
+            closeModal={() => setShowModal(false)}
+          />
         </div>
-      )}
+      </div>
+    )}
 
-      <Footer />
-    </>
-  );
+    <Footer />
+  </>
+);
 }
 
 export default App;

@@ -13,7 +13,10 @@ export default function Navbar({ currentPage, setCurrentPage }) {
         <span>Today</span>
       </div>
 
-      <div className="nav-item">
+      <div
+        className={`nav-item ${currentPage === "schedule" ? "active" : ""}`}
+        onClick={() => setCurrentPage("schedule")}
+      >
         <Calendar size={22} />
         <span>Schedule</span>
       </div>

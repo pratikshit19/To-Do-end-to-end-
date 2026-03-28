@@ -206,6 +206,7 @@ body {
 
 .delete-modern:hover {
   color: red;
+  background: transparent;
 }
 
 /* FLOATING BUTTON */

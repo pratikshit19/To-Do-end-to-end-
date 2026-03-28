@@ -1,0 +1,156 @@
+.schedule-container {
+  background: var(--bg);
+  color: white;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* Top header */
+.schedule-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.avatar-mini {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline {
+  margin-top: 10px;
+}
+
+.timeline-label {
+  color: #22d3ee;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.view-toggle {
+  margin-top: 10px;
+  background: #1e293b;
+  border-radius: 30px;
+  padding: 4px;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+}
+
+.view-toggle button {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.view-toggle .active {
+  background: #111827;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 20px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.calendar-day {
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  border: 1px solid var(--border);
+  align-items: center;
+  justify-content: center;
+  background: #111827;
+  position: relative;
+  cursor: pointer;
+}
+
+.calendar-day.selected {
+  background: #22d3ee;
+  color: black;
+}
+
+.calendar-day .dot {
+  width: 6px;
+  height: 6px;
+  background: #22d3ee;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 6px;
+}
+
+.task-header {
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  opacity: 0.8;
+}
+
+.task-card {
+  background: var(--card);
+  padding: 16px;
+  border-radius: 16px;
+  margin-top: 15px;
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time-badge {
+  background: #22d3ee;
+  color: black;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Navigation buttons wrapper */
+.nav-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Prev / Next buttons */
+.nav-buttons button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+/* Hover effect */
+.nav-buttons button:hover {
+  background: #1e293b;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Active click effect */
+.nav-buttons button:active {
+  transform: scale(0.95);
+}

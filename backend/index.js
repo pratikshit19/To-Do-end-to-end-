@@ -78,34 +78,61 @@ app.post("/signin", async (req, res) => {
 ========================= */
 
 app.post("/todo", authMiddleware, async (req, res) => {
-  const createPayload = req.body;
-  const parsedPayload = createTodo.safeParse(createPayload);
+  try {
+    const { title, description, priority, dueDate, dueTime } = req.body;
 
-  if (!parsedPayload.success) {
-    return res.status(411).json({
-      message: "You sent wrong inputs"
+    if (!dueDate) {
+      return res.status(400).json({ message: "Due date is required" });
+    }
+
+    const parsedDate = new Date(dueDate);
+
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    const newTodo = await todo.create({
+      title,
+      description,
+      completed: false,
+      priority: priority || "medium",
+      dueDate: parsedDate,
+      dueTime: dueTime || null,
+      userId: req.userId
     });
+
+    res.json({
+      message: "To-do created!",
+      todo: newTodo
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
-
-  await todo.create({
-    title: createPayload.title,
-    description: createPayload.description,
-    completed: false,
-    priority: createPayload.priority || "medium",
-    userId: req.userId    
-  });
-
-  res.json({
-    message: "To-do created!"
-  });
 });
 
 app.get("/todos", authMiddleware, async (req, res) => {
-  const todos = await todo.find({
-    userId: req.userId      // 🔥 Only this user's todos
-  });
-  console.log("TODOS FROM DB:", todos);
-  res.json({ todos });
+  try {
+    const { start, end } = req.query;
+
+    let filter = { userId: req.userId };
+
+    // If schedule is requesting a range (week/month)
+    if (start && end) {
+      filter.dueDate = {
+        $gte: new Date(start),
+        $lt: new Date(end)
+      };
+    }
+
+    const todos = await todo.find(filter).sort({ dueDate: 1 });
+
+    res.json({ todos });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 

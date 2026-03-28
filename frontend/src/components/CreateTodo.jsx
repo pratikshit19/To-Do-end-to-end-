@@ -3,9 +3,13 @@ import toast from "react-hot-toast";
 import "../CreateTodo.css";
 
 export function CreateTodo({ fetchTodos, closeModal }) {
+  const today = new Date().toISOString().split("T")[0];
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
+  const [dueDate, setDueDate] = useState(today);
+  const [dueTime, setDueTime] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -22,7 +26,13 @@ export function CreateTodo({ fetchTodos, closeModal }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ title, description, priority }),
+          body: JSON.stringify({
+            title,
+            description,
+            priority,
+            dueDate,
+            dueTime,
+          }),
         }
       );
 
@@ -34,6 +44,8 @@ export function CreateTodo({ fetchTodos, closeModal }) {
       setTitle("");
       setDescription("");
       setPriority("medium");
+      setDueDate(today);
+      setDueTime("");
       closeModal();
     } catch (err) {
       toast.error(err.message, { id: toastId });
@@ -60,33 +72,44 @@ export function CreateTodo({ fetchTodos, closeModal }) {
           required
         />
 
-        {/* PRIORITY SELECT */}
+        {/* DATE + TIME */}
+        <div className="datetime-row">
+          <div>
+            <label>Due Date</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label>Time</label>
+            <input
+              type="time"
+              value={dueTime}
+              onChange={(e) => setDueTime(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* PRIORITY */}
         <div className="priority-section">
           <label>Priority</label>
           <div className="priority-options">
-            <button
-              type="button"
-              className={`priority-btn ${priority === "low" ? "active low" : ""}`}
-              onClick={() => setPriority("low")}
-            >
-              Low
-            </button>
-
-            <button
-              type="button"
-              className={`priority-btn ${priority === "medium" ? "active medium" : ""}`}
-              onClick={() => setPriority("medium")}
-            >
-              Medium
-            </button>
-
-            <button
-              type="button"
-              className={`priority-btn ${priority === "high" ? "active high" : ""}`}
-              onClick={() => setPriority("high")}
-            >
-              High
-            </button>
+            {["low", "medium", "high"].map((level) => (
+              <button
+                key={level}
+                type="button"
+                className={`priority-btn ${
+                  priority === level ? `active ${level}` : ""
+                }`}
+                onClick={() => setPriority(level)}
+              >
+                {level.charAt(0).toUpperCase() + level.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
 

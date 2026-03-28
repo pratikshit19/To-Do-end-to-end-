@@ -156,6 +156,13 @@ export function Todos({ todos, fetchTodos }) {
 </span>
             </div>
             <p>{todo.description}</p>
+
+{todo.dueDate && (
+  <div className="task-datetime">
+    📅 {new Date(todo.dueDate).toLocaleDateString()}
+    {todo.dueTime && ` • ⏰ ${todo.dueTime}`}
+  </div>
+)}
           </div>
 
           <button
