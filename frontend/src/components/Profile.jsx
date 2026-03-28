@@ -6,25 +6,41 @@ export default function Profile({ onLogout }) {
 
   return (
     <div className="profile-container">
-      
-      {/* Profile Header Card */}
-      <div className="task-card-modern">
-        <div className="profile-left">
-          <div className="avatar">
+
+      {/* Profile Card */}
+      <div className="profile-card-modern">
+
+        <div className="profile-header">
+          <div className="avatar-large">
             {username?.charAt(0).toUpperCase()}
+          </div>
+
+          <div>
+            <h2 className="profile-name">{username}</h2>
+            <p className="profile-email">
+              {username ? `${username}@app.com` : "No user logged in"}
+            </p>
           </div>
         </div>
 
-        <div className="profile-right">
-          <h2>{username}</h2>
-          <p className="subtitle">
-            {username ? `Welcome back, ${username}` : "No user logged in"}
-          </p>
+        <div className="profile-divider" />
+
+        <div className="profile-meta">
+          <div className="meta-item">
+            <span className="meta-label">Account Type</span>
+            <span className="meta-value">Free Plan</span>
+          </div>
+
+          <div className="meta-item">
+            <span className="meta-label">Member Since</span>
+            <span className="meta-value">2026</span>
+          </div>
         </div>
+
       </div>
 
-      {/* Logout Button BELOW card */}
-      <button className="logout-btn" onClick={onLogout}>
+      {/* Logout Button */}
+      <button className="logout-btn-modern" onClick={onLogout}>
         Logout
       </button>
 

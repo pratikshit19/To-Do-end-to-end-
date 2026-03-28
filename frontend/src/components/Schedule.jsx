@@ -1,40 +1,12 @@
 import { useState, useEffect } from "react";
 import "../Schedule.css";
 
-export default function Schedule({ todos }) {
+export default function Schedule({ todos = [] }) {
   const today = new Date();
 
   const [currentDate, setCurrentDate] = useState(today);
   const [selectedDate, setSelectedDate] = useState(today);
   const [viewMode, setViewMode] = useState("month"); // month | week
-  const [tasks, setTasks] = useState([]);
-
-  /* ===============================
-     FETCH TODOS FROM BACKEND
-  =============================== */
-//   useEffect(() => {
-//     const fetchTodos = async () => {
-//       try {
-//         const token = localStorage.getItem("token");
-
-//         const response = await fetch(
-//           "https://to-do-app-616k.onrender.com/todos",
-//           {
-//             headers: {
-//               Authorization: `Bearer ${token}`,
-//             },
-//           }
-//         );
-
-//         const data = await response.json();
-//         setTasks(data.todos || []);
-//       } catch (err) {
-//         console.error("Error fetching todos", err);
-//       }
-//     };
-
-//     fetchTodos();
-//   }, []);
 
   /* ===============================
      SYNC MONTH WHEN DATE CHANGES
@@ -81,7 +53,7 @@ export default function Schedule({ todos }) {
   };
 
   /* ===============================
-     GENERATE 2-ROW MONTH GRID
+     GENERATE MONTH GRID
   =============================== */
   const generateMonthDays = () => {
     const year = currentDate.getFullYear();
@@ -91,7 +63,6 @@ export default function Schedule({ todos }) {
     const firstDayIndex = firstDayOfMonth.getDay();
 
     const selectedDay = selectedDate.getDate();
-
     const weekIndex = Math.floor(
       (selectedDay + firstDayIndex - 1) / 7
     );
@@ -107,7 +78,7 @@ export default function Schedule({ todos }) {
   };
 
   /* ===============================
-     GENERATE WEEK DAYS
+     GENERATE WEEK GRID
   =============================== */
   const generateWeekDays = () => {
     const start = new Date(selectedDate);
@@ -125,14 +96,20 @@ export default function Schedule({ todos }) {
     viewMode === "month" ? generateMonthDays() : generateWeekDays();
 
   /* ===============================
-     FILTER TASKS BY SELECTED DATE
+     FILTER TODOS FROM BACKEND
   =============================== */
-  const filteredTasks = tasks.filter((task) => {
-    if (!task.dueDate) return false;
+  const filteredTasks = todos
+    .filter((task) => {
+      if (!task.dueDate) return false;
 
-    const taskDate = new Date(task.dueDate);
-    return formatKey(taskDate) === formatKey(selectedDate);
-  });
+      const taskDate = new Date(task.dueDate);
+      return formatKey(taskDate) === formatKey(selectedDate);
+    })
+    .sort((a, b) => {
+      if (!a.dueTime) return 1;
+      if (!b.dueTime) return -1;
+      return a.dueTime.localeCompare(b.dueTime);
+    });
 
   const pendingCount = filteredTasks.filter((t) => !t.completed).length;
   const completedCount = filteredTasks.filter((t) => t.completed).length;
@@ -142,7 +119,7 @@ export default function Schedule({ todos }) {
   =============================== */
   return (
     <div className="schedule-container">
-      {/* TIMELINE HEADER */}
+      {/* HEADER */}
       <div className="timeline">
         <span className="timeline-label">TIMELINE</span>
 
@@ -163,13 +140,10 @@ export default function Schedule({ todos }) {
                   month: "long",
                   year: "numeric",
                 })
-              : `Week of ${selectedDate.toLocaleDateString(
-                  "default",
-                  {
-                    month: "short",
-                    day: "numeric",
-                  }
-                )}`}
+              : `Week of ${selectedDate.toLocaleDateString("default", {
+                  month: "short",
+                  day: "numeric",
+                })}`}
           </h1>
 
           <button
@@ -199,7 +173,7 @@ export default function Schedule({ todos }) {
         </div>
       </div>
 
-      {/* WEEKDAY LABELS */}
+      {/* WEEK LABELS */}
       <div className="weekday-row">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
           (d) => (
@@ -214,7 +188,7 @@ export default function Schedule({ todos }) {
           const isSelected =
             formatKey(date) === formatKey(selectedDate);
 
-          const hasTasks = tasks.some((t) => {
+          const hasTasks = todos.some((t) => {
             if (!t.dueDate) return false;
             return (
               formatKey(new Date(t.dueDate)) ===
@@ -265,7 +239,11 @@ export default function Schedule({ todos }) {
             >
               <div>
                 <h4>{task.title}</h4>
-                <p>{task.dueTime || "No time set"}</p>
+                <p>
+                  {task.dueTime
+                    ? `⏰ ${task.dueTime}`
+                    : "No time set"}
+                </p>
               </div>
 
               <span className="time-badge">

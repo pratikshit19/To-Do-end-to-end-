@@ -1,150 +1,208 @@
-.avatar-wrapper {
-  position: relative;
-}
-
-.profile-dropdown {
-  position: absolute;
-  top: 60px; /* below avatar */
-  left: 0;
-  width: 180px;
-  background: var(--card);   /* flat dark */
-  border: 1px solid var(--border);
-  
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-
-  z-index: 9999;
-
-  animation: fadeIn 0.2s ease;
-}
-
-.dropdown-user {
-  font-size: 14px;
-  color: #94a3b8;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #334155;
-  padding-bottom: 8px;
-}
-
-.profile-dropdown button {
-  width: 100%;
-  /* background: linear-gradient(135deg, #ef4444, #dc2626); */
-  border: none;
-  padding: 8px;
-  border-radius: 10px;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.2s ease;
-}
-
-.profile-dropdown button:hover {
-  transform: translateY(-2px);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 .profile-container {
-  /* min-height: 100vh; */
-  /* background: radial-gradient(circle at top left, #1e293b, #0f172a 60%); */
-  padding: 30px 20px;
+  padding: 40px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Card aligned at top */
-.profile-card {
+/* Modern Glass Card */
+.profile-card-modern {
   width: 100%;
-  max-width: 500px;
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(18px);
-  border-radius: 20px;
-  padding: 25px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-}
+  max-width: 350px;
+  padding: 24px;
+  border-radius: 24px;
 
-/* Left side avatar */
-.avatar {
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2dd3ee, #0ea5e9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: bold;
-  color: black;
-  box-shadow: 0 0 20px rgba(45, 211, 238, 0.4);
-}
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
-/* Avatar Wrapper */
-.avatar-wrapper {
+  box-shadow:
+    0 0 0 1px rgba(45, 211, 238, 0.08),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+
   position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-/* Avatar Circle */
-.avatar-circle {
-  width: 42px;
-  height: 42px;
+/* Header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Avatar */
+.avatar-large {
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   background: linear-gradient(135deg, #2dd3ee, #0ea5e9);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 24px;
   font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s ease;
+  color: #0f172a;
+  flex-shrink: 0;
 }
 
-.avatar-circle:hover {
-  transform: scale(1.05);
-}
-
-/* Right content */
-.profile-right h2 {
-  color: white;
-  font-size: 20px;
-  margin-bottom: 6px;
-}
-
-.subtitle {
-  color: #94a3b8;
-  font-size: 14px;
-}
-
-/* Logout button outside card */
-.logout-btn {
-  margin-top: 30px;
-  width: 100%;
-  max-width: 500px;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  background: linear-gradient(135deg, #ef444454, #dc26264f);
+/* Text */
+.profile-name {
+  font-size: 18px;
   color: white;
   font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  
+  word-break: break-word;
 }
 
-.logout-btn:hover {
+.profile-email {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.profile-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+  margin: 20px 0;
+}
+
+/* Meta Section */
+.profile-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.meta-value {
+  font-size: 14px;
+  color: white;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Logout Button */
+.logout-btn-modern {
+  margin-top: 30px;
+  width: 100%;
+  max-width: 350px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logout-btn-modern:hover {
+  background: rgba(239, 68, 68, 0.2);
   transform: translateY(-3px);
-  
+  color: white;
+}
+
+/* ========================= */
+/* 📱 SMALL SCREENS (<480px) */
+/* ========================= */
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 30px 50px;
+  }
+
+  .profile-card-modern {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .profile-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .avatar-large {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+
+  .profile-name {
+    font-size: 16px;
+  }
+
+  .profile-email {
+    font-size: 12px;
+  }
+}
+
+/* ========================= */
+/* 💻 MEDIUM SCREENS (768px+) */
+/* ========================= */
+
+@media (min-width: 768px) {
+  .profile-container {
+    padding: 80px 20px;
+  }
+
+  .profile-card-modern {
+    max-width: 420px;
+    padding: 30px;
+  }
+
+  .avatar-large {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+  }
+
+  .profile-name {
+    font-size: 20px;
+  }
+
+  .profile-email {
+    font-size: 14px;
+  }
+
+  .logout-btn-modern {
+    max-width: 420px;
+    font-size: 15px;
+  }
+}
+
+/* ========================= */
+/* 🖥 LARGE SCREENS (1200px+) */
+/* ========================= */
+
+@media (min-width: 1200px) {
+  .profile-card-modern {
+    max-width: 480px;
+    padding: 35px;
+  }
+
+  .avatar-large {
+    width: 90px;
+    height: 90px;
+    font-size: 32px;
+  }
+
+  .profile-name {
+    font-size: 22px;
+  }
+
+  .logout-btn-modern {
+    max-width: 480px;
+  }
 }
