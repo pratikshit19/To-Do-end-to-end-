@@ -1,24 +1,12 @@
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-
-  display: flex;
+.empty-state {
   justify-content: center;
   align-items: center;
-
-  z-index: 999;
-}
-
-.modal-content {
-  width: 90%;
-  max-width: 420px;
 }
 
 
 /* GLOBAL */
 body {
+  overflow-x: hidden;
   margin: 0;
   font-family: "Inter", sans-serif;
   background: linear-gradient(180deg, #05080f 0%, #0d1622 100%);
@@ -27,9 +15,11 @@ body {
 
 /* WRAPPER */
 .app-wrapper {
-  max-width: 420px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 20px 120px;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /* HEADER */
@@ -283,4 +273,67 @@ body {
   display: flex;
   justify-content: space-around;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@media (min-width: 768px) {
+
+  .app-wrapper {
+    padding: 40px 40px 160px;
+  }
+
+  .today-text {
+    font-size: 32px;
+  }
+
+  .progress-row h2 {
+    font-size: 30px;
+  }
+
+  .task-list-modern {
+    gap: 22px;
+  }
+
+  .task-card-modern {
+    padding: 22px;
+  }
+
+  .floating-button {
+    right: 40px;
+    bottom: 120px;
+  }
+}
+
+@media (min-width: 1024px) {
+
+  .app-wrapper {
+    padding: 60px 80px 180px;
+  }
+
+  /* Convert task list to grid */
+  .task-list-modern {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+
+  .task-card-modern {
+    height: 100%;
+  }
+
+  /* Larger header */
+  .today-text {
+    font-size: 36px;
+  }
+
+  .progress-row h2 {
+    font-size: 32px;
+  }
+
+  /* Floating button reposition */
+  .floating-button {
+    right: 60px;
+    bottom: 140px;
+    width: 65px;
+    height: 55px;
+  }
 }

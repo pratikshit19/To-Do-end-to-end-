@@ -1,3 +1,28 @@
+
+.profile-dropdown {
+  position: absolute;
+  top: 55px;
+  left: 0;
+
+  min-width: 160px;
+  padding: 14px;
+  background: rgba(20, 28, 38, 0.75);
+  /* background: rgba(15, 23, 42, 0.95); */
+  backdrop-filter: blur(20px);
+
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
 .profile-container {
   padding: 40px 16px;
   display: flex;
@@ -65,6 +90,7 @@
   background: rgba(255,255,255,0.05);
   margin: 20px 0;
 }
+
 
 /* Meta Section */
 .profile-meta {
