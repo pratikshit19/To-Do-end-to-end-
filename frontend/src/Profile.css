@@ -1,3 +1,61 @@
+.profile-dropdown {
+  position: absolute;
+  top: 60px;
+  left: 0;
+
+  min-width: 180px;
+  padding: 16px;
+  cursor: pointer;
+  background: var(--bg);
+  backdrop-filter: blur(20px);
+
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  box-shadow:
+    0 0 0 1px rgba(45, 211, 238, 0.08),
+    0 20px 50px rgba(0, 0, 0, 0.6);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Username */
+.dropdown-user {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Logout Button */
+.profile-dropdown button {
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+
+  color: #f87171;
+  font-weight: 600;
+  font-size: 13px;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.profile-dropdown button:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  color: white;
+  cursor: pointer;
+}
+
 .profile-page {
   min-height: 100vh;
   padding: 20px;
