@@ -1,48 +1,104 @@
+import { ArrowLeft, Settings } from "lucide-react";
+import { useState, useEffect } from "react";
 import "../Profile.css";
-import "../App.css";
+import "../Settings.css";
+import { Edit } from "lucide-react";
 
-export default function Profile({ onLogout }) {
-  const username = localStorage.getItem("username");
+export default function Profile({ setCurrentPage }) {
+  // const username = localStorage.getItem("username") || "User";
+  const [username, setUsername] = useState("");
+  useEffect(() => {
+      const storedUsername =
+        localStorage.getItem("username") ||
+        sessionStorage.getItem("username");
+  
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }, []);
 
   return (
-    
-    <div className="profile-container">
-<p className="profile-title">Profile page</p>
-      {/* Profile Card */}
-      <div className="profile-card-modern">
-        <div className="profile-header">
-          <div className="avatar-large">
-            {username?.charAt(0).toUpperCase()}
-          </div>
+    <div className="profile-page">
 
-          <div>
-            <h2 className="profile-name">{username}</h2>
-            <p className="profile-email">
-              {username ? `${username}@app.com` : "No user logged in"}
-            </p>
-          </div>
-        </div>
-
-        <div className="profile-divider" />
-
-        <div className="profile-meta">
-          <div className="meta-item">
-            <span className="meta-label">Account Type</span>
-            <span className="meta-value">Free Plan</span>
-          </div>
-
-          <div className="meta-item">
-            <span className="meta-label">Member Since</span>
-            <span className="meta-value">2026</span>
-          </div>
-        </div>
-
+      {/* Header */}
+      <div className="profile-topbar">
+        <ArrowLeft
+          className="top-icon"
+          onClick={() => setCurrentPage("home")}
+        />
+        <h3>Profile</h3>
+        <Settings className="top-icon" onClick={() => setCurrentPage("settings")} />
       </div>
 
-      {/* Logout Button */}
-      <button className="logout-btn-modern" onClick={onLogout}>
-        Logout
-      </button>
+      {/* Avatar Section */}
+      <div className="settings-card profile-card">
+        <div className="profile-left">
+          <div className="profile-avatar"></div>
+          <div>
+            <h3>{username || "User"}</h3>
+            <span className="pro-badge">PRO MEMBER</span>
+          </div>
+        </div>
+        <Edit size={18} />
+      </div>
+
+      {/* Accomplishments */}
+      <div className="accomplishments">
+        <p className="accomplishment-label">TOTAL ACCOMPLISHMENTS</p>
+        <h1>1,248 <span>Tasks Completed</span></h1>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <p className="stat-title">CURRENT STREAK</p>
+          <h3>14 Days</h3>
+        </div>
+
+        <div className="stat-card">
+          <p className="stat-title">FOCUS TIME</p>
+          <h3>128h 40m</h3>
+        </div>
+
+        <div className="stat-card">
+          <p className="stat-title">COMPLETION</p>
+          <h3>94%</h3>
+        </div>
+
+        <div className="stat-card">
+          <p className="stat-title">WEEKLY RANK</p>
+          <h3>Top 5%</h3>
+        </div>
+      </div>
+
+      {/* Goals */}
+      <div className="goals-section">
+        <h4>Active Goals</h4>
+
+        <div className="goal">
+          <div className="goal-row">
+            <span>Daily Reading</span>
+            <span>66%</span>
+          </div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: "66%" }} />
+          </div>
+        </div>
+
+        <div className="goal">
+          <div className="goal-row">
+            <span>Meditation</span>
+            <span>50%</span>
+          </div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: "50%" }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <button className="primary-btn">Edit Profile</button>
+      <button className="secondary-btn">View Full Insights</button>
 
     </div>
   );

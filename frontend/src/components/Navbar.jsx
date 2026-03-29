@@ -21,7 +21,8 @@ export default function Navbar({ currentPage, setCurrentPage }) {
         <span>Schedule</span>
       </div>
 
-      <div className="nav-item">
+      <div className={`nav-item ${currentPage === "insights" ? "active" : ""}`}
+  onClick={() => setCurrentPage("insights")}>
         <LineChart size={22} />
         <span>Insights</span>
       </div>

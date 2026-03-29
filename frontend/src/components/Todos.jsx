@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState, useRef } from "react";
 import { SettingsIcon } from "lucide-react";
 
-export function Todos({ todos = [], fetchTodos, onLogout }) {
+export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const username = localStorage.getItem("username");
 
@@ -109,7 +109,7 @@ export function Todos({ todos = [], fetchTodos, onLogout }) {
         </div>
 
         <div className="today-text">TaskFlow</div>
-        <SettingsIcon className="settings-icon" />
+        <SettingsIcon className="settings-icon" onClick={() => setCurrentPage("settings")} />
       </div>
 
       {/* PROGRESS */}

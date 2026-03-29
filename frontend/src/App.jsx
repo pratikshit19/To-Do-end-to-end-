@@ -6,8 +6,10 @@ import Signup from "./components/Signup";
 import ForgotPassword from "./components/ForgotPassword";
 import Footer from "./components/Footer";
 import Profile from "./components/Profile";
+import Settings from "./components/Settings";
 import Schedule from "./components/Schedule";
 import Navbar from "./components/Navbar";
+import Insights from "./components/Insights";
 import { Toaster } from "react-hot-toast";
 import "./App.css";
 
@@ -21,6 +23,10 @@ function App() {
   const [currentPage, setCurrentPage] = useState("home");
 
   const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
+  const [username, setUsername] = useState(
+  localStorage.getItem("username") ||
+  sessionStorage.getItem("username")
+);
 
   const fetchTodos = async () => {
     const token = getToken();
@@ -72,15 +78,30 @@ function App() {
 
       {currentPage === "home" && (
         <>
-          <Todos todos={todos} fetchTodos={fetchTodos} onLogout={handleLogout} />
+          <Todos todos={todos} fetchTodos={fetchTodos} onLogout={handleLogout} setCurrentPage={setCurrentPage} />
           <button className="floating-button" onClick={() => setShowModal(true)}>+</button>
         </>
       )}
 
-      {currentPage === "profile" && <Profile onLogout={handleLogout} />}
+      {currentPage === "profile" && <Profile onLogout={handleLogout} setCurrentPage={setCurrentPage} />}
       {currentPage === "schedule" && <Schedule todos={todos} />}
+      {currentPage === "settings" && (
+  <Settings 
+    setCurrentPage={setCurrentPage}
+    onLogout={handleLogout}
+    
+  />
+)}
+{currentPage === "insights" && (
+  <Insights setCurrentPage={setCurrentPage} />
+)}
 
-      <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      {currentPage !== "settings" && currentPage !== "profile" && (
+  <Navbar
+    currentPage={currentPage}
+    setCurrentPage={setCurrentPage}
+  />
+)}
 
       {showModal && (
         <div className="modal-overlay">
@@ -90,7 +111,7 @@ function App() {
         </div>
       )}
 
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
