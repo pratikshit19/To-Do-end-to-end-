@@ -33,7 +33,7 @@ export default function Profile({ setCurrentPage }) {
       {/* Avatar Section */}
       <div className="settings-card profile-card">
         <div className="profile-left">
-          <div className="profile-avatar"></div>
+          <div className="profile-avatar">{username?.charAt(0).toUpperCase() || "U"}</div>
           <div>
             <h3>{username || "User"}</h3>
             <span className="pro-badge">PRO MEMBER</span>

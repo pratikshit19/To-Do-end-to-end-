@@ -1,20 +1,57 @@
-import { useEffect, useState } from "react"; import { CreateTodo } from "./components/CreateTodo"; import { Todos } from "./components/Todos"; import Login from "./components/Login"; import Signup from "./components/Signup"; import ForgotPassword from "./components/ForgotPassword"; import Footer from "./components/Footer"; import Profile from "./components/Profile"; import Settings from "./components/Settings"; import Schedule from "./components/Schedule"; import Onboarding from "./components/Onboarding"; import Navbar from "./components/Navbar"; import Insights from "./components/Insights"; import { Toaster } from "react-hot-toast"; import "./App.css";
+import { useEffect, useState } from "react";
+import { CreateTodo } from "./components/CreateTodo";
+import { Todos } from "./components/Todos";
+import Login from "./components/Login";
+import Signup from "./components/Signup";
+import ForgotPassword from "./components/ForgotPassword";
+import Profile from "./components/Profile";
+import Settings from "./components/Settings";
+import Schedule from "./components/Schedule";
+import Onboarding from "./components/Onboarding";
+import Navbar from "./components/Navbar";
+import Insights from "./components/Insights";
+import { Toaster } from "react-hot-toast";
+import "./App.css";
 
 export default function App() {
+
+  /* ================= STATE ================= */
+
   const [showOnboarding, setShowOnboarding] = useState(
     !localStorage.getItem("onboardingDone")
   );
 
   const [todos, setTodos] = useState([]);
+
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!(localStorage.getItem("token") || sessionStorage.getItem("token"))
   );
+
   const [isLogin, setIsLogin] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("home");
 
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("darkMode") === "false" ? false : true
+  );
+
+  /* ================= THEME CONTROL ================= */
+
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      darkMode ? "dark" : "light"
+    );
+
+    localStorage.setItem("darkMode", darkMode);
+  }, [darkMode]);
+
+  /* ================= TOKEN HELPER ================= */
+
   const getToken = () =>
     localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  /* ================= FETCH TODOS ================= */
 
   const fetchTodos = async () => {
     const token = getToken();
@@ -40,31 +77,29 @@ export default function App() {
     }
   };
 
+  /* ================= LOGOUT ================= */
+
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("username");
+    localStorage.clear();
+    sessionStorage.clear();
     setIsAuthenticated(false);
-    setCurrentPage("home"); // reset page
+    setCurrentPage("home");
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchTodos();
-    }
+    if (isAuthenticated) fetchTodos();
   }, [isAuthenticated]);
 
-  /* ----------------- SCREEN CONTROL FLOW ----------------- */
+  /* ================= SCREEN FLOW ================= */
 
-  // 1️⃣ Onboarding First
+  // 1️⃣ Onboarding
   if (showOnboarding) {
     return (
       <Onboarding
         onFinish={() => {
           localStorage.setItem("onboardingDone", "true");
           setShowOnboarding(false);
-          setIsLogin(true); // force login
+          setIsLogin(true);
         }}
       />
     );
@@ -86,7 +121,8 @@ export default function App() {
     return <ForgotPassword setIsLogin={setIsLogin} />;
   }
 
-  // 3️⃣ Main App (Authenticated)
+  /* ================= MAIN APP ================= */
+
   return (
     <>
       <Toaster position="top-right" />
@@ -99,6 +135,7 @@ export default function App() {
             onLogout={handleLogout}
             setCurrentPage={setCurrentPage}
           />
+
           <button
             className="floating-button"
             onClick={() => setShowModal(true)}
@@ -123,6 +160,8 @@ export default function App() {
         <Settings
           setCurrentPage={setCurrentPage}
           onLogout={handleLogout}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
         />
       )}
 
@@ -130,7 +169,7 @@ export default function App() {
         <Insights setCurrentPage={setCurrentPage} />
       )}
 
-      {/* Hide navbar on profile + settings */}
+      {/* Hide navbar on profile & settings */}
       {currentPage !== "settings" &&
         currentPage !== "profile" && (
           <Navbar

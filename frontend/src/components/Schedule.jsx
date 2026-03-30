@@ -6,20 +6,14 @@ export default function Schedule({ todos = [] }) {
 
   const [currentDate, setCurrentDate] = useState(today);
   const [selectedDate, setSelectedDate] = useState(today);
-  const [viewMode, setViewMode] = useState("month"); // month | week
+  const [viewMode, setViewMode] = useState("month");
 
-  /* ===============================
-     SYNC MONTH WHEN DATE CHANGES
-  =============================== */
   useEffect(() => {
     if (viewMode === "month") {
       setCurrentDate(selectedDate);
     }
   }, [selectedDate, viewMode]);
 
-  /* ===============================
-     SAFE DATE FORMAT (NO TZ BUG)
-  =============================== */
   const formatKey = (date) => {
     return new Date(
       date.getFullYear(),
@@ -30,9 +24,6 @@ export default function Schedule({ todos = [] }) {
       .split("T")[0];
   };
 
-  /* ===============================
-     MONTH NAVIGATION
-  =============================== */
   const changeMonth = (offset) => {
     const newDate = new Date(
       currentDate.getFullYear(),
@@ -43,18 +34,12 @@ export default function Schedule({ todos = [] }) {
     setSelectedDate(newDate);
   };
 
-  /* ===============================
-     WEEK NAVIGATION
-  =============================== */
   const changeWeek = (offset) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(selectedDate.getDate() + offset * 7);
     setSelectedDate(newDate);
   };
 
-  /* ===============================
-     GENERATE MONTH GRID
-  =============================== */
   const generateMonthDays = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -77,9 +62,6 @@ export default function Schedule({ todos = [] }) {
     });
   };
 
-  /* ===============================
-     GENERATE WEEK GRID
-  =============================== */
   const generateWeekDays = () => {
     const start = new Date(selectedDate);
     const dayIndex = start.getDay();
@@ -95,13 +77,9 @@ export default function Schedule({ todos = [] }) {
   const calendarDays =
     viewMode === "month" ? generateMonthDays() : generateWeekDays();
 
-  /* ===============================
-     FILTER TODOS FROM BACKEND
-  =============================== */
   const filteredTasks = todos
     .filter((task) => {
       if (!task.dueDate) return false;
-
       const taskDate = new Date(task.dueDate);
       return formatKey(taskDate) === formatKey(selectedDate);
     })
@@ -114,25 +92,13 @@ export default function Schedule({ todos = [] }) {
   const pendingCount = filteredTasks.filter((t) => !t.completed).length;
   const completedCount = filteredTasks.filter((t) => t.completed).length;
 
-  /* ===============================
-     RENDER
-  =============================== */
   return (
     <div className="schedule-container">
-      {/* HEADER */}
       <div className="timeline">
         <span className="timeline-label">TIMELINE</span>
 
         <div className="nav-buttons">
-          <button
-            onClick={() =>
-              viewMode === "month"
-                ? changeMonth(-1)
-                : changeWeek(-1)
-            }
-          >
-            ‹
-          </button>
+          <button onClick={() => viewMode === "month" ? changeMonth(-1) : changeWeek(-1)}>‹</button>
 
           <h1>
             {viewMode === "month"
@@ -146,15 +112,7 @@ export default function Schedule({ todos = [] }) {
                 })}`}
           </h1>
 
-          <button
-            onClick={() =>
-              viewMode === "month"
-                ? changeMonth(1)
-                : changeWeek(1)
-            }
-          >
-            ›
-          </button>
+          <button onClick={() => viewMode === "month" ? changeMonth(1) : changeWeek(1)}>›</button>
         </div>
 
         <div className="view-toggle">
@@ -173,16 +131,12 @@ export default function Schedule({ todos = [] }) {
         </div>
       </div>
 
-      {/* WEEK LABELS */}
       <div className="weekday-row">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-          (d) => (
-            <span key={d}>{d}</span>
-          )
-        )}
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+          <span key={d}>{d}</span>
+        ))}
       </div>
 
-      {/* CALENDAR GRID */}
       <div className={`calendar-grid ${viewMode}`}>
         {calendarDays.map((date, i) => {
           const isSelected =
@@ -190,18 +144,13 @@ export default function Schedule({ todos = [] }) {
 
           const hasTasks = todos.some((t) => {
             if (!t.dueDate) return false;
-            return (
-              formatKey(new Date(t.dueDate)) ===
-              formatKey(date)
-            );
+            return formatKey(new Date(t.dueDate)) === formatKey(date);
           });
 
           return (
             <div
               key={i}
-              className={`calendar-day ${
-                isSelected ? "selected" : ""
-              }`}
+              className={`calendar-day ${isSelected ? "selected" : ""}`}
               onClick={() => setSelectedDate(date)}
             >
               {date.getDate()}
@@ -211,7 +160,6 @@ export default function Schedule({ todos = [] }) {
         })}
       </div>
 
-      {/* TASK HEADER */}
       <div className="task-header">
         <h3>
           Tasks for{" "}
@@ -225,7 +173,6 @@ export default function Schedule({ todos = [] }) {
         </span>
       </div>
 
-      {/* TASK LIST */}
       <div className="task-list">
         {filteredTasks.length === 0 ? (
           <p className="no-task">No tasks for this day</p>
@@ -233,17 +180,11 @@ export default function Schedule({ todos = [] }) {
           filteredTasks.map((task) => (
             <div
               key={task._id}
-              className={`task-card ${
-                task.completed ? "completed" : ""
-              }`}
+              className={`task-card ${task.completed ? "completed" : ""}`}
             >
               <div>
                 <h4>{task.title}</h4>
-                <p>
-                  {task.dueTime
-                    ? `⏰ ${task.dueTime}`
-                    : "No time set"}
-                </p>
+                <p>{task.dueTime ? `⏰ ${task.dueTime}` : "No time set"}</p>
               </div>
 
               <span className="time-badge">

@@ -2,13 +2,13 @@
   min-height: 100vh;
   padding: 20px;
   background: var(--bg);
-  color: white;
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   gap: 20px;
-  font-family: "Inter", sans-serif;
 }
 
+/* Header */
 .settings-header {
   display: flex;
   align-items: center;
@@ -19,8 +19,9 @@
   cursor: pointer;
 }
 
+/* Cards */
 .settings-card {
-  background: #151a22;
+  background: var(--card-bg);
   border-radius: 16px;
   border: 1px solid var(--border);
   padding: 18px;
@@ -41,20 +42,24 @@
   align-items: center;
 }
 
+/* Avatar */
 .profile-avatar {
   width: 45px;
   height: 45px;
-  background: #2dd3ee;
+  background: var(--bg);
   border-radius: 50%;
 }
 
+/* PRO badge */
 .pro-badge {
   font-size: 10px;
-  background: #2dd3ee;
+  background: var(--accent);
   padding: 4px 8px;
   border-radius: 8px;
+  color: var(--bg);
 }
 
+/* Setting rows */
 .setting-row {
   display: flex;
   justify-content: space-between;
@@ -64,15 +69,22 @@
 
 .setting-row.clickable {
   cursor: pointer;
+  transition: opacity 0.2s ease;
 }
 
+.setting-row.clickable:hover {
+  opacity: 1;
+}
+
+/* Toggle */
 .toggle {
   width: 40px;
   height: 22px;
-  background: #333;
+  background: var(--text-secondary);
   border-radius: 20px;
   position: relative;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 .toggle::after {
@@ -80,7 +92,7 @@
   position: absolute;
   width: 18px;
   height: 18px;
-  background: white;
+  background: #fff;
   border-radius: 50%;
   top: 2px;
   left: 2px;
@@ -88,18 +100,14 @@
 }
 
 .toggle.active {
-  background: #2dd3ee;
+  background: var(--accent);
 }
 
 .toggle.active::after {
   left: 20px;
 }
 
-.active-label {
-  font-size: 12px;
-  color: #2dd3ee;
-}
-
+/* Accent selector */
 .color-row {
   display: flex;
   gap: 10px;
@@ -109,24 +117,22 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #2dd3ee;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.color.red {
-  background: #ef4444;
+.color.active {
+  outline: 2px solid var(--text);
 }
 
-.color.blue {
-  background: #3b82f6;
-}
-
+/* Logout button */
 .logout-button {
   margin-top: auto;
   padding: 14px;
   border-radius: 14px;
   border: 1px solid rgba(239, 68, 68, 0.3);
   background: rgba(239, 68, 68, 0.1);
-  color: #ff4d4d;
+  color: #ef4444;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
@@ -134,5 +140,5 @@
 
 .logout-button:hover {
   background: rgba(239, 68, 68, 0.2);
-  color: white;
+  color: var(--text-primary);
 }

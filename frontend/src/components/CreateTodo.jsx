@@ -12,15 +12,17 @@ export function CreateTodo({ fetchTodos, closeModal }) {
   const [dueTime, setDueTime] = useState("");
 
   const token =
-  localStorage.getItem("token") ||
-  sessionStorage.getItem("token");
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("token");
 
   const handleSubmit = async (e) => {
-    if (!token) {
-  toast.error("Please login first");
-  return;
-}
     e.preventDefault();
+
+    if (!token) {
+      toast.error("Please login first");
+      return;
+    }
+
     const toastId = toast.loading("Creating task...");
 
     try {
@@ -41,16 +43,19 @@ export function CreateTodo({ fetchTodos, closeModal }) {
           }),
         }
       );
+
       if (response.status === 403) {
-  localStorage.removeItem("token");
-  localStorage.removeItem("username");
-  toast.error("Session expired. Please login again.", { id: toastId });
+        localStorage.clear();
+        sessionStorage.clear();
+        toast.error("Session expired. Please login again.", {
+          id: toastId,
+        });
+        window.location.reload();
+        return;
+      }
 
-  window.location.reload(); // or redirect to login state
-  return;
-}
-
-      if (!response.ok) throw new Error("Failed to create task");
+      if (!response.ok)
+        throw new Error("Failed to create task");
 
       await fetchTodos();
       toast.success("Task created!", { id: toastId });
@@ -86,9 +91,8 @@ export function CreateTodo({ fetchTodos, closeModal }) {
           required
         />
 
-        {/* DATE + TIME */}
         <div className="datetime-row">
-          <div>
+          <div className="datetime-field">
             <label>Due Date</label>
             <input
               type="date"
@@ -98,7 +102,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
             />
           </div>
 
-          <div>
+          <div className="datetime-field">
             <label>Time</label>
             <input
               type="time"
@@ -108,7 +112,6 @@ export function CreateTodo({ fetchTodos, closeModal }) {
           </div>
         </div>
 
-        {/* PRIORITY */}
         <div className="priority-section">
           <label>Priority</label>
           <div className="priority-options">
@@ -117,11 +120,14 @@ export function CreateTodo({ fetchTodos, closeModal }) {
                 key={level}
                 type="button"
                 className={`priority-btn ${
-                  priority === level ? `active ${level}` : ""
+                  priority === level
+                    ? `active ${level}`
+                    : ""
                 }`}
                 onClick={() => setPriority(level)}
               >
-                {level.charAt(0).toUpperCase() + level.slice(1)}
+                {level.charAt(0).toUpperCase() +
+                  level.slice(1)}
               </button>
             ))}
           </div>

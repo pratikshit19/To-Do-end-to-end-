@@ -1,48 +1,22 @@
-* {
-  box-sizing: border-box;
-}
 .schedule-container {
   background: var(--bg);
-  color: white;
+  color: var(--text);
   padding: 25px;
   min-height: 100vh;
-  /* overflow-y: hidden; */
 }
 
-/* Top header */
-.schedule-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.avatar-mini {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #1e293b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.timeline {
-  margin-top: 10px;
-}
-
+/* Timeline */
 .timeline-label {
-  color: #22d3ee;
+  color: var(--accent);
   font-size: 12px;
   letter-spacing: 2px;
 }
 
 .view-toggle {
   margin-top: 10px;
-  background: #1e293b;
+  background: var(--card-bg);
   border-radius: 15px;
   padding: 4px;
-  align-items: center;
-  justify-content: center;
   display: inline-flex;
 }
 
@@ -51,16 +25,16 @@
   background: transparent;
   padding: 8px 16px;
   border-radius: 10px;
-  color: white;
-  justify-content: center;
+  color: var(--text);
   cursor: pointer;
 }
 
 .view-toggle .active {
-  background: #111827;
-  color: white;
+  background: var(--border);
+  color: var(--text);
 }
 
+/* Weekdays */
 .weekday-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -69,6 +43,7 @@
   opacity: 0.6;
 }
 
+/* Calendar */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -83,25 +58,31 @@
   border: 1px solid var(--border);
   align-items: center;
   justify-content: center;
-  background: #111827;
+  background: var(--card-bg);
   position: relative;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+  transform: translateY(-2px);
 }
 
 .calendar-day.selected {
-  background: #22d3ee;
-  color: black;
+  background: var(--accent);
+  color: var(--bg);
 }
 
 .calendar-day .dot {
   width: 6px;
   height: 6px;
-  background: #22d3ee;
+  background: var(--accent);
   border-radius: 50%;
   position: absolute;
   bottom: 6px;
 }
 
+/* Task Section */
 .task-header {
   margin-top: 25px;
   display: flex;
@@ -110,7 +91,7 @@
 }
 
 .task-card {
-  background: var(--card);
+  background: var(--card-bg);
   padding: 16px;
   border-radius: 16px;
   margin-top: 15px;
@@ -118,17 +99,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.2s ease;
+}
+
+.task-card.completed {
+  opacity: 0.6;
+  text-decoration: line-through;
 }
 
 .time-badge {
-  background: #22d3ee;
-  color: black;
-  padding: 6px 12px;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 6px 10px;
   border-radius: 20px;
   font-size: 12px;
 }
 
-/* Navigation buttons wrapper */
+/* Navigation */
 .nav-buttons {
   margin-top: 15px;
   display: flex;
@@ -136,11 +123,9 @@
   gap: 12px;
 }
 
-/* Prev / Next buttons */
 .nav-buttons button {
   background: transparent;
-  /* border: 1px solid var(--border); */
-  color: white;
+  color: var(--text);
   padding: 8px 18px;
   border-radius: 10px;
   cursor: pointer;
@@ -148,14 +133,16 @@
   font-size: 34px;
 }
 
-/* Hover effect */
 .nav-buttons button:hover {
-  background: #1e293b;
-  color: white;
+  background: var(--card);
   transform: translateY(-2px);
 }
 
-/* Active click effect */
 .nav-buttons button:active {
   transform: scale(0.95);
+}
+
+.no-task {
+  margin-top: 20px;
+  opacity: 0.6;
 }
