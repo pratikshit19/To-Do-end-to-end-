@@ -288,7 +288,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
 
                   {todo.dueDate && (
                     <div className="task-datetime">
-                      📅{" "}
+                      {" "}
                       {new Date(
                         todo.dueDate
                       ).toLocaleDateString()}

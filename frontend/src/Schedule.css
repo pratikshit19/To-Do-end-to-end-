@@ -1,7 +1,6 @@
 .schedule-container {
   background: var(--bg);
   color: var(--text);
-  padding: 25px;
   min-height: 100vh;
 }
 

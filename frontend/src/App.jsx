@@ -14,7 +14,6 @@ import { Toaster } from "react-hot-toast";
 import "./App.css";
 
 export default function App() {
-
   /* ================= STATE ================= */
 
   const [showOnboarding, setShowOnboarding] = useState(
@@ -121,63 +120,134 @@ export default function App() {
     return <ForgotPassword setIsLogin={setIsLogin} />;
   }
 
+  /* ================= PAGE RENDER HELPER ================= */
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case "profile":
+        return (
+          <Profile
+            onLogout={handleLogout}
+            setCurrentPage={setCurrentPage}
+          />
+        );
+
+      case "schedule":
+        return <Schedule todos={todos} />;
+
+      case "settings":
+        return (
+          <Settings
+            setCurrentPage={setCurrentPage}
+            onLogout={handleLogout}
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+          />
+        );
+
+      case "insights":
+        return <Insights setCurrentPage={setCurrentPage} />;
+
+      default:
+        return (
+          <>
+            <Todos
+              todos={todos}
+              fetchTodos={fetchTodos}
+              onLogout={handleLogout}
+              setCurrentPage={setCurrentPage}
+            />
+
+            <button
+              className="floating-button"
+              onClick={() => setShowModal(true)}
+            >
+              +
+            </button>
+          </>
+        );
+    }
+  };
+
   /* ================= MAIN APP ================= */
 
   return (
     <>
       <Toaster position="top-right" />
 
-      {currentPage === "home" && (
-        <>
-          <Todos
-            todos={todos}
-            fetchTodos={fetchTodos}
-            onLogout={handleLogout}
-            setCurrentPage={setCurrentPage}
-          />
+      <div className="layout">
+        {/* ===== Desktop Sidebar ===== */}
+        <aside className="sidebar">
+          <div className="sidebar-logo">TaskFlow</div>
 
-          <button
-            className="floating-button"
-            onClick={() => setShowModal(true)}
+          <div
+            className={`sidebar-item ${
+              currentPage === "home" ? "active" : ""
+            }`}
+            onClick={() => setCurrentPage("home")}
           >
-            +
-          </button>
-        </>
-      )}
+            Home
+          </div>
 
-      {currentPage === "profile" && (
-        <Profile
-          onLogout={handleLogout}
-          setCurrentPage={setCurrentPage}
-        />
-      )}
+          <div
+            className={`sidebar-item ${
+              currentPage === "schedule" ? "active" : ""
+            }`}
+            onClick={() => setCurrentPage("schedule")}
+          >
+            Schedule
+          </div>
 
-      {currentPage === "schedule" && (
-        <Schedule todos={todos} />
-      )}
+          <div
+            className={`sidebar-item ${
+              currentPage === "insights" ? "active" : ""
+            }`}
+            onClick={() => setCurrentPage("insights")}
+          >
+            Insights
+          </div>
 
-      {currentPage === "settings" && (
-        <Settings
-          setCurrentPage={setCurrentPage}
-          onLogout={handleLogout}
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
-        />
-      )}
+          <div
+            className={`sidebar-item ${
+              currentPage === "profile" ? "active" : ""
+            }`}
+            onClick={() => setCurrentPage("profile")}
+          >
+            Profile
+          </div>
 
-      {currentPage === "insights" && (
-        <Insights setCurrentPage={setCurrentPage} />
-      )}
+          <div
+            className={`sidebar-item ${
+              currentPage === "settings" ? "active" : ""
+            }`}
+            onClick={() => setCurrentPage("settings")}
+          >
+            Settings
+          </div>
+        </aside>
 
-      {/* Hide navbar on profile & settings */}
-      {currentPage !== "settings" &&
-        currentPage !== "profile" && (
-          <Navbar
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-        )}
+        {/* ===== Main Area ===== */}
+        <div className="main-area">
+          <header className="desktop-header">
+            <h2>
+              {currentPage.charAt(0).toUpperCase() +
+                currentPage.slice(1)}
+            </h2>
+          </header>
 
+          <div className="page-content">
+            {renderPage()}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Mobile Bottom Navbar ===== */}
+      <Navbar
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
+
+      {/* ===== Modal ===== */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
