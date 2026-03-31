@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import "../Login.css";
 import toast from "react-hot-toast";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
@@ -30,14 +29,12 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
   const validate = (name, value) => {
     if (!value.trim()) return `${name} is required`;
 
-    if (name === "password") {
-      if (value.length < 6)
-        return "Password must be at least 6 characters";
+    if (name === "password" && value.length < 6) {
+      return "Password must be at least 6 characters";
     }
 
-    if (name === "confirmPassword") {
-      if (value !== form.password)
-        return "Passwords do not match";
+    if (name === "confirmPassword" && value !== form.password) {
+      return "Passwords do not match";
     }
 
     return "";
@@ -58,14 +55,8 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    const usernameError = validate(
-      "username",
-      form.username
-    );
-    const passwordError = validate(
-      "password",
-      form.password
-    );
+    const usernameError = validate("username", form.username);
+    const passwordError = validate("password", form.password);
     const confirmError = validate(
       "confirmPassword",
       form.confirmPassword
@@ -124,134 +115,159 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
   const getPasswordStrength = () => {
     const pwd = form.password;
     if (pwd.length < 6) return "weak";
-    if (
-      pwd.match(/[A-Z]/) &&
-      pwd.match(/[0-9]/) &&
-      pwd.length >= 8
-    )
+    if (pwd.match(/[A-Z]/) && pwd.match(/[0-9]/) && pwd.length >= 8)
       return "strong";
     return "medium";
   };
 
   const strength = getPasswordStrength();
 
+  const strengthColor =
+    strength === "weak"
+      ? "text-red-500"
+      : strength === "medium"
+      ? "text-yellow-500"
+      : "text-green-500";
+
   return (
-    <div className="auth-container">
-      <div className="auth-content">
-        <h1 className="brand-title">Create Account</h1>
-        <p className="auth-subtitle">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] px-4 transition-colors duration-300">
+      <div className="w-full max-w-md bg-[var(--card-bg)] p-8 rounded-2xl shadow-xl transition-colors duration-300">
+        
+        <h1 className="text-3xl font-bold text-center text-[var(--text-primary)]">
+          Create Account
+        </h1>
+        <p className="text-center text-[var(--text-secondary)] mt-2">
           Start organizing your productivity
         </p>
 
-        <form onSubmit={handleSignup} className="auth-form">
+        <form onSubmit={handleSignup} className="mt-8 space-y-5">
+          
           {/* Username */}
-          <div className="input-group">
-            <Mail size={18} className="input-icon" />
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={form.username}
-              onChange={handleChange}
-              className={`auth-input ${
-                errors.username ? "input-error" : ""
-              }`}
-            />
+          <div>
+            <div className="relative">
+              <Mail
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+              />
+              <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={form.username}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--input-bg)] text-[var(--text-primary)] border transition ${
+                  errors.username
+                    ? "border-red-500"
+                    : "border-transparent focus:border-cyan-400"
+                } focus:outline-none`}
+              />
+            </div>
+            {errors.username && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.username}
+              </p>
+            )}
           </div>
-          {errors.username && (
-            <span className="error-text">
-              {errors.username}
-            </span>
-          )}
 
           {/* Password */}
-          <div className="input-group password-group">
-            <Lock size={18} className="input-icon" />
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              className={`auth-input ${
-                errors.password ? "input-error" : ""
-              }`}
-            />
-
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() =>
-                setShowPassword((prev) => !prev)
-              }
-            >
-              {showPassword ? (
-                <EyeOff size={18} />
-              ) : (
-                <Eye size={18} />
-              )}
-            </button>
-          </div>
-
-          {form.password && (
-            <div className={`password-strength ${strength}`}>
-              {strength === "weak" && "Weak password"}
-              {strength === "medium" &&
-                "Medium strength password"}
-              {strength === "strong" &&
-                "Strong password 💪"}
+          <div>
+            <div className="relative">
+              <Lock
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+              />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-10 py-3 rounded-xl bg-[var(--input-bg)] text-[var(--text-primary)] border transition ${
+                  errors.password
+                    ? "border-red-500"
+                    : "border-transparent focus:border-cyan-400"
+                } focus:outline-none`}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword((prev) => !prev)
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+              >
+                {showPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
             </div>
-          )}
 
-          {errors.password && (
-            <span className="error-text">
-              {errors.password}
-            </span>
-          )}
+            {form.password && (
+              <p className={`text-sm mt-1 ${strengthColor}`}>
+                {strength === "weak" && "Weak password"}
+                {strength === "medium" &&
+                  "Medium strength password"}
+                {strength === "strong" &&
+                  "Strong password 💪"}
+              </p>
+            )}
+
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password}
+              </p>
+            )}
+          </div>
 
           {/* Confirm Password */}
-          <div className="input-group password-group">
-            <Lock size={18} className="input-icon" />
-            <input
-              type={
-                showConfirmPassword ? "text" : "password"
-              }
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              className={`auth-input ${
-                errors.confirmPassword
-                  ? "input-error"
-                  : ""
-              }`}
-            />
+          <div>
+            <div className="relative">
+              <Lock
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+              />
+              <input
+                type={
+                  showConfirmPassword ? "text" : "password"
+                }
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-10 py-3 rounded-xl bg-[var(--input-bg)] text-[var(--text-primary)] border transition ${
+                  errors.confirmPassword
+                    ? "border-red-500"
+                    : "border-transparent focus:border-cyan-400"
+                } focus:outline-none`}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowConfirmPassword((prev) => !prev)
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
+            </div>
 
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() =>
-                setShowConfirmPassword((prev) => !prev)
-              }
-            >
-              {showConfirmPassword ? (
-                <EyeOff size={18} />
-              ) : (
-                <Eye size={18} />
-              )}
-            </button>
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
 
-          {errors.confirmPassword && (
-            <span className="error-text">
-              {errors.confirmPassword}
-            </span>
-          )}
-
+          {/* Submit Button */}
           <button
             type="submit"
-            className="auth-button"
             disabled={loading}
+            className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white font-semibold transition disabled:opacity-50"
           >
             {loading
               ? "Creating account..."
@@ -259,10 +275,12 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
           </button>
         </form>
 
-        <p className="auth-switch">
+        <p className="text-center text-sm text-[var(--text-secondary)] mt-6">
           Already have an account?
-          <span onClick={() => setIsLogin(true)}>
-            {" "}
+          <span
+            onClick={() => setIsLogin(true)}
+            className="text-cyan-500 cursor-pointer ml-1 hover:underline"
+          >
             Sign In
           </span>
         </p>

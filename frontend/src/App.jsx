@@ -11,7 +11,6 @@ import Onboarding from "./components/Onboarding";
 import Navbar from "./components/Navbar";
 import Insights from "./components/Insights";
 import { Toaster } from "react-hot-toast";
-import "./App.css";
 
 export default function App() {
   /* ================= STATE ================= */
@@ -34,7 +33,7 @@ export default function App() {
     localStorage.getItem("darkMode") === "false" ? false : true
   );
 
-  /* ================= THEME CONTROL ================= */
+  /* ================= THEME ================= */
 
   useEffect(() => {
     document.documentElement.setAttribute(
@@ -45,12 +44,10 @@ export default function App() {
     localStorage.setItem("darkMode", darkMode);
   }, [darkMode]);
 
-  /* ================= TOKEN HELPER ================= */
+  /* ================= TOKEN ================= */
 
   const getToken = () =>
     localStorage.getItem("token") || sessionStorage.getItem("token");
-
-  /* ================= FETCH TODOS ================= */
 
   const fetchTodos = async () => {
     const token = getToken();
@@ -76,8 +73,6 @@ export default function App() {
     }
   };
 
-  /* ================= LOGOUT ================= */
-
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
@@ -89,9 +84,8 @@ export default function App() {
     if (isAuthenticated) fetchTodos();
   }, [isAuthenticated]);
 
-  /* ================= SCREEN FLOW ================= */
+  /* ================= FLOW ================= */
 
-  // 1️⃣ Onboarding
   if (showOnboarding) {
     return (
       <Onboarding
@@ -104,7 +98,6 @@ export default function App() {
     );
   }
 
-  // 2️⃣ Auth Screens
   if (!isAuthenticated) {
     if (isLogin === true)
       return (
@@ -120,7 +113,7 @@ export default function App() {
     return <ForgotPassword setIsLogin={setIsLogin} />;
   }
 
-  /* ================= PAGE RENDER HELPER ================= */
+  /* ================= PAGE RENDER ================= */
 
   const renderPage = () => {
     switch (currentPage) {
@@ -158,9 +151,10 @@ export default function App() {
               setCurrentPage={setCurrentPage}
             />
 
+            {/* Floating Button */}
             <button
-              className="floating-button"
               onClick={() => setShowModal(true)}
+              className="fixed bottom-24 right-6 md:hidden w-12 h-12 rounded-xl bg-(--accent) text-white text-2xl flex items-center justify-center shadow-lg hover:scale-105 transition"
             >
               +
             </button>
@@ -174,83 +168,59 @@ export default function App() {
   return (
     <>
       <Toaster position="top-right" />
-
-      <div className="layout">
-        {/* ===== Desktop Sidebar ===== */}
-        <aside className="sidebar">
-          <div className="sidebar-logo">TaskFlow</div>
-
-          <div
-            className={`sidebar-item ${
-              currentPage === "home" ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage("home")}
-          >
-            Home
+      <div className="min-h-screen bg-(--bg) text-(text-primary) md:px-10 md:py-10 space-y-6 pb-20 flex">
+        {/* ================= DESKTOP SIDEBAR ================= */}
+        <aside className="hidden md:flex md:flex-col w-64 bg-card border-r border-border p-6 space-y-4">
+          <div className="text-xl font-semibold mb-6">
+            TaskFlow
           </div>
 
-          <div
-            className={`sidebar-item ${
-              currentPage === "schedule" ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage("schedule")}
-          >
-            Schedule
-          </div>
-
-          <div
-            className={`sidebar-item ${
-              currentPage === "insights" ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage("insights")}
-          >
-            Insights
-          </div>
-
-          <div
-            className={`sidebar-item ${
-              currentPage === "profile" ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage("profile")}
-          >
-            Profile
-          </div>
-
-          <div
-            className={`sidebar-item ${
-              currentPage === "settings" ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage("settings")}
-          >
-            Settings
-          </div>
+          {["home", "schedule", "insights", "profile", "settings"].map(
+            (page) => (
+              <div
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-4 py-2 rounded-lg cursor-pointer transition ${
+                  currentPage === page
+                    ? "bg-(--bg) text-(--accent)"
+                    : "hover:bg-(--border)"
+                }`}
+              >
+                {page.charAt(0).toUpperCase() + page.slice(1)}
+              </div>
+            )
+          )}
         </aside>
 
-        {/* ===== Main Area ===== */}
-        <div className="main-area">
-          <header className="desktop-header">
-            <h2>
+        {/* ================= MAIN AREA ================= */}
+        <div className="flex-1 flex flex-col">
+          {/* Desktop Header */}
+          <header className="hidden md:flex justify-between items-center px-8 py-4 border-b border-border bg-(--bg)">
+            <h2 className="text-xl font-semibold">
               {currentPage.charAt(0).toUpperCase() +
                 currentPage.slice(1)}
             </h2>
           </header>
 
-          <div className="page-content">
+          {/* Page Content */}
+          <div className="flex-1 px-4 py-6 md:px-10 md:py-8 max-w-7xl w-full mx-auto">
             {renderPage()}
           </div>
         </div>
       </div>
 
-      {/* ===== Mobile Bottom Navbar ===== */}
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-      />
+      {/* ================= MOBILE NAVBAR ================= */}
+      <div className="md:hidden">
+        <Navbar
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+        />
+      </div>
 
-      {/* ===== Modal ===== */}
+      {/* ================= MODAL ================= */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-transparent rounded-xl p-6 w-[95%] max-w-md flex items-center justify-center z-50">
             <CreateTodo
               fetchTodos={fetchTodos}
               closeModal={() => setShowModal(false)}

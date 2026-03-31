@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import "../Login.css"; // same styling as Login
 
 export default function ForgotPassword({ setIsLogin }) {
   const [form, setForm] = useState({ username: "", newPassword: "" });
@@ -47,71 +46,132 @@ export default function ForgotPassword({ setIsLogin }) {
       );
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Reset failed");
+      if (!response.ok)
+        throw new Error(data.message || "Reset failed");
 
-      toast.success("Password reset successfully! Please login.", { id: toastId });
-      setIsLogin(true); // go back to login page
+      toast.success(
+        "Password reset successfully! Please login.",
+        { id: toastId }
+      );
+
+      setIsLogin(true);
     } catch (err) {
-      toast.error(err.message || "Reset failed", { id: toastId });
+      toast.error(err.message || "Reset failed", {
+        id: toastId,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-content">
-        <h1 className="brand-title">Reset Password</h1>
-        <p className="auth-subtitle">Enter your username and new password</p>
+    <div className="min-h-screen flex items-center justify-center px-6 bg-white dark:bg-[#0f172a] transition-colors duration-300">
+      <div className="w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white">
+          Reset Password
+        </h1>
 
-        <form onSubmit={handleReset} className="auth-form">
-          <div className="input-group">
-            <Lock size={18} className="input-icon" />
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={form.username}
-              onChange={handleChange}
-              className={`auth-input ${errors.username ? "input-error" : ""}`}
-            />
+        <p className="text-center text-gray-500 dark:text-gray-400 mt-2 mb-8">
+          Enter your username and new password
+        </p>
+
+        <form onSubmit={handleReset} className="space-y-5">
+          {/* Username */}
+          <div>
+            <div className="relative">
+              <Lock
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={form.username}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-transparent text-gray-900 dark:text-white
+                  focus:outline-none focus:ring-2 transition
+                  ${
+                    errors.username
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 dark:border-gray-600 focus:ring-cyan-500"
+                  }`}
+              />
+            </div>
+            {errors.username && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.username}
+              </p>
+            )}
           </div>
-          {errors.username && <span className="error-text">{errors.username}</span>}
 
-          <div className="input-group password-group">
-            <Lock size={18} className="input-icon" />
-            <input
-              type={showPassword ? "text" : "password"}
-              name="newPassword"
-              placeholder="New Password"
-              value={form.newPassword}
-              onChange={handleChange}
-              className={`auth-input ${errors.newPassword ? "input-error" : ""}`}
-            />
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setShowPassword((prev) => !prev)}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+          {/* Password */}
+          <div>
+            <div className="relative">
+              <Lock
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+
+              <input
+                type={showPassword ? "text" : "password"}
+                name="newPassword"
+                placeholder="New Password"
+                value={form.newPassword}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-12 py-3 rounded-xl border bg-transparent text-gray-900 dark:text-white
+                  focus:outline-none focus:ring-2 transition
+                  ${
+                    errors.newPassword
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 dark:border-gray-600 focus:ring-cyan-500"
+                  }`}
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword((prev) => !prev)
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                {showPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
+            </div>
+
+            {errors.newPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.newPassword}
+              </p>
+            )}
           </div>
-          {errors.newPassword && (
-            <span className="error-text">{errors.newPassword}</span>
-          )}
 
+          {/* Button */}
           <button
             type="submit"
-            className="auth-button"
             disabled={loading}
+            className="w-full py-3 rounded-xl font-semibold
+              bg-cyan-500 hover:bg-cyan-600
+              text-white transition
+              disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
 
-        <p className="auth-switch">
+        {/* Switch */}
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           Remembered your password?
-          <span onClick={() => setIsLogin(true)}> Login</span>
+          <span
+            onClick={() => setIsLogin(true)}
+            className="ml-1 text-cyan-500 hover:underline cursor-pointer"
+          >
+            Login
+          </span>
         </p>
       </div>
     </div>

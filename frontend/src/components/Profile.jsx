@@ -1,7 +1,5 @@
 import { ArrowLeft, Settings, Edit } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import "../Profile.css";
-import "../Settings.css";
 
 export default function Profile({
   setCurrentPage,
@@ -75,7 +73,7 @@ export default function Profile({
     return `${hours}h ${minutes}m`;
   }, [focusSessions]);
 
-  /* ---------------- WEEKLY RANK (SIMULATED LOGIC) ---------------- */
+  /* ---------------- WEEKLY RANK ---------------- */
   const weeklyRank = useMemo(() => {
     if (completionPercentage >= 90) return "Top 5%";
     if (completionPercentage >= 75) return "Top 15%";
@@ -110,98 +108,126 @@ export default function Profile({
   }, [tasks, focusSessions]);
 
   return (
-    <div className="profile-page">
+    <div className="min-h-screen px-2 pb-24 md:pb-10 md:px-10 lg:px-20 
+                  bg-(--bg) ">
+
       {/* Header */}
-      <div className="profile-topbar">
+      <div className="flex items-center justify-between mb-6">
         <ArrowLeft
-          className="top-icon"
+          className="cursor-pointer opacity-70 hover:opacity-100 transition"
           onClick={() => setCurrentPage("home")}
         />
-        <h3>Profile</h3>
+        <h3 className="text-lg font-semibold">Profile</h3>
         <Settings
-          className="top-icon"
+          className="cursor-pointer opacity-70 hover:opacity-100 transition"
           onClick={() => setCurrentPage("settings")}
         />
       </div>
 
-      {/* Avatar Section */}
-      <div className="settings-card profile-card">
-        <div className="profile-left">
-          <div className="profile-avatar">
+      {/* Avatar Card */}
+      <div className="flex items-center justify-between 
+                     bg-(--card-bg) text-(--text-primary) 
+                      p-5 rounded-2xl mb-8 shadow-sm">
+
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 flex items-center justify-center 
+                          rounded-full 
+                          bg-gradient-to-br from-cyan-400 to-blue-500 
+                          text-white text-xl font-bold">
             {username?.charAt(0).toUpperCase() || "U"}
           </div>
+
           <div>
-            <h3>{username || "User"}</h3>
-            <span className="pro-badge">PRO MEMBER</span>
+            <h3 className="font-semibold text-lg">
+              {username || "User"}
+            </h3>
+            <span className="text-xs px-2 py-1 rounded-full 
+                             bg-(--accent)/30
+                             text-(--accent)">
+              PRO MEMBER
+            </span>
           </div>
         </div>
-        <Edit size={18} />
+
+        <Edit size={18} className="opacity-70" />
       </div>
 
       {/* Accomplishments */}
-      <div className="accomplishments">
-        <p className="accomplishment-label">
+      <div className="mb-8">
+        <p className="text-xs tracking-widest opacity-60 mb-2">
           TOTAL ACCOMPLISHMENTS
         </p>
-        <h1>
+        <h1 className="text-3xl md:text-4xl font-bold">
           {totalCompleted.toLocaleString()}{" "}
-          <span>Tasks Completed</span>
+          <span className="text-base font-normal opacity-60">
+            Tasks Completed
+          </span>
         </h1>
       </div>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <p className="stat-title">CURRENT STREAK</p>
-          <h3>{streak} Days</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+          <p className="text-xs opacity-60 mb-1">CURRENT STREAK</p>
+          <h3 className="text-lg font-semibold">{streak} Days</h3>
         </div>
 
-        <div className="stat-card">
-          <p className="stat-title">FOCUS TIME</p>
-          <h3>{totalFocusTime}</h3>
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+          <p className="text-xs opacity-60 mb-1">FOCUS TIME</p>
+          <h3 className="text-lg font-semibold">{totalFocusTime}</h3>
         </div>
 
-        <div className="stat-card">
-          <p className="stat-title">COMPLETION</p>
-          <h3>{completionPercentage}%</h3>
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+          <p className="text-xs opacity-60 mb-1">COMPLETION</p>
+          <h3 className="text-lg font-semibold">{completionPercentage}%</h3>
         </div>
 
-        <div className="stat-card">
-          <p className="stat-title">WEEKLY RANK</p>
-          <h3>{weeklyRank}</h3>
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+          <p className="text-xs opacity-60 mb-1">WEEKLY RANK</p>
+          <h3 className="text-lg font-semibold">{weeklyRank}</h3>
         </div>
       </div>
 
       {/* Goals */}
-      <div className="goals-section">
-        <h4>Active Goals</h4>
+      <div className="mb-10">
+        <h4 className="font-semibold mb-4">Active Goals</h4>
 
-        {goals.map((goal, index) => (
-          <div className="goal" key={index}>
-            <div className="goal-row">
-              <span>{goal.name}</span>
-              <span>{goal.percent}%</span>
+        <div className="space-y-5">
+          {goals.map((goal, index) => (
+            <div key={index}>
+              <div className="flex justify-between mb-2 text-sm">
+                <span>{goal.name}</span>
+                <span>{goal.percent}%</span>
+              </div>
+
+              <div className="w-full h-2 bg-(--card-bg) rounded-full">
+                <div
+                  className="h-2 bg-(--accent) rounded-full transition-all"
+                  style={{ width: `${goal.percent}%` }}
+                />
+              </div>
             </div>
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: `${goal.percent}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Buttons */}
-      <button className="primary-btn">
-        Edit Profile
-      </button>
-      <button
-        className="secondary-btn"
-        onClick={() => setCurrentPage("insights")}
-      >
-        View Full Insights
-      </button>
+      <div className="space-y-4 md:flex md:gap-4 md:space-y-0">
+        <button className="w-full md:w-auto px-6 py-3 rounded-xl 
+                           bg-(--accent) hover:bg-(--accent)/80 
+                           text-white font-medium transition">
+          Edit Profile
+        </button>
+
+        <button
+          className="w-full md:w-auto px-6 py-3 rounded-xl border border-(--accent) 
+                     text-(--accent) hover:bg-(--accent)/20
+                     hover:opacity-90 transition font-medium"
+          onClick={() => setCurrentPage("insights")}
+        >
+          View Full Insights
+        </button>
+      </div>
     </div>
   );
 }

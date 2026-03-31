@@ -1,73 +1,38 @@
+@import "tailwindcss";
+
+/* ===== LIGHT THEME ===== */
 :root {
-  line-height: 1.6;
-  font-weight: 400; 
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bg: #EFF1F3;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+  --primary: #3b82f6;
+  --accent: #3b82f6;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+}
+
+/* ===== DARK THEME ===== */
+[data-theme="dark"] {
   --bg:radial-gradient(circle at 20% 30%, rgba(45, 167, 238, 0.15), transparent 0%),
     radial-gradient(circle at 80% 50%, rgba(45, 167, 238, 0.12), transparent 25%),
     radial-gradient(circle at 0% 20%, rgba(45, 167, 238, 0.08), transparent 40%),
-    rgb(10, 10, 12); 
-  --card-bg: #151a22;
-  --text-primary: #ffffff;
+    rgb(10, 10, 12);
+  --card-bg: #121924;
+  --border: #334155;
+  --primary: #3b82f6;
+  --accent: #60a5fa;
+  --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --border: #1f2937;
-  --accent: #2dd3ee;
-  --accent-glow: rgba(34, 170, 238, 0.6);
-  --danger: #ef4444;
 }
-
-[data-theme="light"] {
-  --bg: #EFF1F3;
-  --card-bg: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border: #e5e7eb;
-  --accent: #2dd3ee;
-
-  --danger: #ef4444;
-}
-
 body {
   margin: 0;
   min-height: 100vh;
-  font-family:"Outfit", system-ui, sans-serif;
+  font-family: "Outfit", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text-primary);
-  transition: background 0.25s ease, color 0.25s ease;
+  overflow-x: hidden;
 }
 
-h1, h2, h3 {
-  margin: 0;
-}
-
-input {
-  background-color: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 10px;
-  color: white;
-  outline: none;
-  transition: all 0.25s ease;
-}
-
-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
-}
-
-button {
-  border: none;
-  background: #2da1ee3d;
- 
-  color: #2daaee;
-  font-weight: 300;
-  border-radius: 10px;
-  padding: 1em 1.4em;
-  transition: all 0.25s ease;
-}
-
-button:hover {
-  background: var(--text);
-  color: #020617;
-
-  /* box-shadow: 0 0 15px var(--accent-glow); */
+*, *::before, *::after {
+  box-sizing: border-box;
 }

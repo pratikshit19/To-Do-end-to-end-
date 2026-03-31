@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "../Onboarding.css";
 
 const slides = [
   {
@@ -30,34 +29,74 @@ export default function Onboarding({ onFinish }) {
   };
 
   return (
-    <div className="onboarding-container">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={index}
-          className="onboarding-content"
-          initial={{ opacity: 0, x: 80 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -80 }}
-          transition={{ duration: 0.4 }}
-        >
-          <h1>{slides[index].title}</h1>
-          <p>{slides[index].description}</p>
-        </motion.div>
-      </AnimatePresence>
+    <div
+      className="
+        min-h-screen 
+        flex flex-col 
+        justify-between 
+        px-6 py-12
+        bg-white dark:bg-[#0f172a]
+        text-gray-900 dark:text-gray-100
+      "
+    >
+      {/* Center Content */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-xl text-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: 80 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -80 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-6"
+            >
+              <h1 className="text-3xl md:text-5xl font-bold leading-tight">
+                {slides[index].title}
+              </h1>
 
-      <div className="bottom-section">
-        <div className="dots">
+              <p className="text-base md:text-lg opacity-70 max-w-md mx-auto">
+                {slides[index].description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="space-y-8">
+        {/* Dots */}
+        <div className="flex justify-center gap-3">
           {slides.map((_, i) => (
             <div
               key={i}
-              className={`dot ${i === index ? "active" : ""}`}
+              className={`
+                h-2 rounded-full transition-all duration-300
+                ${i === index 
+                  ? "w-8 bg-cyan-500" 
+                  : "w-2 bg-gray-300 dark:bg-slate-600"}
+              `}
             />
           ))}
         </div>
 
-        <button onClick={handleNext} className="onboarding-btn">
-          {index === slides.length - 1 ? "Get Started" : "Next"}
-        </button>
+        {/* Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleNext}
+            className="
+              w-full max-w-xs
+              py-3 rounded-xl
+              bg-cyan-500 hover:bg-cyan-600
+              text-white font-semibold
+              transition-all duration-200
+              shadow-md
+              active:scale-95
+            "
+          >
+            {index === slides.length - 1 ? "Get Started" : "Next"}
+          </button>
+        </div>
       </div>
     </div>
   );

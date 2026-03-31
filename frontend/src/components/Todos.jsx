@@ -13,7 +13,6 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
 
-  /* ---------------- SWIPE STATE ---------------- */
   const [dragX, setDragX] = useState(0);
   const [draggingId, setDraggingId] = useState(null);
   const startXRef = useRef(0);
@@ -21,13 +20,14 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   const ACTION_WIDTH = 55;
 
   /* ---------------- DATE LOGIC ---------------- */
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const isSameDay = (date1, date2) =>
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate();
+  const isSameDay = (d1, d2) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
 
   const filteredTodos = todos.filter((todo) => {
     if (activeFilter === "all") return true;
@@ -42,7 +42,8 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
     return true;
   });
 
-  /* ---------------- CLOSE MENU ON OUTSIDE CLICK ---------------- */
+  /* ---------------- CLOSE MENU ---------------- */
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -54,6 +55,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   }, []);
 
   /* ---------------- DELETE ---------------- */
+
   const handleDelete = async (id) => {
     const toastId = toast.loading("Deleting task...");
     try {
@@ -75,6 +77,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   };
 
   /* ---------------- TOGGLE COMPLETE ---------------- */
+
   const handleToggleComplete = async (todo) => {
     try {
       const response = await fetch(
@@ -101,6 +104,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   };
 
   /* ---------------- PROGRESS ---------------- */
+
   const completedCount = todos.filter((t) => t.completed).length;
   const progressPercentage =
     todos.length > 0
@@ -108,6 +112,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
       : 0;
 
   /* ---------------- SWIPE LOGIC ---------------- */
+
   const handleStart = (clientX, id) => {
     startXRef.current = clientX;
     setDraggingId(id);
@@ -115,14 +120,9 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
 
   const handleMove = (clientX, id) => {
     if (draggingId !== id) return;
-
     const delta = startXRef.current - clientX;
-
-    if (delta > 0) {
-      setDragX(Math.min(delta, ACTION_WIDTH));
-    } else {
-      setDragX(0);
-    }
+    if (delta > 0) setDragX(Math.min(delta, ACTION_WIDTH));
+    else setDragX(0);
   };
 
   const handleEnd = (id) => {
@@ -137,86 +137,103 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   };
 
   /* ---------------- RENDER ---------------- */
+
   return (
-    <div className="app-wrapper">
+    <div className="min-h-screen w-full max-w-3xl mx-auto sm:px-6 lg:px-8 py-6">
+
       {/* HEADER */}
-      <div className="today-header">
-        <div className="avatar-wrapper" ref={menuRef}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="relative" ref={menuRef}>
           <div
-            className="avatar-circle"
             onClick={() => setShowMenu(!showMenu)}
+            className="w-10 h-10 rounded-full bg-(--card-bg) shadow flex items-center justify-center font-semibold text-(--accent) cursor-pointer"
           >
             {username?.charAt(0).toUpperCase() || "U"}
           </div>
 
           {showMenu && (
-            <div className="profile-dropdown">
-              <p className="dropdown-user">{username}</p>
-              <button onClick={onLogout}>Logout</button>
+            <div className="absolute left-0 mt-2 w-40 bg-(--card-bg) border border-(--border) rounded-xl p-3 shadow-lg">
+              <p className="text-sm mb-2">{username}</p>
+              <button
+                onClick={onLogout}
+                className="text-sm text-red-500 hover:opacity-80"
+              >
+                Logout
+              </button>
             </div>
           )}
         </div>
 
-        <div className="today-text">TaskFlow</div>
+        <h1 className="text-xl font-semibold">TaskFlow</h1>
+
         <SettingsIcon
-          className="settings-icon"
+          className="cursor-pointer text-accent opacity-70 hover:opacity-100"
           onClick={() => setCurrentPage("settings")}
         />
       </div>
 
       {/* PROGRESS */}
-      <div className="progress-container">
-        <p className="progress-sub">Daily Progress</p>
-        <div className="progress-row">
-          <h2>
+      <div className="bg-(--card-bg) rounded-2xl p-5 mb-6">
+        <p className="text-xs opacity-70 mb-1">Daily Progress</p>
+
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-medium">
             {completedCount} of {todos.length} <span>Tasks</span>
           </h2>
-          <span className="percent">{progressPercentage}%</span>
+          <span className="text-xl font-semibold text-(--accent)">
+            {progressPercentage}%
+          </span>
         </div>
-        <div className="progress-bar-modern">
+
+        <div className="mt-3 h-2 bg-border rounded-full overflow-hidden">
           <div
-            className="progress-fill-modern"
+            className="h-2 bg-(--accent) rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
       </div>
 
       {/* FILTERS */}
-      <div className="filter-pills">
+      <div className="flex gap-3 overflow-x-auto mb-6 pb-1">
         {["all", "focused", "upcoming", "completed"].map((filter) => (
           <button
             key={filter}
-            className={`pill ${
-              activeFilter === filter ? "active" : ""
-            }`}
             onClick={() => setActiveFilter(filter)}
+            className={`px-4 py-2 rounded-full bg-(--card-bg) text-sm transition whitespace-nowrap ${
+              activeFilter === filter
+                ? "bg-accent text-(--accent) border border-(--accent)"
+                : "bg-(--card-bg) border-border text(--text-secondary) hover:text-(--text-secondary)"
+            }`}
           >
             {filter.charAt(0).toUpperCase() + filter.slice(1)}
           </button>
         ))}
       </div>
 
-      {/* TASK LIST */}
+      {/* TASKS */}
       {filteredTodos.length === 0 ? (
-        <div className="empty-state">
-          <p>No tasks here 🎉</p>
+        <div className="text-center py-10 bg-(--card-bg) border border-(--border) rounded-2xl opacity-70">
+          No tasks here 🎉
         </div>
       ) : (
-        <div className="task-list-modern">
+        <div className="space-y-4">
           {filteredTodos.map((todo) => (
-            <div key={todo._id} className="swipe-wrapper">
-              <div className="swipe-actions">
+            <div key={todo._id} className="relative w-full overflow-hidden">
+
+              {/* DELETE ACTION */}
+              <div className="absolute right-0 top-0 bottom-0 w-[55px] flex items-center justify-center pointer-events-auto">
                 <button
-                  className="delete-btn"
                   onClick={() => handleDelete(todo._id)}
+                  className="w-[55px] h-full bg-red-500/10 text-red-500 text-xs font-semibold rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-red-500/20 transition"
                 >
                   <DeleteIcon size={18} />
                   DELETE
                 </button>
               </div>
 
+              {/* TASK CARD */}
               <div
-                className="task-card-modern"
+                className="bg-(--card-bg) rounded-2xl p-4 flex gap-3 transition-transform duration-300"
                 style={{
                   transform:
                     openId === todo._id
@@ -230,70 +247,61 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
                       : "transform 0.25s ease",
                 }}
                 onTouchStart={(e) =>
-                  handleStart(
-                    e.targetTouches[0].clientX,
-                    todo._id
-                  )
+                  handleStart(e.targetTouches[0].clientX, todo._id)
                 }
                 onTouchMove={(e) =>
-                  handleMove(
-                    e.targetTouches[0].clientX,
-                    todo._id
-                  )
+                  handleMove(e.targetTouches[0].clientX, todo._id)
                 }
                 onTouchEnd={() => handleEnd(todo._id)}
-                onMouseDown={(e) =>
-                  handleStart(e.clientX, todo._id)
-                }
+                onMouseDown={(e) => handleStart(e.clientX, todo._id)}
                 onMouseMove={(e) =>
-                  draggingId &&
-                  handleMove(e.clientX, todo._id)
+                  draggingId && handleMove(e.clientX, todo._id)
                 }
                 onMouseUp={() => handleEnd(todo._id)}
                 onMouseLeave={() =>
                   draggingId && handleEnd(todo._id)
                 }
               >
-                <div className="checkbox-wrapper">
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onChange={() =>
-                      handleToggleComplete(todo)
-                    }
-                  />
-                </div>
+                <input
+                  type="checkbox"
+                  checked={todo.completed}
+                  onChange={() => handleToggleComplete(todo)}
+                  className="w-5 h-5 text-(--accent) mt-1 cursor-pointer"
+                />
 
-                <div className="task-content">
-                  <div className="task-top">
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
                     <h3
-                      className={
+                      className={`text-sm font-medium ${
                         todo.completed
-                          ? "completed-text"
+                          ? "line-through opacity-50"
                           : ""
-                      }
+                      }`}
                     >
                       {todo.title}
                     </h3>
+
                     <span
-                      className={`tag priority-${
-                        todo.priority || "medium"
+                      className={`text-[10px] px-2 py-1 rounded-full font-semibold ${
+                        todo.priority === "high"
+                          ? "bg-red-500/15 text-red-500"
+                          : todo.priority === "low"
+                          ? "bg-green-500/15 text-green-500"
+                          : "bg-yellow-500/15 text-yellow-500"
                       }`}
                     >
                       {(todo.priority || "medium").toUpperCase()}
                     </span>
                   </div>
 
-                  <p>{todo.description}</p>
+                  <p className="text-sm opacity-70 mt-1">
+                    {todo.description}
+                  </p>
 
                   {todo.dueDate && (
-                    <div className="task-datetime">
-                      {" "}
-                      {new Date(
-                        todo.dueDate
-                      ).toLocaleDateString()}
-                      {todo.dueTime &&
-                        ` • ${todo.dueTime}`}
+                    <div className="text-xs opacity-60 mt-2">
+                      {new Date(todo.dueDate).toLocaleDateString()}
+                      {todo.dueTime && ` • ${todo.dueTime}`}
                     </div>
                   )}
                 </div>

@@ -1,40 +1,35 @@
 import { Home, Calendar, LineChart, User } from "lucide-react";
-import "../Navbar.css";
 
 export default function Navbar({ currentPage, setCurrentPage }) {
+  const navItems = [
+    { id: "home", label: "Today", icon: Home },
+    { id: "schedule", label: "Schedule", icon: Calendar },
+    { id: "insights", label: "Insights", icon: LineChart },
+    { id: "profile", label: "Profile", icon: User },
+  ];
+
   return (
-    <div className="bottom-nav">
+    <div className="md:hidden fixed bottom-0 left-0 w-full bg-(--card-bg) flex justify-around items-center py-4 z-50">
 
-      <div
-        className={`nav-item ${currentPage === "home" ? "active" : ""}`}
-        onClick={() => setCurrentPage("home")}
-      >
-        <Home size={22} />
-        <span>Today</span>
-      </div>
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = currentPage === item.id;
 
-      <div
-        className={`nav-item ${currentPage === "schedule" ? "active" : ""}`}
-        onClick={() => setCurrentPage("schedule")}
-      >
-        <Calendar size={22} />
-        <span>Schedule</span>
-      </div>
-
-      <div className={`nav-item ${currentPage === "insights" ? "active" : ""}`}
-  onClick={() => setCurrentPage("insights")}>
-        <LineChart size={22} />
-        <span>Insights</span>
-      </div>
-
-      <div
-        className={`nav-item ${currentPage === "profile" ? "active" : ""}`}
-        onClick={() => setCurrentPage("profile")}
-      >
-        <User size={22} />
-        <span>Profile</span>
-      </div>
-
+        return (
+          <div
+            key={item.id}
+            onClick={() => setCurrentPage(item.id)}
+            className={`flex flex-col items-center justify-center text-xs cursor-pointer transition-all duration-200 ${
+              isActive
+                ? "text-(--accent)"
+                : "text-(--text-secondary) hover:text-(--accent)"
+            }`}
+          >
+            <Icon size={22} />
+            <span className="mt-1">{item.label}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }

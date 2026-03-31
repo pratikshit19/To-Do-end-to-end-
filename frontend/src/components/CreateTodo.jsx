@@ -1,6 +1,5 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import "../CreateTodo.css";
 
 export function CreateTodo({ fetchTodos, closeModal }) {
   const today = new Date().toISOString().split("T")[0];
@@ -47,9 +46,10 @@ export function CreateTodo({ fetchTodos, closeModal }) {
       if (response.status === 403) {
         localStorage.clear();
         sessionStorage.clear();
-        toast.error("Session expired. Please login again.", {
-          id: toastId,
-        });
+        toast.error(
+          "Session expired. Please login again.",
+          { id: toastId }
+        );
         window.location.reload();
         return;
       }
@@ -58,7 +58,9 @@ export function CreateTodo({ fetchTodos, closeModal }) {
         throw new Error("Failed to create task");
 
       await fetchTodos();
-      toast.success("Task created!", { id: toastId });
+      toast.success("Task created!", {
+        id: toastId,
+      });
 
       setTitle("");
       setDescription("");
@@ -67,82 +69,132 @@ export function CreateTodo({ fetchTodos, closeModal }) {
       setDueTime("");
       closeModal();
     } catch (err) {
-      toast.error(err.message, { id: toastId });
+      toast.error(err.message, {
+        id: toastId,
+      });
     }
   };
 
   return (
-    <div className="create-container">
-      <h2 className="create-title">Create New Task</h2>
+    <div className="w-full max-w-lg mx-auto bg-(--card-bg) rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
 
-      <form onSubmit={handleSubmit} className="create-form">
+      <h2 className="text-xl md:text-2xl font-semibold text-center">
+        Create New Task
+      </h2>
+
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5"
+      >
+        {/* Title */}
         <input
           type="text"
           placeholder="Task title..."
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) =>
+            setTitle(e.target.value)
+          }
           required
+          className="w-full  bg-(--border) px-4 py-3 rounded-xl text-(--text-primary) focus:outline-none focus:ring focus:ring-(--accent) transition"
         />
 
+        {/* Description */}
         <textarea
           placeholder="Task description..."
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) =>
+            setDescription(e.target.value)
+          }
           required
+          rows={4}
+          className="w-full  px-4 py-3 rounded-xl bg-(--border) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent) transition resize-none"
         />
 
-        <div className="datetime-row">
-          <div className="datetime-field">
-            <label>Due Date</label>
+        {/* Date & Time */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col space-y-1">
+            <label className="text-sm opacity-70">
+              Due Date
+            </label>
             <input
               type="date"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={(e) =>
+                setDueDate(e.target.value)
+              }
               required
+              className="px-4 py-3 bg-(--border) rounded-xl text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
             />
           </div>
 
-          <div className="datetime-field">
-            <label>Time</label>
+          <div className="flex flex-col space-y-1">
+            <label className="text-sm opacity-70">
+              Time
+            </label>
             <input
               type="time"
               value={dueTime}
-              onChange={(e) => setDueTime(e.target.value)}
+              onChange={(e) =>
+                setDueTime(e.target.value)
+              }
+              className="px-4 py-3 rounded-xl bg-(--border) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
             />
           </div>
         </div>
 
-        <div className="priority-section">
-          <label>Priority</label>
-          <div className="priority-options">
-            {["low", "medium", "high"].map((level) => (
-              <button
-                key={level}
-                type="button"
-                className={`priority-btn ${
-                  priority === level
-                    ? `active ${level}`
-                    : ""
-                }`}
-                onClick={() => setPriority(level)}
-              >
-                {level.charAt(0).toUpperCase() +
-                  level.slice(1)}
-              </button>
-            ))}
+        {/* Priority */}
+        <div className="space-y-2">
+          <label className="text-sm opacity-70">
+            Priority
+          </label>
+
+          <div className="flex gap-3">
+            {["low", "medium", "high"].map(
+              (level) => {
+                const isActive =
+                  priority === level;
+
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() =>
+                      setPriority(level)
+                    }
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium transition 
+                      ${
+                        isActive
+                          ? level === "high"
+                            ? "bg-red-500/30 text-red-500"
+                            : level === "medium"
+                            ? "bg-yellow-500/20 text-yellow-500"
+                            : "bg-emerald-500/30 text-emerald-400"
+                          : "bg-(--bg) text-(--text-secondary) opacity-70 hover:opacity-100"
+                      }`}
+                  >
+                    {level.charAt(0).toUpperCase() +
+                      level.slice(1)}
+                  </button>
+                );
+              }
+            )}
           </div>
         </div>
 
-        <div className="create-buttons">
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 pt-4">
           <button
             type="button"
-            className="cancel-btn"
             onClick={closeModal}
+            className="px-5 py-2 rounded-xl bg-(--border) hover:opacity-80 transition"
           >
             Cancel
           </button>
 
-          <button type="submit" className="submit-btn">
+          <button
+            type="submit"
+            className="px-5 py-2 rounded-xl bg-(--accent) text-white hover:opacity-90 transition"
+          >
             Create Task
           </button>
         </div>
