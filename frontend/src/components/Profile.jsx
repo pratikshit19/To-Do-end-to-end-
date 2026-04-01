@@ -108,7 +108,7 @@ export default function Profile({
   }, [tasks, focusSessions]);
 
   return (
-    <div className="min-h-screen px-2 pb-24 md:pb-10 md:px-10 lg:px-20 
+    <div className="min-h-screen pb-24 md:pb-10 md:px-10 lg:px-20 
                   bg-(--bg) ">
 
       {/* Header */}
@@ -127,7 +127,7 @@ export default function Profile({
       {/* Avatar Card */}
       <div className="flex items-center justify-between 
                      bg-(--card-bg) text-(--text-primary) 
-                      p-5 rounded-2xl mb-8 shadow-sm">
+                      p-5 rounded-2xl mb-8 shadow-md">
 
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 flex items-center justify-center 
@@ -167,22 +167,22 @@ export default function Profile({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
           <p className="text-xs opacity-60 mb-1">CURRENT STREAK</p>
           <h3 className="text-lg font-semibold">{streak} Days</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
           <p className="text-xs opacity-60 mb-1">FOCUS TIME</p>
           <h3 className="text-lg font-semibold">{totalFocusTime}</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
           <p className="text-xs opacity-60 mb-1">COMPLETION</p>
           <h3 className="text-lg font-semibold">{completionPercentage}%</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
           <p className="text-xs opacity-60 mb-1">WEEKLY RANK</p>
           <h3 className="text-lg font-semibold">{weeklyRank}</h3>
         </div>

@@ -143,7 +143,7 @@ export default function Insights({
   }, [tasks]);
 
   return (
-    <div className="min-h-screen bg-(--bg) text-(--text-primary) px-2 md:px-10 md:py-10 space-y-6 pb-20">
+    <div className="min-h-screen bg-(--bg) text-(--text-primary) md:px-10 md:py-10 space-y-6 pb-20">
 
       {/* Top Bar */}
       <div className="flex items-center justify-between">
@@ -161,7 +161,7 @@ export default function Insights({
       </div>
 
       {/* Weekly Efficiency */}
-      <div className="bg-(--card-bg) text-(--text-primary) rounded-2xl p-6 shadow-sm space-y-4">
+      <div className="bg-(--card-bg) text-(--text-primary) rounded-2xl p-6 shadow-md space-y-4">
         <p className="text-xs tracking-widest opacity-60">
           WEEKLY EFFICIENCY
         </p>
@@ -192,7 +192,7 @@ export default function Insights({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Streak */}
-        <div className="bg-(--card-bg) text-(--text-primary) rounded-2xl p-6 space-y-4 shadow-sm">
+        <div className="bg-(--card-bg) text-(--text-primary) rounded-2xl p-6 space-y-4 shadow-md">
           <div className="text-3xl">🔥</div>
           <p className="text-sm opacity-70">
             Current Streak
@@ -215,7 +215,7 @@ export default function Insights({
         </div>
 
         {/* Top Category */}
-        <div className="bg-(--card-bg) text-(--text-primary) shadow-sm rounded-2xl p-6 space-y-3">
+        <div className="bg-(--card-bg) text-(--text-primary) shadow-md rounded-2xl p-6 space-y-3">
           <p className="text-xs tracking-widest opacity-60">
             TOP CATEGORY
           </p>
@@ -228,7 +228,7 @@ export default function Insights({
         </div>
 
         {/* Peak Hour */}
-        <div className="bg-(--card-bg) text-(--text-primary) shadow-sm rounded-2xl p-6 space-y-3">
+        <div className="bg-(--card-bg) text-(--text-primary) shadow-md rounded-2xl p-6 space-y-3">
           <p className="text-xs tracking-widest opacity-60">
             PEAK ENERGY
           </p>
@@ -241,7 +241,7 @@ export default function Insights({
         </div>
 
         {/* Monthly Completion */}
-        <div className="bg-(--card-bg) text-(--text-primary) shadow-sm rounded-2xl p-6 flex flex-col items-center justify-center space-y-4">
+        <div className="bg-(--card-bg) text-(--text-primary) shadow-md rounded-2xl p-6 flex flex-col items-center justify-center space-y-4">
           <p className="text-xs tracking-widest opacity-60">
             MONTHLY COMPLETION
           </p>

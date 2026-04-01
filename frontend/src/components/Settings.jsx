@@ -62,7 +62,7 @@ export default function Settings({
   );
 
   return (
-    <div className="min-h-screen bg-(--bg-primary) pb-20 px-2 text-(--text-primary) md:px-10 transition-colors duration-300">
+    <div className="min-h-screen bg-(--bg-primary) pb-20 text-(--text-primary) md:px-10 transition-colors duration-300">
 
       {/* ================= HEADER ================= */}
       <div className="flex items-center justify-between mb-6">
@@ -75,7 +75,7 @@ export default function Settings({
       </div>
 
       {/* ================= PROFILE CARD ================= */}
-      <div className="bg-[var(--card-bg)] rounded-2xl p-5 shadow-md mb-6 flex items-center justify-between">
+      <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xl font-bold">
             {username?.charAt(0).toUpperCase() || "U"}
@@ -146,7 +146,7 @@ export default function Settings({
       </div>
 
       {/* ================= SUPPORT ================= */}
-      <div className="bg-[var(--card-bg)] rounded-2xl p-5 shadow-md mb-6">
+      <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6">
         <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide text-[var(--text-secondary)]">
           Support
         </h4>

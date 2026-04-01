@@ -139,14 +139,14 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   /* ---------------- RENDER ---------------- */
 
   return (
-    <div className="min-h-screen w-full max-w-3xl mx-auto sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-(--bg) text-(--text-primary) pb-24 md:px-10 overflow-x-hidden transition-colors duration-300">
 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-6">
         <div className="relative" ref={menuRef}>
           <div
             onClick={() => setShowMenu(!showMenu)}
-            className="w-10 h-10 rounded-full bg-(--card-bg) shadow flex items-center justify-center font-semibold text-(--accent) cursor-pointer"
+            className="w-10 h-10 rounded-full bg-(--card-bg) shadow-md flex items-center justify-center font-semibold text-(--accent) cursor-pointer"
           >
             {username?.charAt(0).toUpperCase() || "U"}
           </div>
@@ -173,10 +173,10 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
       </div>
 
       {/* PROGRESS */}
-      <div className="bg-(--card-bg) rounded-2xl p-5 mb-6">
+      <div className="bg-(--card-bg) rounded-2xl p-5 mb-6 shadow-md">
         <p className="text-xs opacity-70 mb-1">Daily Progress</p>
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-start gap-2">
           <h2 className="text-lg font-medium">
             {completedCount} of {todos.length} <span>Tasks</span>
           </h2>
@@ -185,7 +185,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
           </span>
         </div>
 
-        <div className="mt-3 h-2 bg-border rounded-full overflow-hidden">
+        <div className="mt-3 h-2 bg-(--border) rounded-full overflow-hidden">
           <div
             className="h-2 bg-(--accent) rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
@@ -194,7 +194,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
       </div>
 
       {/* FILTERS */}
-      <div className="flex gap-3 overflow-x-auto mb-6 pb-1">
+      <div className="flex gap-2 mb-5 pb-1 overflow-x-auto scrollbar-none">
         {["all", "focused", "upcoming", "completed"].map((filter) => (
           <button
             key={filter}
@@ -202,7 +202,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
             className={`px-4 py-2 rounded-full bg-(--card-bg) text-sm transition whitespace-nowrap ${
               activeFilter === filter
                 ? "bg-accent text-(--accent) border border-(--accent)"
-                : "bg-(--card-bg) border-border text(--text-secondary) hover:text-(--text-secondary)"
+                : "bg-(--card-bg) text-(--text-secondary) hover:opacity-80 shadow-md"
             }`}
           >
             {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -212,13 +212,13 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
 
       {/* TASKS */}
       {filteredTodos.length === 0 ? (
-        <div className="text-center py-10 bg-(--card-bg) border border-(--border) rounded-2xl opacity-70">
+        <div className="text-center py-10 bg-(--card-bg) border border-(--border) rounded-2xl opacity-70 shadow-md">
           No tasks here 🎉
         </div>
       ) : (
         <div className="space-y-4">
           {filteredTodos.map((todo) => (
-            <div key={todo._id} className="relative w-full overflow-hidden">
+            <div key={todo._id} className="relative w-full max-w-full overflow-hidden shadow-md">
 
               {/* DELETE ACTION */}
               <div className="absolute right-0 top-0 bottom-0 w-[55px] flex items-center justify-center pointer-events-auto">
@@ -233,7 +233,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
 
               {/* TASK CARD */}
               <div
-                className="bg-(--card-bg) rounded-2xl p-4 flex gap-3 transition-transform duration-300"
+                className="bg-(--card-bg) rounded-2xl p-4 flex gap-3 transition-transform duration-300 w-full shadow-md"
                 style={{
                   transform:
                     openId === todo._id

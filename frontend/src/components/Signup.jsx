@@ -130,13 +130,12 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
       : "text-green-500";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] px-4 transition-colors duration-300">
-      <div className="w-full max-w-md bg-[var(--card-bg)] p-8 rounded-2xl shadow-xl transition-colors duration-300">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-(--bg-primary) px-4 transition-colors duration-300">
         
-        <h1 className="text-3xl font-bold text-center text-[var(--text-primary)]">
+        <h1 className="text-3xl font-bold text-center text-(--text-primary)">
           Create Account
         </h1>
-        <p className="text-center text-[var(--text-secondary)] mt-2">
+        <p className="text-center text-(--text-secondary) mt-2">
           Start organizing your productivity
         </p>
 
@@ -147,7 +146,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
             <div className="relative">
               <Mail
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
               />
               <input
                 type="text"
@@ -155,10 +154,10 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
                 placeholder="Username"
                 value={form.username}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--input-bg)] text-[var(--text-primary)] border transition ${
+                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) text-(--text-primary) border transition ${
                   errors.username
                     ? "border-red-500"
-                    : "border-transparent focus:border-cyan-400"
+                    : "border-transparent focus:border-(--accent)"
                 } focus:outline-none`}
               />
             </div>
@@ -174,7 +173,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
             <div className="relative">
               <Lock
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
               />
               <input
                 type={showPassword ? "text" : "password"}
@@ -182,10 +181,10 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
                 placeholder="Password"
                 value={form.password}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-3 rounded-xl bg-[var(--input-bg)] text-[var(--text-primary)] border transition ${
+                className={`w-full pl-10 pr-10 py-3 rounded-xl bg-(--card-bg) text-(--text-primary) border transition ${
                   errors.password
                     ? "border-red-500"
-                    : "border-transparent focus:border-cyan-400"
+                    : "border-transparent focus:border-(--accent)"
                 } focus:outline-none`}
               />
               <button
@@ -235,10 +234,10 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
                 placeholder="Confirm Password"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-3 rounded-xl bg-[var(--input-bg)] text-[var(--text-primary)] border transition ${
+                className={`w-full pl-10 pr-10 py-3 rounded-xl bg-(--card-bg) text-(--text-primary) border transition ${
                   errors.confirmPassword
                     ? "border-red-500"
-                    : "border-transparent focus:border-cyan-400"
+                    : "border-transparent focus:border-(--accent)"
                 } focus:outline-none`}
               />
               <button
@@ -246,7 +245,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
                 onClick={() =>
                   setShowConfirmPassword((prev) => !prev)
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
               >
                 {showConfirmPassword ? (
                   <EyeOff size={18} />
@@ -267,7 +266,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white font-semibold transition disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-(--accent) hover:bg-(--accent)/80 text-white font-semibold transition disabled:opacity-50"
           >
             {loading
               ? "Creating account..."
@@ -275,16 +274,16 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
           </button>
         </form>
 
-        <p className="text-center text-sm text-[var(--text-secondary)] mt-6">
+        <p className="text-center text-sm text-(--text-secondary) mt-6">
           Already have an account?
           <span
             onClick={() => setIsLogin(true)}
-            className="text-cyan-500 cursor-pointer ml-1 hover:underline"
+            className="text-(--accent) cursor-pointer ml-1 hover:underline"
           >
             Sign In
           </span>
         </p>
-      </div>
+      
     </div>
   );
 }

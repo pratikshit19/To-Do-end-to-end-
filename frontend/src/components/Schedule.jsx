@@ -86,7 +86,7 @@ export default function Schedule({ todos = [] }) {
   const completedCount = filteredTasks.filter((t) => t.completed).length;
 
   return (
-    <div className="min-h-screen bg-(--bg) text-(--text-primary) px-2 md:p-8">
+    <div className="min-h-screen bg-(--bg) text-(--text-primary) md:p-8">
 
       {/* HEADER */}
       <div className="max-w-5xl mx-auto">
@@ -141,7 +141,7 @@ export default function Schedule({ todos = [] }) {
                 className={`px-4 py-1 rounded-full text-sm transition ${
                   viewMode === mode
                     ? "bg-[var(--accent)] text-white"
-                    : "bg-[var(--card-bg)] text-[var(--text-secondary)]"
+                    : "bg-[var(--card-bg)] text-[var(--text-secondary)] shadow-md"
                 }`}
               >
                 {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -163,7 +163,7 @@ export default function Schedule({ todos = [] }) {
             viewMode === "month"
               ? "grid-cols-7 grid-rows-2"
               : "grid-cols-7"
-          } gap-2`}
+          } gap-2 `}
         >
           {calendarDays.map((date, i) => {
             const isSelected =
@@ -178,7 +178,7 @@ export default function Schedule({ todos = [] }) {
               <div
                 key={i}
                 onClick={() => setSelectedDate(date)}
-                className={`relative flex items-center justify-center h-12 rounded-lg cursor-pointer transition
+                className={`relative flex items-center justify-center h-12 rounded-lg cursor-pointer transition shadow-md
                   ${
                     isSelected
                       ? "bg-[var(--accent)] text-white"
@@ -206,7 +206,7 @@ export default function Schedule({ todos = [] }) {
             })}
           </h3>
 
-          <span className="text-sm text-[var(--text-secondary)]">
+          <span className="text-sm text-(--text-secondary)">
             {pendingCount} Pending · {completedCount} Completed
           </span>
         </div>
@@ -214,14 +214,14 @@ export default function Schedule({ todos = [] }) {
         {/* TASK LIST */}
         <div className="mt-4 space-y-3">
           {filteredTasks.length === 0 ? (
-            <p className="text-[var(--text-secondary)]">
+            <p className="text-(--text-secondary)">
               No tasks for this day
             </p>
           ) : (
             filteredTasks.map((task) => (
               <div
                 key={task._id}
-                className={`p-4 rounded-xl bg-[var(--card-bg)] flex justify-between items-center transition
+                className={`p-4 rounded-xl bg-(--card-bg) flex justify-between items-center transition shadow-md
                   ${
                     task.completed
                       ? "opacity-60 line-through"

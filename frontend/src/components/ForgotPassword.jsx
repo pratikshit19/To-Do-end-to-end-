@@ -65,13 +65,13 @@ export default function ForgotPassword({ setIsLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-white dark:bg-[#0f172a] transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center px-6 bg-(--bg) text-(--text-primary) transition-colors duration-300">
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-center">
           Reset Password
         </h1>
 
-        <p className="text-center text-gray-500 dark:text-gray-400 mt-2 mb-8">
+        <p className="text-center text-(--text-secondary) mt-2 mb-8">
           Enter your username and new password
         </p>
 
@@ -89,7 +89,7 @@ export default function ForgotPassword({ setIsLogin }) {
                 placeholder="Username"
                 value={form.username}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-transparent text-gray-900 dark:text-white
+                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) text-(--text-primary)
                   focus:outline-none focus:ring-2 transition
                   ${
                     errors.username
@@ -119,12 +119,12 @@ export default function ForgotPassword({ setIsLogin }) {
                 placeholder="New Password"
                 value={form.newPassword}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-12 py-3 rounded-xl border bg-transparent text-gray-900 dark:text-white
+                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-(--card-bg) text-(--text-primary)
                   focus:outline-none focus:ring-2 transition
                   ${
                     errors.newPassword
                       ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-cyan-500"
+                      : "border-gray-300 dark:border-gray-600 focus:ring-(--accent)"
                   }`}
               />
 
@@ -155,7 +155,7 @@ export default function ForgotPassword({ setIsLogin }) {
             type="submit"
             disabled={loading}
             className="w-full py-3 rounded-xl font-semibold
-              bg-cyan-500 hover:bg-cyan-600
+              bg-(--accent) hover:bg-(--accent)/60
               text-white transition
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -168,7 +168,7 @@ export default function ForgotPassword({ setIsLogin }) {
           Remembered your password?
           <span
             onClick={() => setIsLogin(true)}
-            className="ml-1 text-cyan-500 hover:underline cursor-pointer"
+            className="ml-1 text-(--accent) hover:underline cursor-pointer"
           >
             Login
           </span>

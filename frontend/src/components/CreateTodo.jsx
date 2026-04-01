@@ -76,7 +76,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-(--card-bg) rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+    <div className="w-full max-w-lg mx-auto bg-(--createbg) rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
 
       <h2 className="text-xl md:text-2xl font-semibold text-center">
         Create New Task
@@ -95,7 +95,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
             setTitle(e.target.value)
           }
           required
-          className="w-full  bg-(--border) px-4 py-3 rounded-xl text-(--text-primary) focus:outline-none focus:ring focus:ring-(--accent) transition"
+          className="w-full  bg-(--card-bg) px-4 py-3 rounded-xl text-(--text-primary) focus:outline-none focus:ring focus:ring-(--accent) transition"
         />
 
         {/* Description */}
@@ -107,7 +107,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
           }
           required
           rows={4}
-          className="w-full  px-4 py-3 rounded-xl bg-(--border) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent) transition resize-none"
+          className="w-full  px-4 py-3 rounded-xl bg-(--card-bg) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent) transition resize-none"
         />
 
         {/* Date & Time */}
@@ -123,7 +123,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
                 setDueDate(e.target.value)
               }
               required
-              className="px-4 py-3 bg-(--border) rounded-xl text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
+              className="px-4 py-3 bg-(--card-bg) rounded-xl text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
             />
           </div>
 
@@ -137,7 +137,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
               onChange={(e) =>
                 setDueTime(e.target.value)
               }
-              className="px-4 py-3 rounded-xl bg-(--border) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
+              className="px-4 py-3 rounded-xl bg-(--card-bg) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
             />
           </div>
         </div>

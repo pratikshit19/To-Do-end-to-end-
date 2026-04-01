@@ -154,7 +154,7 @@ export default function App() {
             {/* Floating Button */}
             <button
               onClick={() => setShowModal(true)}
-              className="fixed bottom-24 right-6 md:hidden w-12 h-12 rounded-xl bg-(--accent) text-white text-2xl flex items-center justify-center shadow-lg hover:scale-105 transition"
+              className="fixed bottom-24 md:bottom-8 right-6 md:right-55 w-12 h-12 md:w-140 md:h-15 rounded-xl bg-(--accent) text-white text-2xl flex items-center justify-center shadow-lg hover:scale-105 transition"
             >
               +
             </button>
@@ -168,9 +168,9 @@ export default function App() {
   return (
     <>
       <Toaster position="top-right" />
-      <div className="min-h-screen bg-(--bg) text-(text-primary) md:px-10 md:py-10 space-y-6 pb-20 flex">
+      <div className="min-h-screen bg-(--bg) text-(text-primary) pb-15">
         {/* ================= DESKTOP SIDEBAR ================= */}
-        <aside className="hidden md:flex md:flex-col w-64 bg-card border-r border-border p-6 space-y-4">
+        <aside className="hidden md:flex md:flex-col w-64 bg-(--bg) border-r border-(--border) shadow p-6 space-y-4">
           <div className="text-xl font-semibold mb-6">
             TaskFlow
           </div>
@@ -180,9 +180,9 @@ export default function App() {
               <div
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded-lg cursor-pointer transition ${
+                className={`px-4 py-2 rounded-lg cursor-pointer transition  ${
                   currentPage === page
-                    ? "bg-(--bg) text-(--accent)"
+                    ? "bg-(--accent)/20 text-(--accent)"
                     : "hover:bg-(--border)"
                 }`}
               >
@@ -195,7 +195,7 @@ export default function App() {
         {/* ================= MAIN AREA ================= */}
         <div className="flex-1 flex flex-col">
           {/* Desktop Header */}
-          <header className="hidden md:flex justify-between items-center px-8 py-4 border-b border-border bg-(--bg)">
+          <header className="hidden md:flex justify-between items-center px-8 py-4 shadow border-b border-(--border) bg-(--bg)">
             <h2 className="text-xl font-semibold">
               {currentPage.charAt(0).toUpperCase() +
                 currentPage.slice(1)}
@@ -203,7 +203,7 @@ export default function App() {
           </header>
 
           {/* Page Content */}
-          <div className="flex-1 px-4 py-6 md:px-10 md:py-8 max-w-7xl w-full mx-auto">
+          <div className="flex-1 min-w-0 overflow-x-hidden px-5 py-6 md:px-10 md:py-8 w-full mx-auto">
             {renderPage()}
           </div>
         </div>

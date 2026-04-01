@@ -89,12 +89,12 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg text-[var(--text-primary)] px-6 transition-colors duration-300">
+    <div className="min-h-screen bg-(--bg) flex flex-col justify-center items-center bg text-(--text-primary) px-6 transition-colors duration-300">
 
       {/* Brand */}
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
-        <p className="text-[var(--text-secondary)] mb-8">
+        <h1 className="text-center text-3xl font-bold mb-2">Welcome back</h1>
+        <p className="text-center text-(--text-secondary) mb-8">
           Sign in to continue
         </p>
 
@@ -113,11 +113,11 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
                 placeholder="Username"
                 value={form.username}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--card-bg)] border ${
+                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) border ${
                   errors.username
                     ? "border-red-500"
-                    : "border-[var(--border-color)]"
-                } focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition`}
+                    : "border-(--border)"
+                } focus:outline-none transition`}
               />
             </div>
             {errors.username && (
@@ -140,11 +140,11 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
                 placeholder="Password"
                 value={form.password}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-[var(--card-bg)] border ${
+                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-(--card-bg) border ${
                   errors.password
                     ? "border-red-500"
-                    : "border-[var(--border-color)]"
-                } focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition`}
+                    : "border-(--border)"
+                } focus:outline-none transition`}
               />
 
               <button
