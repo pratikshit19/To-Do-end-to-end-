@@ -1,104 +1,104 @@
 import { ArrowLeft, Settings } from "lucide-react";
 import { useMemo } from "react";
 
+const formatDay = (date) => {
+  const d = new Date(date);
+  if (isNaN(d)) return null;
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+};
+
 export default function Insights({
   setCurrentPage,
-  tasks = [],
+  todos = [],
   focusSessions = [],
 }) {
-  /* -------------------- WEEKLY DATA -------------------- */
+
+  /* ================= WEEKLY DATA ================= */
 
   const weeklyData = useMemo(() => {
-    const now = new Date();
-    const startOfWeek = new Date();
-    startOfWeek.setDate(now.getDate() - 6);
+    const today = new Date();
+    const last7Days = [];
 
-    const thisWeekTasks = tasks.filter((t) => {
-      const date = new Date(t.completedAt);
-      return t.completed && date >= startOfWeek;
-    });
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      last7Days.push(formatDay(d));
+    }
 
-    const totalThisWeek = tasks.filter((t) => {
-      const date = new Date(t.createdAt);
-      return date >= startOfWeek;
-    });
-
-    const efficiency = totalThisWeek.length
-      ? Math.round(
-          (thisWeekTasks.length / totalThisWeek.length) * 100
-        )
-      : 0;
-
-    return {
-      completed: thisWeekTasks.length,
-      total: totalThisWeek.length,
-      efficiency,
-    };
-  }, [tasks]);
-
-  /* -------------------- STREAK -------------------- */
-
-  const streak = useMemo(() => {
-    const completedDates = tasks
-      .filter((t) => t.completed)
-      .map((t) =>
-        new Date(t.completedAt).toDateString()
-      );
-
-    const uniqueDates = [...new Set(completedDates)].sort(
-      (a, b) => new Date(b) - new Date(a)
+    const weekTodos = todos.filter((t) =>
+      last7Days.includes(formatDay(t.createdAt))
     );
 
-    let count = 0;
-    let currentDate = new Date();
+    const completed = weekTodos.filter((t) => t.completed);
 
-    for (let i = 0; i < uniqueDates.length; i++) {
-      const compareDate = new Date(uniqueDates[i]);
+    return {
+      total: weekTodos.length,
+      completed: completed.length,
+      efficiency: weekTodos.length
+        ? Math.round((completed.length / weekTodos.length) * 100)
+        : 0,
+    };
+  }, [todos]);
 
-      if (
-        compareDate.toDateString() ===
-        currentDate.toDateString()
-      ) {
-        count++;
-        currentDate.setDate(
-          currentDate.getDate() - 1
-        );
-      } else break;
+  /* ================= STREAK ================= */
+
+  const streak = useMemo(() => {
+    const completedDays = todos
+      .filter((t) => t.completed)
+      .map((t) => formatDay(t.updatedAt || t.createdAt))
+      .filter(Boolean);
+
+    const uniqueDays = [...new Set(completedDays)].sort().reverse();
+
+    if (!uniqueDays.length) return 0;
+
+    let count = 1;
+
+    for (let i = 1; i < uniqueDays.length; i++) {
+      const prev = new Date(uniqueDays[i - 1]);
+      const curr = new Date(uniqueDays[i]);
+
+      const diff =
+        (prev - curr) / (1000 * 60 * 60 * 24);
+
+      if (diff === 1) count++;
+      else break;
     }
 
     return count;
-  }, [tasks]);
+  }, [todos]);
 
-  /* -------------------- TOP CATEGORY -------------------- */
+  /* ================= TOP CATEGORY ================= */
 
   const topCategory = useMemo(() => {
     const map = {};
-    tasks.forEach((t) => {
-      if (t.completed) {
-        map[t.category] =
-          (map[t.category] || 0) + 1;
+
+    todos.forEach((t) => {
+      if (t.completed && t.category) {
+        map[t.category] = (map[t.category] || 0) + 1;
       }
     });
 
     let max = 0;
     let top = "None";
 
-    for (let cat in map) {
-      if (map[cat] > max) {
-        max = map[cat];
+    Object.entries(map).forEach(([cat, value]) => {
+      if (value > max) {
+        max = value;
         top = cat;
       }
-    }
+    });
 
     return top;
-  }, [tasks]);
+  }, [todos]);
 
-  /* -------------------- PEAK HOUR -------------------- */
+  /* ================= PEAK HOUR ================= */
 
   const peakHour = useMemo(() => {
     const map = {};
 
     focusSessions.forEach((s) => {
+      if (!s.date) return;
       const hour = new Date(s.date).getHours();
       map[hour] = (map[hour] || 0) + 1;
     });
@@ -106,148 +106,81 @@ export default function Insights({
     let max = 0;
     let peak = null;
 
-    for (let hour in map) {
-      if (map[hour] > max) {
-        max = map[hour];
+    Object.entries(map).forEach(([hour, value]) => {
+      if (value > max) {
+        max = value;
         peak = hour;
       }
-    }
+    });
 
     return peak !== null ? `${peak}:00` : "N/A";
   }, [focusSessions]);
 
-  /* -------------------- MONTHLY COMPLETION -------------------- */
+  /* ================= MONTHLY COMPLETION ================= */
 
   const monthlyCompletion = useMemo(() => {
     const now = new Date();
+    const month = now.getMonth();
+    const year = now.getFullYear();
 
-    const thisMonthTasks = tasks.filter((t) => {
-      const date = new Date(t.createdAt);
+    const monthTodos = todos.filter((t) => {
+      const d = new Date(t.createdAt);
       return (
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear()
+        d.getMonth() === month &&
+        d.getFullYear() === year
       );
     });
 
-    const completed = thisMonthTasks.filter(
-      (t) => t.completed
-    );
+    const completed = monthTodos.filter((t) => t.completed);
 
-    return thisMonthTasks.length
-      ? Math.round(
-          (completed.length /
-            thisMonthTasks.length) *
-            100
-        )
+    return monthTodos.length
+      ? Math.round((completed.length / monthTodos.length) * 100)
       : 0;
-  }, [tasks]);
+  }, [todos]);
+
+  /* ================= UI ================= */
 
   return (
     <div className="min-h-screen bg-(--bg) text-(--text-primary) md:px-10 md:py-10 space-y-6 pb-20">
 
-      {/* Top Bar */}
       <div className="flex items-center justify-between">
-        <ArrowLeft
-          className="cursor-pointer opacity-70 hover:opacity-100"
-          onClick={() => setCurrentPage("home")}
-        />
-        <h3 className="text-lg font-semibold">
-          Insights
-        </h3>
-        <Settings
-          className="cursor-pointer opacity-70 hover:opacity-100"
-          onClick={() => setCurrentPage("settings")}
-        />
+        <ArrowLeft onClick={() => setCurrentPage("home")} className="cursor-pointer" />
+        <h3 className="text-lg font-semibold">Insights</h3>
+        <Settings onClick={() => setCurrentPage("settings")} className="cursor-pointer" />
       </div>
 
-      {/* Weekly Efficiency */}
-      <div className="bg-(--card-bg) text-(--text-primary) rounded-2xl p-6 shadow-md space-y-4">
-        <p className="text-xs tracking-widest opacity-60">
-          WEEKLY EFFICIENCY
-        </p>
-
+      <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4">
+        <p className="text-xs opacity-60">WEEKLY EFFICIENCY</p>
         <h1 className="text-4xl font-bold text-(--accent)">
           {weeklyData.efficiency}%
         </h1>
-
         <p className="text-sm opacity-70">
-          {weeklyData.completed} / {weeklyData.total} tasks completed
+          {weeklyData.completed} / {weeklyData.total} Tasks completed
         </p>
-
-        <div className="flex items-end gap-2 h-20 mt-4">
-          {[...Array(7)].map((_, i) => (
-            <div
-              key={i}
-              className={`flex-1 rounded-md ${
-                i === 6
-                  ? "bg-(--accent) h-full"
-                  : "bg-(--border) h-3/4"
-              }`}
-            />
-          ))}
-        </div>
       </div>
 
-      {/* Responsive Grid Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* Streak */}
-        <div className="bg-(--card-bg) text-(--text-primary) rounded-2xl p-6 space-y-4 shadow-md">
+        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4">
           <div className="text-3xl">🔥</div>
-          <p className="text-sm opacity-70">
-            Current Streak
-          </p>
-          <h2 className="text-3xl font-bold">
-            {streak} Days
-          </h2>
-
-          <div className="h-2 bg-(--border) rounded-full overflow-hidden">
-            <div
-              className="h-full bg-(--accent) transition-all"
-              style={{
-                width: `${Math.min(
-                  streak * 5,
-                  100
-                )}%`,
-              }}
-            />
-          </div>
+          <p className="text-sm opacity-70">Current Streak</p>
+          <h2 className="text-3xl font-bold">{streak} Days</h2>
         </div>
 
-        {/* Top Category */}
-        <div className="bg-(--card-bg) text-(--text-primary) shadow-md rounded-2xl p-6 space-y-3">
-          <p className="text-xs tracking-widest opacity-60">
-            TOP CATEGORY
-          </p>
-          <h3 className="text-xl font-semibold">
-            {topCategory}
-          </h3>
-          <span className="text-xs bg-cyan-500/20 text-cyan-500 px-3 py-1 rounded-full">
-            Most Completed
-          </span>
+        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3">
+          <p className="text-xs opacity-60">TOP CATEGORY</p>
+          <h3 className="text-xl font-semibold">{topCategory}</h3>
         </div>
 
-        {/* Peak Hour */}
-        <div className="bg-(--card-bg) text-(--text-primary) shadow-md rounded-2xl p-6 space-y-3">
-          <p className="text-xs tracking-widest opacity-60">
-            PEAK ENERGY
-          </p>
-          <h3 className="text-xl font-semibold">
-            {peakHour}
-          </h3>
-          <span className="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full">
-            Highest Focus Hour
-          </span>
+        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3">
+          <p className="text-xs opacity-60">PEAK ENERGY</p>
+          <h3 className="text-xl font-semibold">{peakHour}</h3>
         </div>
 
-        {/* Monthly Completion */}
-        <div className="bg-(--card-bg) text-(--text-primary) shadow-md rounded-2xl p-6 flex flex-col items-center justify-center space-y-4">
-          <p className="text-xs tracking-widest opacity-60">
-            MONTHLY COMPLETION
-          </p>
-
+        <div className="bg-(--card-bg) rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-md">
+          <p className="text-xs opacity-60">MONTHLY COMPLETION</p>
           <div className="relative w-28 h-28 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center">
-            <div className="absolute w-20 h-20 bg-(--card-bg) text-(--text-primary) rounded-full flex items-center justify-center text-lg font-semibold">
+            <div className="absolute w-20 h-20 bg-(--card-bg) rounded-full flex items-center justify-center text-lg font-semibold">
               {monthlyCompletion}%
             </div>
           </div>

@@ -89,7 +89,7 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-(--bg) flex flex-col justify-center items-center bg text-(--text-primary) px-6 transition-colors duration-300">
+    <div className="min-h-screen bg-(--bg) flex justify-center items-center text-(--text-primary) px-8 transition-colors duration-300">
 
       {/* Brand */}
       <div className="w-full max-w-md">

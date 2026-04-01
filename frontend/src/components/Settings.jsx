@@ -130,7 +130,7 @@ export default function Settings({
         </div>
 
         <div className="flex gap-4">
-          {["#2dd3ee", "#ff7759", "#3b82f6"].map((color) => (
+          {["#2dd3ee", "#249E94", "#3b82f6"].map((color) => (
             <div
               key={color}
               onClick={() => setAccentColor(color)}

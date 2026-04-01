@@ -203,7 +203,7 @@ export default function App() {
           </header>
 
           {/* Page Content */}
-          <div className="flex-1 min-w-0 overflow-x-hidden px-5 py-6 md:px-10 md:py-8 w-full mx-auto">
+          <div className="flex-1 min-w-0 overflow-x-hidden px-5 py-8 md:px-10 md:py-8 w-full mx-auto">
             {renderPage()}
           </div>
         </div>

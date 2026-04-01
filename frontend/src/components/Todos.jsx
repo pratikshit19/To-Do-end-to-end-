@@ -146,17 +146,17 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
         <div className="relative" ref={menuRef}>
           <div
             onClick={() => setShowMenu(!showMenu)}
-            className="w-10 h-10 rounded-full bg-(--card-bg) shadow-md flex items-center justify-center font-semibold text-(--accent) cursor-pointer"
+            className="w-11 h-11 rounded-full bg-(--card-bg) shadow-md flex items-center justify-center font-semibold text-(--accent) cursor-pointer"
           >
             {username?.charAt(0).toUpperCase() || "U"}
           </div>
 
           {showMenu && (
-            <div className="absolute left-0 mt-2 w-40 bg-(--card-bg) border border-(--border) rounded-xl p-3 shadow-lg">
-              <p className="text-sm mb-2">{username}</p>
+            <div className="absolute left-0 mt-2 w-42 bg-(--card-bg) border border-(--border) rounded-xl p-3 shadow-lg">
+              <p className="text-sm mb-2 p-4">{username}</p>
               <button
                 onClick={onLogout}
-                className="text-sm text-red-500 hover:opacity-80"
+                className="text-sm text-center cursor-pointer rounded-xl p-2 text-red-500 hover:opacity-80 bg-red-200"
               >
                 Logout
               </button>
@@ -174,11 +174,11 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
 
       {/* PROGRESS */}
       <div className="bg-(--card-bg) rounded-2xl p-5 mb-6 shadow-md">
-        <p className="text-xs opacity-70 mb-1">Daily Progress</p>
+        <p className="text-xs mb-1">Daily Progress</p>
 
         <div className="flex items-start gap-2">
           <h2 className="text-lg font-medium">
-            {completedCount} of {todos.length} <span>Tasks</span>
+            {completedCount} / {todos.length} <span>Tasks</span>
           </h2>
           <span className="text-xl font-semibold text-(--accent)">
             {progressPercentage}%

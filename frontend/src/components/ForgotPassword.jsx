@@ -65,7 +65,7 @@ export default function ForgotPassword({ setIsLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-(--bg) text-(--text-primary) transition-colors duration-300">
+    <div className="min-h-screen bg-(--bg) flex justify-center items-center text-(--text-primary) px-8 transition-colors duration-300">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold text-center">
           Reset Password

@@ -34,9 +34,8 @@ export default function Onboarding({ onFinish }) {
         min-h-screen 
         flex flex-col 
         justify-between 
-        px-6 py-12
-        bg-white dark:bg-[#0f172a]
-        text-gray-900 dark:text-gray-100
+        px-6 py-24
+        bg-(--bg)
       "
     >
       {/* Center Content */}
@@ -73,7 +72,7 @@ export default function Onboarding({ onFinish }) {
               className={`
                 h-2 rounded-full transition-all duration-300
                 ${i === index 
-                  ? "w-8 bg-cyan-500" 
+                  ? "w-8 bg-(--accent)" 
                   : "w-2 bg-gray-300 dark:bg-slate-600"}
               `}
             />
@@ -87,7 +86,7 @@ export default function Onboarding({ onFinish }) {
             className="
               w-full max-w-xs
               py-3 rounded-xl
-              bg-cyan-500 hover:bg-cyan-600
+              bg-(--accent) hover:bg-(--accent)/50
               text-white font-semibold
               transition-all duration-200
               shadow-md
