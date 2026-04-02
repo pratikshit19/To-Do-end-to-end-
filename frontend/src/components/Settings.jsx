@@ -50,7 +50,7 @@ export default function Settings({
     <div
       onClick={onClick}
       className={`w-12 h-6 flex items-center rounded-full cursor-pointer transition ${
-        enabled ? "bg-[var(--accent)]" : "bg-gray-400"
+        enabled ? "bg-(--accent)" : "bg-gray-400"
       }`}
     >
       <div

@@ -192,7 +192,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
                 onClick={() =>
                   setShowPassword((prev) => !prev)
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
               >
                 {showPassword ? (
                   <EyeOff size={18} />
@@ -224,7 +224,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
             <div className="relative">
               <Lock
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
               />
               <input
                 type={

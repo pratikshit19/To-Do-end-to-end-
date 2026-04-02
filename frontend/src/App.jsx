@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CreateTodo } from "./components/CreateTodo";
-import { Todos } from "./components/Todos";
+import  Todos  from "./components/Todos";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import ForgotPassword from "./components/ForgotPassword";
@@ -139,7 +139,7 @@ export default function App() {
         );
 
       case "insights":
-        return <Insights setCurrentPage={setCurrentPage} />;
+        return <Insights setCurrentPage={setCurrentPage} todos={todos} />;
 
       default:
         return (
@@ -168,7 +168,7 @@ export default function App() {
   return (
     <>
       <Toaster position="top-right" />
-      <div className="min-h-screen bg-(--bg) text-(text-primary) pb-15">
+      <div className=" md:flex min-h-screen bg-(--bg) text-(text-primary)">
         {/* ================= DESKTOP SIDEBAR ================= */}
         <aside className="hidden md:flex md:flex-col w-64 bg-(--bg) border-r border-(--border) shadow p-6 space-y-4">
           <div className="text-xl font-semibold mb-6">
@@ -195,12 +195,12 @@ export default function App() {
         {/* ================= MAIN AREA ================= */}
         <div className="flex-1 flex flex-col">
           {/* Desktop Header */}
-          <header className="hidden md:flex justify-between items-center px-8 py-4 shadow border-b border-(--border) bg-(--bg)">
+          {/* <header className="hidden md:flex justify-between items-center px-8 py-4 shadow border-b border-(--border) bg-(--bg)">
             <h2 className="text-xl font-semibold">
               {currentPage.charAt(0).toUpperCase() +
                 currentPage.slice(1)}
             </h2>
-          </header>
+          </header> */}
 
           {/* Page Content */}
           <div className="flex-1 min-w-0 overflow-x-hidden px-5 py-8 md:px-10 md:py-8 w-full mx-auto">

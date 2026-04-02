@@ -1,10 +1,25 @@
 import { ArrowLeft, Settings } from "lucide-react";
 import { useMemo } from "react";
 
-const formatDay = (date) => {
+/* ================= SAFE DATE HELPER ================= */
+
+const getDateOnly = (date) => {
   const d = new Date(date);
   if (isNaN(d)) return null;
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const formatDay = (date) => {
+  const d = getDateOnly(date);
+  if (!d) return null;
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
 export default function Insights({
@@ -12,35 +27,43 @@ export default function Insights({
   todos = [],
   focusSessions = [],
 }) {
-
-  /* ================= WEEKLY DATA ================= */
+  console.log("INSIGHTS RENDERED");
+console.log("Todos received:", todos);
+console.log("Todos length:", todos.length);
+  /* ================= WEEKLY EFFICIENCY ================= */
+  /* Based on tasks COMPLETED in last 7 days */
 
   const weeklyData = useMemo(() => {
     const today = new Date();
-    const last7Days = [];
+    today.setHours(23, 59, 59, 999);
 
-    for (let i = 0; i < 7; i++) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
-      last7Days.push(formatDay(d));
-    }
+    const start = new Date();
+    start.setDate(start.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
 
-    const weekTodos = todos.filter((t) =>
-      last7Days.includes(formatDay(t.createdAt))
-    );
+    const weekCompleted = todos.filter((t) => {
+      if (!t.completed) return false;
+      const date = getDateOnly(t.updatedAt || t.createdAt);
+      return date && date >= start && date <= today;
+    });
 
-    const completed = weekTodos.filter((t) => t.completed);
+    const weekCreated = todos.filter((t) => {
+      const date = getDateOnly(t.createdAt);
+      return date && date >= start && date <= today;
+    });
 
     return {
-      total: weekTodos.length,
-      completed: completed.length,
-      efficiency: weekTodos.length
-        ? Math.round((completed.length / weekTodos.length) * 100)
-        : 0,
+      total: weekCreated.length,
+      completed: weekCompleted.length,
+      efficiency:
+        weekCreated.length > 0
+          ? Math.round((weekCompleted.length / weekCreated.length) * 100)
+          : 0,
     };
   }, [todos]);
 
   /* ================= STREAK ================= */
+  /* Consecutive completion days */
 
   const streak = useMemo(() => {
     const completedDays = todos
@@ -49,17 +72,19 @@ export default function Insights({
       .filter(Boolean);
 
     const uniqueDays = [...new Set(completedDays)].sort().reverse();
-
     if (!uniqueDays.length) return 0;
+
+    const todayFormatted = formatDay(new Date());
+
+    // If no task completed today → streak is 0
+    if (uniqueDays[0] !== todayFormatted) return 0;
 
     let count = 1;
 
     for (let i = 1; i < uniqueDays.length; i++) {
       const prev = new Date(uniqueDays[i - 1]);
       const curr = new Date(uniqueDays[i]);
-
-      const diff =
-        (prev - curr) / (1000 * 60 * 60 * 24);
+      const diff = (prev - curr) / (1000 * 60 * 60 * 24);
 
       if (diff === 1) count++;
       else break;
@@ -117,13 +142,14 @@ export default function Insights({
   }, [focusSessions]);
 
   /* ================= MONTHLY COMPLETION ================= */
+  /* Based on completed tasks this month */
 
   const monthlyCompletion = useMemo(() => {
     const now = new Date();
     const month = now.getMonth();
     const year = now.getFullYear();
 
-    const monthTodos = todos.filter((t) => {
+    const monthCreated = todos.filter((t) => {
       const d = new Date(t.createdAt);
       return (
         d.getMonth() === month &&
@@ -131,24 +157,38 @@ export default function Insights({
       );
     });
 
-    const completed = monthTodos.filter((t) => t.completed);
+    const monthCompleted = todos.filter((t) => {
+      if (!t.completed) return false;
+      const d = new Date(t.updatedAt || t.createdAt);
+      return (
+        d.getMonth() === month &&
+        d.getFullYear() === year
+      );
+    });
 
-    return monthTodos.length
-      ? Math.round((completed.length / monthTodos.length) * 100)
+    return monthCreated.length > 0
+      ? Math.round((monthCompleted.length / monthCreated.length) * 100)
       : 0;
   }, [todos]);
 
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-(--bg) text-(--text-primary) md:px-10 md:py-10 space-y-6 pb-20">
+    <div className="min-h-screen bg-(--bg) text-(--text-primary) md:px-10 space-y-6 pb-20">
 
       <div className="flex items-center justify-between">
-        <ArrowLeft onClick={() => setCurrentPage("home")} className="cursor-pointer" />
+        <ArrowLeft
+          onClick={() => setCurrentPage("home")}
+          className="cursor-pointer"
+        />
         <h3 className="text-lg font-semibold">Insights</h3>
-        <Settings onClick={() => setCurrentPage("settings")} className="cursor-pointer" />
+        <Settings
+          onClick={() => setCurrentPage("settings")}
+          className="cursor-pointer"
+        />
       </div>
 
+      {/* WEEKLY */}
       <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4">
         <p className="text-xs opacity-60">WEEKLY EFFICIENCY</p>
         <h1 className="text-4xl font-bold text-(--accent)">
@@ -161,25 +201,29 @@ export default function Insights({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+        {/* STREAK */}
         <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4">
           <div className="text-3xl">🔥</div>
           <p className="text-sm opacity-70">Current Streak</p>
           <h2 className="text-3xl font-bold">{streak} Days</h2>
         </div>
 
+        {/* TOP CATEGORY */}
         <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3">
           <p className="text-xs opacity-60">TOP CATEGORY</p>
           <h3 className="text-xl font-semibold">{topCategory}</h3>
         </div>
 
+        {/* PEAK HOUR */}
         <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3">
           <p className="text-xs opacity-60">PEAK ENERGY</p>
           <h3 className="text-xl font-semibold">{peakHour}</h3>
         </div>
 
+        {/* MONTHLY */}
         <div className="bg-(--card-bg) rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-md">
           <p className="text-xs opacity-60">MONTHLY COMPLETION</p>
-          <div className="relative w-28 h-28 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center">
+          <div className="relative w-28 h-28 rounded-full bg-linear-to-tr from-cyan-500 to-blue-500 flex items-center justify-center">
             <div className="absolute w-20 h-20 bg-(--card-bg) rounded-full flex items-center justify-center text-lg font-semibold">
               {monthlyCompletion}%
             </div>

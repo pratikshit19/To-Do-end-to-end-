@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { useEffect, useState, useRef } from "react";
 import { DeleteIcon, SettingsIcon } from "lucide-react";
 
-export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
+export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   const username =
@@ -266,7 +266,7 @@ export function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
                   type="checkbox"
                   checked={todo.completed}
                   onChange={() => handleToggleComplete(todo)}
-                  className="w-5 h-5 text-(--accent) mt-1 cursor-pointer"
+                  className="w-5 h-5 bg-(--accent) mt-1 cursor-pointer rounded-xl"
                 />
 
                 <div className="flex-1">
