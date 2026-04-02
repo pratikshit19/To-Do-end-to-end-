@@ -222,7 +222,7 @@ app.get("/user/profile", authMiddleware, async (req, res) => {
 
 app.post(
   "/upload-profile",
-  authenticateToken,
+  authMiddleware,
   upload.single("profilePhoto"),
   async (req, res) => {
     try {
