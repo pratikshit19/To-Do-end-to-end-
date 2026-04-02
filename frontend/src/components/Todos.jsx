@@ -24,54 +24,33 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
 
   /* ================= PROFILE FETCH ================= */
 
-  useEffect(() => {
+useEffect(() => {
+  if (!token) return;
+
   const fetchProfile = async () => {
     try {
       const res = await fetch(
         "https://to-do-app-616k.onrender.com/profile",
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      const data = await res.json();
+      if (!res.ok) throw new Error("Failed to fetch profile");
 
-      if (res.ok) {
-        setProfilePhoto(data.profilePhoto);
-      }
+      const data = await res.json();
+      setProfilePhoto(data.profilePhoto);
     } catch (err) {
-      console.error("Failed to fetch profile");
+      console.error(err);
     }
   };
 
   fetchProfile();
-}, []);
+}, [token]);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch(
-          "https://to-do-app-616k.onrender.com/user/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch profile");
-
-        const data = await res.json();
-        setProfilePhoto(data.profilePhoto);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    if (token) fetchProfile();
-  }, [token]);
+  
 
   /* ================= PROFILE UPLOAD ================= */
 

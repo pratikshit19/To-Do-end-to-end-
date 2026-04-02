@@ -254,7 +254,7 @@ app.post(
 
 app.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.userId);
     res.json({ profilePhoto: user.profilePhoto });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch profile" });
