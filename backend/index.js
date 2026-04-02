@@ -6,6 +6,7 @@ require("dotenv").config();
 const PORT = process.env.PORT || 5000;
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 
 const app = express();
@@ -15,7 +16,9 @@ const { todo, User } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
