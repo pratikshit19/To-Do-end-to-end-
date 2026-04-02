@@ -75,7 +75,7 @@ export default function Settings({
       </div>
 
       {/* ================= PROFILE CARD ================= */}
-      <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6 flex items-center justify-between">
+      {/* <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xl font-bold">
             {username?.charAt(0).toUpperCase() || "U"}
@@ -90,7 +90,7 @@ export default function Settings({
           </div>
         </div>
         <Edit size={18} className="cursor-pointer opacity-70" />
-      </div>
+      </div> */}
 
       {/* ================= GENERAL ================= */}
       <div className="bg-[var(--card-bg)] rounded-2xl p-5 shadow-md mb-6">

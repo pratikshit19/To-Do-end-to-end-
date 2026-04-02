@@ -37,15 +37,16 @@ const todoSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   },
-  profilePhoto: {
-    type: String,   // will store image URL
-    default: ""
-  }
+  
 }, { timestamps: true });  // good practice
 
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true },
-  password: String
+  password: String,
+  profilePhoto: {
+    type: String,   // will store image URL
+    default: ""
+  }
 });
 
 const User = mongoose.model("User", userSchema);
