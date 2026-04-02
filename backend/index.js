@@ -233,7 +233,7 @@ app.post(
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      const userId = req.user.id;
+      const userId = req.userId;
 
       const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
 
