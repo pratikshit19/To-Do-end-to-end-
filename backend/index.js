@@ -4,6 +4,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const PORT = process.env.PORT || 5000;
+const multer = require("multer");
+const path = require("path");
 
 
 const app = express();
@@ -14,11 +16,22 @@ const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
 app.use(express.json());
 app.use(cors({
   origin: ["192.168.29.199:5173","http://localhost:5173","https://to-do-app-gilt-tau.vercel.app"], credentials: true
 }));
-
+app.use("/uploads", express.static("uploads"));
 
 app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
@@ -206,6 +219,27 @@ app.get("/user/profile", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+app.post(
+  "/upload-profile",
+  authenticateToken,
+  upload.single("profilePhoto"),
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+
+      await User.findByIdAndUpdate(userId, {
+        profilePhoto: imageUrl,
+      });
+
+      res.json({ profilePhoto: imageUrl });
+    } catch (err) {
+      res.status(500).json({ message: "Upload failed" });
+    }
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
