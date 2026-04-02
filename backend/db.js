@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { image } = require("./cloudinary");
 
 mongoose.connect(process.env.MONGO_URL)
 .then(()=>{
@@ -23,13 +24,11 @@ const todoSchema = new mongoose.Schema({
     default: "medium"
   },
 
-  // ✅ ADD THIS
   dueDate: {
     type: Date,
     required: true
   },
 
-  // ✅ OPTIONAL TIME (for time display)
   dueTime: {
     type: String
   },
@@ -37,6 +36,10 @@ const todoSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
+  },
+  profilePhoto: {
+    type: String,   // will store image URL
+    default: ""
   }
 }, { timestamps: true });  // good practice
 

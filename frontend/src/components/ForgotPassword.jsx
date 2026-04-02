@@ -89,12 +89,12 @@ export default function ForgotPassword({ setIsLogin }) {
                 placeholder="Username"
                 value={form.username}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) text-(--text-primary)
-                  focus:outline-none focus:ring-2 transition
+                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) text-(--text-primary) border border(--border)
+                  focus:outline-none focus:ring-1 transition
                   ${
                     errors.username
                       ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-cyan-500"
+                      : "border-gray-300 dark:border-gray-600 focus:ring-(--accent)"
                   }`}
               />
             </div>
@@ -119,8 +119,8 @@ export default function ForgotPassword({ setIsLogin }) {
                 placeholder="New Password"
                 value={form.newPassword}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-(--card-bg) text-(--text-primary)
-                  focus:outline-none focus:ring-2 transition
+                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-(--card-bg) text-(--text-primary) border border(--border)
+                  focus:outline-none focus:ring-1 transition
                   ${
                     errors.newPassword
                       ? "border-red-500 focus:ring-red-500"

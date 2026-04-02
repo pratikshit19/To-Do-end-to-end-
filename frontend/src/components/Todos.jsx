@@ -13,13 +13,88 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
 
+  const [profilePhoto, setProfilePhoto] = useState("");
+  const fileInputRef = useRef(null);
+
   const [dragX, setDragX] = useState(0);
   const [draggingId, setDraggingId] = useState(null);
   const startXRef = useRef(0);
   const [openId, setOpenId] = useState(null);
   const ACTION_WIDTH = 55;
 
-  /* ---------------- DATE LOGIC ---------------- */
+  /* ================= PROFILE FETCH ================= */
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(
+          "https://to-do-app-616k.onrender.com/user/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+        setProfilePhoto(data.profilePhoto);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (token) fetchProfile();
+  }, [token]);
+
+  /* ================= PROFILE UPLOAD ================= */
+
+  const handleProfileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const toastId = toast.loading("Uploading profile photo...");
+
+    try {
+      const formData = new FormData();
+      formData.append("profilePhoto", file);
+
+      const res = await fetch(
+        "https://to-do-app-616k.onrender.com/upload-profile",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      setProfilePhoto(data.profilePhoto);
+
+      toast.success("Profile photo updated!", { id: toastId });
+    } catch (err) {
+      toast.error(err.message, { id: toastId });
+    }
+  };
+
+  /* ================= CLOSE MENU ================= */
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* ================= DATE LOGIC ================= */
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -42,19 +117,7 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
     return true;
   });
 
-  /* ---------------- CLOSE MENU ---------------- */
-
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  /* ---------------- DELETE ---------------- */
+  /* ================= DELETE ================= */
 
   const handleDelete = async (id) => {
     const toastId = toast.loading("Deleting task...");
@@ -76,7 +139,7 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
     }
   };
 
-  /* ---------------- TOGGLE COMPLETE ---------------- */
+  /* ================= TOGGLE COMPLETE ================= */
 
   const handleToggleComplete = async (todo) => {
     try {
@@ -103,7 +166,7 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
     }
   };
 
-  /* ---------------- PROGRESS ---------------- */
+  /* ================= PROGRESS ================= */
 
   const completedCount = todos.filter((t) => t.completed).length;
   const progressPercentage =
@@ -111,7 +174,7 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
       ? Math.round((completedCount / todos.length) * 100)
       : 0;
 
-  /* ---------------- SWIPE LOGIC ---------------- */
+  /* ================= SWIPE LOGIC ================= */
 
   const handleStart = (clientX, id) => {
     startXRef.current = clientX;
@@ -136,27 +199,51 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
     setDraggingId(null);
   };
 
-  /* ---------------- RENDER ---------------- */
-
   return (
     <div className="min-h-screen bg-(--bg) text-(--text-primary) pb-24 md:px-10 overflow-x-hidden transition-colors duration-300">
 
-      {/* HEADER */}
       <div className="flex items-center justify-between mb-6">
+
         <div className="relative" ref={menuRef}>
           <div
             onClick={() => setShowMenu(!showMenu)}
-            className="w-11 h-11 rounded-full bg-(--card-bg) shadow-md flex items-center justify-center font-semibold text-(--accent) cursor-pointer"
+            className="w-11 h-11 rounded-full bg-(--card-bg) shadow-md flex items-center justify-center cursor-pointer overflow-hidden"
           >
-            {username?.charAt(0).toUpperCase() || "U"}
+            {profilePhoto ? (
+              <img
+                src={profilePhoto}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="font-semibold text-(--accent)">
+                {username?.charAt(0).toUpperCase() || "U"}
+              </span>
+            )}
           </div>
 
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleProfileUpload}
+            className="hidden"
+          />
+
           {showMenu && (
-            <div className="absolute left-0 mt-2 w-42 bg-(--card-bg) border border-(--border) rounded-xl p-3 shadow-lg">
-              <p className="text-sm mb-2 p-4">{username}</p>
+            <div className="absolute left-0 mt-2 w-42 bg-(--card-bg) border border-(--border) rounded-xl p-3 shadow-lg z-50">
+              <p className="text-sm mb-2 p-2">{username}</p>
+
+              <button
+                onClick={() => fileInputRef.current.click()}
+                className="text-sm w-full text-left p-2 rounded-lg hover:bg-(--border)"
+              >
+                Change Profile Photo
+              </button>
+
               <button
                 onClick={onLogout}
-                className="text-sm text-center cursor-pointer rounded-xl p-2 text-red-500 hover:opacity-80 bg-red-200"
+                className="text-sm w-full text-left mt-2 p-2 rounded-lg text-red-500 hover:bg-red-500/10"
               >
                 Logout
               </button>
@@ -172,7 +259,6 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
         />
       </div>
 
-      {/* PROGRESS */}
       <div className="bg-(--card-bg) rounded-2xl p-5 mb-6 shadow-md">
         <p className="text-xs mb-1">Daily Progress</p>
 
@@ -193,7 +279,6 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
         </div>
       </div>
 
-      {/* FILTERS */}
       <div className="flex gap-2 mb-5 pb-1 overflow-x-auto scrollbar-none">
         {["all", "focused", "upcoming", "completed"].map((filter) => (
           <button
@@ -210,7 +295,6 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
         ))}
       </div>
 
-      {/* TASKS */}
       {filteredTodos.length === 0 ? (
         <div className="text-center py-10 bg-(--card-bg) border border-(--border) rounded-2xl opacity-70 shadow-md">
           No tasks here 🎉
@@ -220,7 +304,6 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
           {filteredTodos.map((todo) => (
             <div key={todo._id} className="relative w-full max-w-full overflow-hidden shadow-md">
 
-              {/* DELETE ACTION */}
               <div className="absolute right-0 top-0 bottom-0 w-[55px] flex items-center justify-center pointer-events-auto">
                 <button
                   onClick={() => handleDelete(todo._id)}
@@ -231,7 +314,6 @@ export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage
                 </button>
               </div>
 
-              {/* TASK CARD */}
               <div
                 className="bg-(--card-bg) rounded-2xl p-4 flex gap-3 transition-transform duration-300 w-full shadow-md"
                 style={{

@@ -130,7 +130,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
       : "text-green-500";
 
   return (
-    <div className="min-h-screen bg-(--bg) flex flex-col justify-center items-center text-(--text-primary) px-8 transition-colors duration-300">
+    <div className="min-h-screen bg-(--bg) flex flex-col justify-center items-center text-(--text-primary) transition-colors duration-300">
         
         <h1 className="text-3xl font-bold text-center text-(--text-primary)">
           Create Account

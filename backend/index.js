@@ -154,42 +154,6 @@ app.delete("/todos/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// app.put("/todos/:id", authMiddleware, async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { completed, priority } = req.body;
-
-//     const existingTodo = await todo.findOne({
-//       _id: id,
-//       userId: req.userId
-//     });
-
-//     if (!existingTodo) {
-//       return res.status(404).json({ message: "Todo not found" });
-//     }
-
-//     // Update only if provided
-//     if (typeof completed !== "undefined") {
-//       existingTodo.completed = completed;
-//     }
-
-//     if (priority) {
-//       existingTodo.priority = priority;
-//     }
-
-//     await existingTodo.save();
-
-//     res.json({
-//       message: "Todo updated successfully",
-//       todo: existingTodo
-//     });
-
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
 app.put("/todos/:id", authMiddleware, async (req, res) => {
   try {
     const updated = await todo.findOneAndUpdate(
@@ -229,7 +193,19 @@ app.put("/reset-password", async (req, res) => {
   }
 });
 
+app.get("/user/profile", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
 
+    res.json({
+      profilePhoto: user.profilePhoto || "",
+      username: user.username
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
