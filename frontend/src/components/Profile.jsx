@@ -3,10 +3,13 @@ import { useState, useEffect, useMemo } from "react";
 
 export default function Profile({
   setCurrentPage,
-  tasks = [],
+  todos = [],
   focusSessions = [],
 }) {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
   const [username, setUsername] = useState("");
+    const [profilePhoto, setProfilePhoto] = useState("");
 
   useEffect(() => {
     const storedUsername =
@@ -17,22 +20,47 @@ export default function Profile({
       setUsername(storedUsername);
     }
   }, []);
+    useEffect(() => {
+    if (!token) return;
+
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(
+          "https://to-do-app-616k.onrender.com/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+        setProfilePhoto(data.profilePhoto || "");
+      } catch (err) {
+        console.error("Profile fetch failed:", err);
+      }
+    };
+
+    fetchProfile();
+  }, [token]);
 
   /* ---------------- TOTAL COMPLETED ---------------- */
   const totalCompleted = useMemo(() => {
-    return tasks.filter((t) => t.completed).length;
-  }, [tasks]);
+    return todos.filter((t) => t.completed).length;
+  }, [todos]);
 
   /* ---------------- COMPLETION % ---------------- */
   const completionPercentage = useMemo(() => {
-    if (!tasks.length) return 0;
-    const completed = tasks.filter((t) => t.completed).length;
-    return Math.round((completed / tasks.length) * 100);
-  }, [tasks]);
+    if (!todos.length) return 0;
+    const completed = todos.filter((t) => t.completed).length;
+    return Math.round((completed / todos.length) * 100);
+  }, [todos]);
 
   /* ---------------- STREAK ---------------- */
   const streak = useMemo(() => {
-    const completedDates = tasks
+    const completedDates = todos
       .filter((t) => t.completed)
       .map((t) => new Date(t.completedAt).toDateString());
 
@@ -58,7 +86,7 @@ export default function Profile({
     }
 
     return count;
-  }, [tasks]);
+  }, [todos]);
 
   /* ---------------- FOCUS TIME ---------------- */
   const totalFocusTime = useMemo(() => {
@@ -85,14 +113,14 @@ export default function Profile({
   const goals = useMemo(() => {
     const today = new Date().toDateString();
 
-    const todayTasks = tasks.filter(
+    const todaytodos = todos.filter(
       (t) =>
         t.completed &&
         new Date(t.completedAt).toDateString() === today
     );
 
     const dailyReading = Math.min(
-      Math.round((todayTasks.length / 5) * 100),
+      Math.round((todaytodos.length / 5) * 100),
       100
     );
 
@@ -105,7 +133,7 @@ export default function Profile({
       { name: "Daily Productivity", percent: dailyReading },
       { name: "Focus Consistency", percent: meditation },
     ];
-  }, [tasks, focusSessions]);
+  }, [todos, focusSessions]);
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 md:px-10 lg:px-20 
@@ -134,7 +162,15 @@ export default function Profile({
                           rounded-full 
                           bg-gradient-to-br from-cyan-400 to-blue-500 
                           text-white text-xl font-bold">
-            {username?.charAt(0).toUpperCase() || "U"}
+           {profilePhoto ? (
+              <img
+                src={profilePhoto}
+                alt="Profile"
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              username?.charAt(0).toUpperCase() || "U"
+            )}
           </div>
 
           <div>
@@ -160,7 +196,7 @@ export default function Profile({
         <h1 className="text-3xl md:text-4xl font-bold">
           {totalCompleted.toLocaleString()}{" "}
           <span className="text-base font-normal opacity-60">
-            Tasks Completed
+            todos Completed
           </span>
         </h1>
       </div>
@@ -213,11 +249,11 @@ export default function Profile({
 
       {/* Buttons */}
       <div className="space-y-4 md:flex md:gap-4 md:space-y-0">
-        <button className="w-full md:w-auto px-6 py-3 rounded-xl 
+        {/* <button className="w-full md:w-auto px-6 py-3 rounded-xl 
                            bg-(--accent) hover:bg-(--accent)/80 
                            text-white font-medium transition">
           Edit Profile
-        </button>
+        </button> */}
 
         <button
           className="w-full md:w-auto px-6 py-3 rounded-xl border border-(--accent) 
