@@ -226,6 +226,13 @@ app.post(
   upload.single("profilePhoto"),
   async (req, res) => {
     try {
+      console.log("USER:", req.user);
+      console.log("FILE:", req.file);
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
       const userId = req.user.id;
 
       const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
@@ -236,11 +243,11 @@ app.post(
 
       res.json({ profilePhoto: imageUrl });
     } catch (err) {
-      res.status(500).json({ message: "Upload failed" });
+      console.error("UPLOAD ERROR:", err);
+      res.status(500).json({ message: err.message });
     }
   }
 );
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
