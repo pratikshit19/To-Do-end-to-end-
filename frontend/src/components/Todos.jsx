@@ -263,7 +263,7 @@ useEffect(() => {
         />
       </div>
 
-      <div className="bg-(--card-bg) rounded-2xl p-5 mb-6 shadow-md">
+      <div className="bg-(--card-bg) rounded-2xl p-5 mb-6 shadow-md border border-(--border)">
         <p className="text-xs mb-1">Daily Progress</p>
 
         <div className="flex items-start gap-2">
@@ -291,7 +291,7 @@ useEffect(() => {
             className={`px-4 py-2 rounded-full bg-(--card-bg) text-sm transition whitespace-nowrap ${
               activeFilter === filter
                 ? "bg-accent text-(--accent) border border-(--accent)"
-                : "bg-(--card-bg) text-(--text-secondary) hover:opacity-80 shadow-md"
+                : "bg-(--card-bg) text-(--text-secondary) hover:opacity-80 shadow-md border border-(--border)"
             }`}
           >
             {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -306,7 +306,7 @@ useEffect(() => {
       ) : (
         <div className="space-y-4">
           {filteredTodos.map((todo) => (
-            <div key={todo._id} className="relative w-full max-w-full overflow-hidden shadow-md">
+            <div key={todo._id} className="relative w-full max-w-full overflow-hidden">
 
               <div className="absolute right-0 top-0 bottom-0 w-[55px] flex items-center justify-center pointer-events-auto">
                 <button
@@ -319,7 +319,7 @@ useEffect(() => {
               </div>
 
               <div
-                className="bg-(--card-bg) rounded-2xl p-4 flex gap-3 transition-transform duration-300 w-full shadow-md"
+                className="bg-(--card-bg) rounded-2xl p-4 flex gap-3 transition-transform duration-300 w-full shadow-md border border-(--border)"
                 style={{
                   transform:
                     openId === todo._id
@@ -380,7 +380,7 @@ useEffect(() => {
                     </span>
                   </div>
 
-                  <p className="text-sm opacity-70 mt-1">
+                  <p className="text-sm opacity-70 mt-1 font-extralight">
                     {todo.description}
                   </p>
 

@@ -155,13 +155,13 @@ export default function Profile({
       {/* Avatar Card */}
       <div className="flex items-center justify-between 
                      bg-(--card-bg) text-(--text-primary) 
-                      p-5 rounded-2xl mb-8 shadow-md">
+                      p-5 rounded-2xl mb-8 shadow-md border border-(--border)">
 
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 flex items-center justify-center 
                           rounded-full 
-                          bg-gradient-to-br from-cyan-400 to-blue-500 
-                          text-white text-xl font-bold">
+                          bg-linear-to-br from-cyan-400 to-blue-500 
+                          text-white text-xl font-light border border-(--accent)">
            {profilePhoto ? (
               <img
                 src={profilePhoto}
@@ -174,13 +174,13 @@ export default function Profile({
           </div>
 
           <div>
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-light text-lg">
               {username || "User"}
             </h3>
             <span className="text-xs px-2 py-1 rounded-full 
                              bg-(--accent)/30
                              text-(--accent)">
-              PRO MEMBER
+              FREE MEMBER
             </span>
           </div>
         </div>
@@ -203,29 +203,31 @@ export default function Profile({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
           <p className="text-xs opacity-60 mb-1">CURRENT STREAK</p>
           <h3 className="text-lg font-semibold">{streak} Days</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
           <p className="text-xs opacity-60 mb-1">FOCUS TIME</p>
           <h3 className="text-lg font-semibold">{totalFocusTime}</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
           <p className="text-xs opacity-60 mb-1">COMPLETION</p>
           <h3 className="text-lg font-semibold">{completionPercentage}%</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md">
+        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
           <p className="text-xs opacity-60 mb-1">WEEKLY RANK</p>
           <h3 className="text-lg font-semibold">{weeklyRank}</h3>
         </div>
       </div>
 
       {/* Goals */}
-      <div className="mb-10">
+      <div className=" 
+                     bg-(--card-bg) text-(--text-primary) 
+                      p-5 rounded-2xl mb-8 shadow-md border border-(--border)">
         <h4 className="font-semibold mb-4">Active Goals</h4>
 
         <div className="space-y-5">
@@ -236,7 +238,7 @@ export default function Profile({
                 <span>{goal.percent}%</span>
               </div>
 
-              <div className="w-full h-2 bg-(--card-bg) rounded-full">
+              <div className="w-full h-2 bg-(--border) rounded-full">
                 <div
                   className="h-2 bg-(--accent) rounded-full transition-all"
                   style={{ width: `${goal.percent}%` }}

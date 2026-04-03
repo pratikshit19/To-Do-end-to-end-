@@ -93,8 +93,8 @@ export default function Settings({
       </div> */}
 
       {/* ================= GENERAL ================= */}
-      <div className="bg-[var(--card-bg)] rounded-2xl p-5 shadow-md mb-6">
-        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide text-[var(--text-secondary)]">
+      <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6 border border-(--border)">
+        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide text-(--text-secondary)">
           General
         </h4>
 
@@ -116,8 +116,8 @@ export default function Settings({
       </div>
 
       {/* ================= APPEARANCE ================= */}
-      <div className="bg-[var(--card-bg)] rounded-2xl p-5 shadow-md mb-6">
-        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide text-[var(--text-secondary)]">
+      <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6 border border-(--border)">
+        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide text-(--text-secondary)">
           Appearance
         </h4>
 
@@ -146,8 +146,8 @@ export default function Settings({
       </div>
 
       {/* ================= SUPPORT ================= */}
-      <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6">
-        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide text-[var(--text-secondary)]">
+      <div className="bg-(--card-bg) rounded-2xl p-5 shadow-md mb-6 border border-(--border)">
+        <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide text-(--text-secondary)">
           Support
         </h4>
 
@@ -155,7 +155,7 @@ export default function Settings({
           (item) => (
             <div
               key={item}
-              className="flex items-center justify-between py-3 border-b border-[var(--border-color)] last:border-none cursor-pointer hover:opacity-70 transition"
+              className="flex items-center justify-between py-3 border-b border-(--border) last:border-none cursor-pointer hover:opacity-70 transition"
             >
               <span>{item}</span>
               <ChevronRight size={18} />

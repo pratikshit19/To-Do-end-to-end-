@@ -151,7 +151,7 @@ export default function Schedule({ todos = [] }) {
         </div>
 
         {/* WEEKDAY ROW */}
-        <div className="grid grid-cols-7 text-center text-sm text-[var(--text-secondary)] mb-2">
+        <div className="grid grid-cols-7 text-center text-sm text-(--text-secondary) mb-2">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
             <span key={d}>{d}</span>
           ))}
@@ -159,7 +159,7 @@ export default function Schedule({ todos = [] }) {
 
         {/* CALENDAR GRID */}
         <div
-          className={`grid ${
+          className={`grid  ${
             viewMode === "month"
               ? "grid-cols-7 grid-rows-2"
               : "grid-cols-7"
@@ -181,15 +181,15 @@ export default function Schedule({ todos = [] }) {
                 className={`relative flex items-center justify-center h-12 rounded-lg cursor-pointer transition shadow-md
                   ${
                     isSelected
-                      ? "bg-[var(--accent)] text-white"
-                      : "bg-[var(--card-bg)] hover:bg-[var(--border-color)]"
+                      ? "bg-(--accent) text-white"
+                      : "bg-(--card-bg) hover:bg-(--border)"
                   }
                 `}
               >
                 {date.getDate()}
 
                 {hasTasks && (
-                  <span className="absolute bottom-1 w-1.5 h-1.5 bg-[var(--accent)] rounded-full"></span>
+                  <span className="absolute bottom-1 w-1.5 h-1.5 bg-(--accent) rounded-full"></span>
                 )}
               </div>
             );
@@ -221,7 +221,7 @@ export default function Schedule({ todos = [] }) {
             filteredTasks.map((task) => (
               <div
                 key={task._id}
-                className={`p-4 rounded-xl bg-(--card-bg) flex justify-between items-center transition shadow-md
+                className={`p-4 rounded-xl bg-(--card-bg) flex justify-between items-center transition shadow-md border border-(--border)
                   ${
                     task.completed
                       ? "opacity-60 line-through"

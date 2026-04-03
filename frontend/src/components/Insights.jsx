@@ -189,7 +189,7 @@ console.log("Todos length:", todos.length);
       </div>
 
       {/* WEEKLY */}
-      <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4">
+      <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4 border border-(--border)">
         <p className="text-xs opacity-60">WEEKLY EFFICIENCY</p>
         <h1 className="text-4xl font-bold text-(--accent)">
           {weeklyData.efficiency}%
@@ -202,26 +202,26 @@ console.log("Todos length:", todos.length);
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* STREAK */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4">
+        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4 border border-(--border)">
           <div className="text-3xl">🔥</div>
           <p className="text-sm opacity-70">Current Streak</p>
           <h2 className="text-3xl font-bold">{streak} Days</h2>
         </div>
 
         {/* TOP CATEGORY */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3">
+        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3 border border-(--border)">
           <p className="text-xs opacity-60">TOP CATEGORY</p>
           <h3 className="text-xl font-semibold">{topCategory}</h3>
         </div>
 
         {/* PEAK HOUR */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3">
+        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-lg space-y-3 border border-(--border)">
           <p className="text-xs opacity-60">PEAK ENERGY</p>
           <h3 className="text-xl font-semibold">{peakHour}</h3>
         </div>
 
         {/* MONTHLY */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-md">
+        <div className="bg-(--card-bg) rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-lg border border-(--border)">
           <p className="text-xs opacity-60">MONTHLY COMPLETION</p>
           <div className="relative w-28 h-28 rounded-full bg-linear-to-tr from-cyan-500 to-blue-500 flex items-center justify-center">
             <div className="absolute w-20 h-20 bg-(--card-bg) rounded-full flex items-center justify-center text-lg font-semibold">
