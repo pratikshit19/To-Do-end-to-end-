@@ -306,9 +306,9 @@ useEffect(() => {
       ) : (
         <div className="space-y-4">
           {filteredTodos.map((todo) => (
-            <div key={todo._id} className="relative w-full max-w-full overflow-hidden">
+            <div key={todo._id} className="relative w-full max-w-full overflow-hidden shadow-md rounded-2xl">
 
-              <div className="absolute right-0 top-0 bottom-0 w-[55px] flex items-center justify-center pointer-events-auto">
+              <div className="absolute right-0 top-0 bottom-0 w-[55px] flex items-center justify-center pointer-events-auto border border-(--border)">
                 <button
                   onClick={() => handleDelete(todo._id)}
                   className="w-[55px] h-full bg-red-500/10 text-red-500 text-xs font-semibold rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-red-500/20 transition"
@@ -352,7 +352,7 @@ useEffect(() => {
                   type="checkbox"
                   checked={todo.completed}
                   onChange={() => handleToggleComplete(todo)}
-                  className="w-5 h-5 bg-(--accent) mt-1 cursor-pointer rounded-xl"
+                  className="w-5 h-5 bg-(--accent) text-(--accent) mt-1 cursor-pointer rounded-xl"
                 />
 
                 <div className="flex-1">
