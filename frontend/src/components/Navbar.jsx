@@ -9,7 +9,7 @@ export default function Navbar({ currentPage, setCurrentPage }) {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 w-full bg-(--card-bg) flex justify-around items-center py-4 z-50">
+    <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm bg-(--card-bg)/80 backdrop-blur-xl border border-(--border)/60 flex justify-around items-center py-3 px-2 rounded-2xl shadow-2xl z-50 transition-all duration-300">
 
       {navItems.map((item) => {
         const Icon = item.icon;
@@ -19,14 +19,24 @@ export default function Navbar({ currentPage, setCurrentPage }) {
           <div
             key={item.id}
             onClick={() => setCurrentPage(item.id)}
-            className={`flex flex-col items-center justify-center text-xs cursor-pointer transition-all duration-200 ${
-              isActive
-                ? "text-(--accent)"
-                : "text-(--text-secondary) hover:text-(--accent)"
-            }`}
+            className="flex flex-col items-center justify-center cursor-pointer p-1.5 w-16 relative"
           >
-            <Icon size={22} />
-            <span className="mt-1">{item.label}</span>
+            {/* Active Indicator Glow */}
+            {isActive && (
+              <div className="absolute inset-0 bg-linear-to-b from-(--gradient-start)/20 to-transparent rounded-xl pointer-events-none -z-10 opacity-70"></div>
+            )}
+            
+            <div className={`transition-all duration-300 transform ${isActive ? "-translate-y-1 text-(--accent)" : "translate-y-0.5 text-(--text-secondary) hover:text-(--text-primary)"}`}>
+               <Icon size={22} className={`${isActive ? "drop-shadow-md" : ""}`} />
+            </div>
+            
+            <span 
+              className={`text-[10px] font-extrabold tracking-wide transition-all duration-300 overflow-hidden ${
+                isActive ? "max-h-4 opacity-100 mt-1.5 text-(--text-primary)" : "max-h-0 opacity-0 mt-0 text-(--text-secondary)"
+              }`}
+            >
+              {item.label}
+            </span>
           </div>
         );
       })}

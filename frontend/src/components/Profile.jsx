@@ -1,15 +1,54 @@
-import { ArrowLeft, Settings, Edit } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { Edit, Flame, Timer, CheckCircle, Trophy, LogOut, Settings } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import toast from "react-hot-toast";
 
 export default function Profile({
-  setCurrentPage,
   todos = [],
   focusSessions = [],
+  onLogout,
+  setCurrentPage,
 }) {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   const [username, setUsername] = useState("");
-    const [profilePhoto, setProfilePhoto] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState("");
+
+  const fileInputRef = useRef(null);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!token) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
+
+    const toastId = toast.loading("Uploading photo...");
+    const formData = new FormData();
+    formData.append("profilePhoto", file);
+
+    try {
+      const res = await fetch("https://to-do-app-616k.onrender.com/upload-profile", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const data = await res.json();
+      setProfilePhoto(data.profilePhoto);
+      toast.success("Profile photo updated!", { id: toastId });
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error("Cloud upload failed.", { id: toastId });
+    }
+  };
 
   useEffect(() => {
     const storedUsername =
@@ -20,7 +59,8 @@ export default function Profile({
       setUsername(storedUsername);
     }
   }, []);
-    useEffect(() => {
+
+  useEffect(() => {
     if (!token) return;
 
     const fetchProfile = async () => {
@@ -136,136 +176,141 @@ export default function Profile({
   }, [todos, focusSessions]);
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10 md:px-10 lg:px-20 
-                  bg-(--bg) ">
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <ArrowLeft
-          className="cursor-pointer opacity-70 hover:opacity-100 transition"
-          onClick={() => setCurrentPage("home")}
-        />
-        <h3 className="text-lg font-semibold">Profile</h3>
-        <Settings
-          className="cursor-pointer opacity-70 hover:opacity-100 transition"
-          onClick={() => setCurrentPage("settings")}
-        />
-      </div>
+    <div className="w-full pb-30 md:pb-6 transition-colors duration-300">
 
       {/* Avatar Card */}
-      <div className="flex items-center justify-between 
-                     bg-(--card-bg) text-(--text-primary) 
-                      p-5 rounded-2xl mb-8 shadow-md border border-(--border)">
+      <div className="flex items-center justify-between bg-(--card-bg) p-6 rounded-3xl mb-8 shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow relative overflow-hidden group">
+        {/* Subtle decorative background */}
+        <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] bg-(--gradient-start)/5 rounded-full blur-[40px] pointer-events-none transition-all group-hover:bg-(--gradient-start)/10"></div>
 
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 flex items-center justify-center 
-                          rounded-full 
-                          bg-linear-to-br from-cyan-400 to-blue-500 
-                          text-white text-xl font-light border border-(--accent)">
-           {profilePhoto ? (
-              <img
-                src={profilePhoto}
-                alt="Profile"
-                className="w-full h-full object-cover rounded-full"
-              />
+        <div className="flex items-center gap-5 relative z-10">
+          <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white text-2xl font-semibold shadow-lg shadow-(--gradient-start)/20 ring-4 ring-(--gradient-start)/10 overflow-hidden">
+            {profilePhoto ? (
+              <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               username?.charAt(0).toUpperCase() || "U"
             )}
           </div>
 
           <div>
-            <h3 className="font-light text-lg">
+            <h3 className="font-bold text-xl tracking-wide bg-linear-to-br from-(--text-primary) to-(--text-secondary) bg-clip-text text-transparent">
               {username || "User"}
             </h3>
-            <span className="text-xs px-2 py-1 rounded-full 
-                             bg-(--accent)/30
-                             text-(--accent)">
-              FREE MEMBER
+            <span className="inline-block mt-1 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-(--accent)/10 text-(--accent)">
+              Pro Workspace
             </span>
           </div>
         </div>
 
-        <Edit size={18} className="opacity-70" />
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-(--card-bg) border border-(--border) hover:bg-(--border)/50 transition-colors text-(--text-secondary) hover:text-(--accent) focus:outline-none"
+        >
+          <Edit size={18} />
+        </button>
       </div>
 
       {/* Accomplishments */}
-      <div className="mb-8">
-        <p className="text-xs tracking-widest opacity-60 mb-2">
-          TOTAL ACCOMPLISHMENTS
-        </p>
-        <h1 className="text-3xl md:text-4xl font-bold">
-          {totalCompleted.toLocaleString()}{" "}
-          <span className="text-base font-normal opacity-60">
-            todos Completed
-          </span>
+      <div className="mb-8 p-6 rounded-3xl bg-(--card-bg)/30 border border-(--border)/30">
+        <p className="text-xs font-semibold tracking-widest opacity-50 mb-2 uppercase">Lifetime Value</p>
+        <h1 className="text-4xl md:text-5xl font-extrabold flex items-baseline gap-2">
+          {totalCompleted.toLocaleString()}
+          <span className="text-lg font-medium opacity-50 tracking-tight">Tasks Crushed</span>
         </h1>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
-          <p className="text-xs opacity-60 mb-1">CURRENT STREAK</p>
-          <h3 className="text-lg font-semibold">{streak} Days</h3>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+
+        {/* Streak */}
+        <div className="bg-(--card-bg) p-5 rounded-2xl shadow-sm border border-(--border)/60 hover:-translate-y-1 transition-transform duration-300">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-3">
+            <Flame size={20} />
+          </div>
+          <p className="text-xs font-medium opacity-60 mb-1">CURRENT STREAK</p>
+          <h3 className="text-2xl font-bold">{streak} <span className="text-sm font-normal opacity-60">Days</span></h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
-          <p className="text-xs opacity-60 mb-1">FOCUS TIME</p>
-          <h3 className="text-lg font-semibold">{totalFocusTime}</h3>
+        {/* Focus */}
+        <div className="bg-(--card-bg) p-5 rounded-2xl shadow-sm border border-(--border)/60 hover:-translate-y-1 transition-transform duration-300">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">
+            <Timer size={20} />
+          </div>
+          <p className="text-xs font-medium opacity-60 mb-1">FOCUS TIME</p>
+          <h3 className="text-2xl font-bold">{totalFocusTime}</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
-          <p className="text-xs opacity-60 mb-1">COMPLETION</p>
-          <h3 className="text-lg font-semibold">{completionPercentage}%</h3>
+        {/* Completion */}
+        <div className="bg-(--card-bg) p-5 rounded-2xl shadow-sm border border-(--border)/60 hover:-translate-y-1 transition-transform duration-300">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3">
+            <CheckCircle size={20} />
+          </div>
+          <p className="text-xs font-medium opacity-60 mb-1">COMPLETION RATE</p>
+          <h3 className="text-2xl font-bold">{completionPercentage}%</h3>
         </div>
 
-        <div className="bg-(--card-bg) p-4 rounded-xl shadow-md border border-(--border)">
-          <p className="text-xs opacity-60 mb-1">WEEKLY RANK</p>
-          <h3 className="text-lg font-semibold">{weeklyRank}</h3>
+        {/* Rank */}
+        <div className="bg-(--card-bg) p-5 rounded-2xl shadow-sm border border-(--border)/60 hover:-translate-y-1 transition-transform duration-300">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center mb-3">
+            <Trophy size={20} />
+          </div>
+          <p className="text-xs font-medium opacity-60 mb-1">WEEKLY RANK</p>
+          <h3 className="text-2xl font-bold">{weeklyRank}</h3>
         </div>
+
       </div>
 
       {/* Goals */}
-      <div className=" 
-                     bg-(--card-bg) text-(--text-primary) 
-                      p-5 rounded-2xl mb-8 shadow-md border border-(--border)">
-        <h4 className="font-semibold mb-4">Active Goals</h4>
+      <div className="bg-(--card-bg) p-6 sm:p-8 rounded-3xl mb-8 shadow-sm border border-(--border)/60">
+        <h4 className="text-lg font-bold mb-6">Active Targets</h4>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {goals.map((goal, index) => (
-            <div key={index}>
-              <div className="flex justify-between mb-2 text-sm">
-                <span>{goal.name}</span>
-                <span>{goal.percent}%</span>
+            <div key={index} className="group">
+              <div className="flex justify-between items-end mb-2">
+                <span className="text-sm font-medium opacity-80">{goal.name}</span>
+                <span className="text-lg font-bold bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">{goal.percent}%</span>
               </div>
 
-              <div className="w-full h-2 bg-(--border) rounded-full">
+              <div className="w-full h-2.5 bg-(--border)/50 rounded-full overflow-hidden shadow-inner">
                 <div
-                  className="h-2 bg-(--accent) rounded-full transition-all"
+                  className="h-full bg-linear-to-r from-(--gradient-start) to-(--gradient-end) rounded-full transition-all duration-1000 ease-out relative"
                   style={{ width: `${goal.percent}%` }}
-                />
+                >
+                  <div className="absolute top-0 right-0 bottom-0 w-8 bg-white/20"></div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Buttons */}
-      <div className="space-y-4 md:flex md:gap-4 md:space-y-0">
-        {/* <button className="w-full md:w-auto px-6 py-3 rounded-xl 
-                           bg-(--accent) hover:bg-(--accent)/80 
-                           text-white font-medium transition">
-          Edit Profile
-        </button> */}
+      {/* Actions */}
+      <div className="space-y-4 mt-8">
+        <button 
+          onClick={() => setCurrentPage("settings")}
+          className="w-full bg-(--card-bg) hover:bg-(--border)/50 text-(--text-primary) font-bold py-4 rounded-3xl flex items-center justify-center gap-2 transition-colors border border-(--border)/60 shadow-sm focus:outline-none focus:ring-4 focus:ring-(--accent)/20"
+        >
+          <Settings size={20} />
+          Workspace Settings
+        </button>
 
         <button
-          className="w-full md:w-auto px-6 py-3 rounded-xl border border-(--accent) 
-                     text-(--accent) hover:bg-(--accent)/20
-                     hover:opacity-90 transition font-medium"
-          onClick={() => setCurrentPage("insights")}
+          onClick={onLogout}
+          className="w-full bg-(--card-bg) hover:bg-red-500/10 text-(--text-primary) hover:text-red-500 font-bold py-4 rounded-3xl flex items-center justify-center gap-2 transition-colors border border-(--border)/60 hover:border-red-500/30 shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20"
         >
-          View Full Insights
+          <LogOut size={20} />
+          Sign Out Workspace
         </button>
       </div>
+
     </div>
   );
 }

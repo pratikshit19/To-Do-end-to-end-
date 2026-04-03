@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { CreateTodo } from "./components/CreateTodo";
-import  Todos  from "./components/Todos";
+import Todos from "./components/Todos";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import ForgotPassword from "./components/ForgotPassword";
@@ -11,55 +12,69 @@ import Onboarding from "./components/Onboarding";
 import Navbar from "./components/Navbar";
 import Insights from "./components/Insights";
 import { Toaster } from "react-hot-toast";
+import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus } from "lucide-react";
 
-export default function App() {
+function AppContent() {
   /* ================= STATE ================= */
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [showOnboarding, setShowOnboarding] = useState(
     !localStorage.getItem("onboardingDone")
   );
-
   const [todos, setTodos] = useState([]);
-
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!(localStorage.getItem("token") || sessionStorage.getItem("token"))
   );
-
   const [isLogin, setIsLogin] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState("home");
+  const [isLoading, setIsLoading] = useState(true);
 
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("darkMode") === "false" ? false : true
   );
 
-  /* ================= THEME ================= */
+  const [colorTheme, setColorTheme] = useState(
+    localStorage.getItem("colorTheme") || "blue"
+  );
 
+  const currentPage = location.pathname === '/' ? 'home' : location.pathname.substring(1);
+
+  const setCurrentPage = (page) => {
+    navigate(page === 'home' ? '/' : `/${page}`);
+  };
+
+  /* ================= THEME ================= */
   useEffect(() => {
     document.documentElement.setAttribute(
       "data-theme",
       darkMode ? "dark" : "light"
     );
-
     localStorage.setItem("darkMode", darkMode);
   }, [darkMode]);
 
-  /* ================= TOKEN ================= */
+  useEffect(() => {
+    document.documentElement.setAttribute("data-color-theme", colorTheme);
+    localStorage.setItem("colorTheme", colorTheme);
 
-  const getToken = () =>
-    localStorage.getItem("token") || sessionStorage.getItem("token");
+    // Clear out the obsolete inline style that the old Settings approach left stuck on your HTML tag!
+    document.documentElement.style.removeProperty("--accent");
+  }, [colorTheme]);
+
+  /* ================= TOKEN ================= */
+  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const fetchTodos = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const response = await fetch(
-        "https://to-do-app-616k.onrender.com/todos",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await fetch("https://to-do-app-616k.onrender.com/todos", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response.status === 403) {
         handleLogout();
@@ -70,6 +85,8 @@ export default function App() {
       setTodos(data.todos || []);
     } catch (err) {
       console.error("Failed to fetch todos:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,7 +98,11 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (isAuthenticated) fetchTodos();
+    if (isAuthenticated) {
+      fetchTodos();
+    } else {
+      setIsLoading(false);
+    }
   }, [isAuthenticated]);
 
   /* ================= FLOW ================= */
@@ -99,118 +120,182 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    if (isLogin === true)
-      return (
-        <Login
-          setIsAuthenticated={setIsAuthenticated}
-          setIsLogin={setIsLogin}
-        />
-      );
+    return (
+      <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden bg-(--bg) text-(--text-primary)">
+        {/* Subtle Background Elements */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-(--gradient-start)/10 blur-[120px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-(--gradient-end)/10 blur-[120px] pointer-events-none translate-x-1/2 translate-y-1/2"></div>
 
-    if (isLogin === false)
-      return <Signup setIsLogin={setIsLogin} />;
+        <div className="w-full max-w-md bg-(--card-bg) shadow-2xl shadow-(--gradient-start)/5 rounded-[2rem] p-8 sm:p-10 border border-(--border)/80 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+          <div className="flex flex-col items-center justify-center mb-5 space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-2xl shadow-xl shadow-(--gradient-start)/30 ring-4 ring-(--gradient-start)/10">
+              <span className="font-extrabold pb-[2px]">T</span>
+            </div>
+            <div className="text-center space-y-1.5">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">
+                TaskFlow
+              </h1>
+              <p className="text-sm font-medium opacity-60">
+                {isLogin === true
+                  ? "Sign in to your workspace"
+                  : isLogin === false
+                    ? "Start your journey today"
+                    : "Securely reset your password"}
+              </p>
+            </div>
+          </div>
 
-    return <ForgotPassword setIsLogin={setIsLogin} />;
+          <div className="w-full">
+            {isLogin === true ? (
+              <Login setIsAuthenticated={setIsAuthenticated} setIsLogin={setIsLogin} />
+            ) : isLogin === false ? (
+              <Signup setIsLogin={setIsLogin} />
+            ) : (
+              <ForgotPassword setIsLogin={setIsLogin} />
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  /* ================= PAGE RENDER ================= */
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-(--bg) flex flex-col items-center justify-center text-(--text-primary)">
+        <div className="w-12 h-12 border-4 border-(--accent) border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-5 text-sm opacity-60 font-medium tracking-wide">Loading workspace...</p>
+      </div>
+    );
+  }
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case "profile":
-        return (
-          <Profile
-            onLogout={handleLogout}
-            setCurrentPage={setCurrentPage}
-          />
-        );
-
-      case "schedule":
-        return <Schedule todos={todos} />;
-
-      case "settings":
-        return (
-          <Settings
-            setCurrentPage={setCurrentPage}
-            onLogout={handleLogout}
-            darkMode={darkMode}
-            setDarkMode={setDarkMode}
-          />
-        );
-
-      case "insights":
-        return <Insights setCurrentPage={setCurrentPage} todos={todos} />;
-
-      default:
-        return (
-          <>
-            <Todos
-              todos={todos}
-              fetchTodos={fetchTodos}
-              onLogout={handleLogout}
-              setCurrentPage={setCurrentPage}
-            />
-
-            {/* Floating Button */}
-            <button
-              onClick={() => setShowModal(true)}
-              className="fixed bottom-24 md:bottom-8 right-6 md:right-55 w-12 h-12 md:w-140 md:h-15 rounded-xl bg-(--accent) text-white text-2xl flex items-center justify-center shadow-lg hover:scale-105 transition"
-            >
-              +
-            </button>
-          </>
-        );
-    }
-  };
+  /* ================= CONFIG ================= */
+  const NAV_ITEMS = [
+    { id: "home", label: "Dashboard", icon: Home },
+    { id: "schedule", label: "Schedule", icon: Calendar },
+    { id: "insights", label: "Insights", icon: TrendingUp },
+    { id: "profile", label: "Profile", icon: User },
+    { id: "settings", label: "Settings", icon: SettingsIcon },
+  ];
 
   /* ================= MAIN APP ================= */
 
   return (
-    <>
-      <Toaster position="top-right" />
-      <div className=" md:flex min-h-screen bg-(--bg) text-(text-primary)">
-        {/* ================= DESKTOP SIDEBAR ================= */}
-        <aside className="hidden md:flex md:flex-col w-64 bg-(--bg) border-r border-(--border) shadow p-6 space-y-4">
-          <div className="text-xl font-semibold mb-6">
-            TaskFlow
+    <div className="md:flex h-screen bg-(--bg) text-(--text-primary) overflow-hidden">
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <aside className="hidden md:flex md:flex-col w-64 bg-(--card-bg) border-r border-(--border) relative shadow-sm z-20">
+        <div className="p-6">
+          <div className="text-2xl font-bold mb-8 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-lg shadow-lg">
+              <span className="font-extrabold pb-[2px]">T</span>
+            </div>
+            <span className="bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">TaskFlow</span>
           </div>
 
-          {["home", "schedule", "insights", "profile", "settings"].map(
-            (page) => (
-              <div
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded-lg cursor-pointer transition  ${
-                  currentPage === page
-                    ? "bg-(--accent)/20 text-(--accent)"
-                    : "hover:bg-(--border)"
-                }`}
-              >
-                {page.charAt(0).toUpperCase() + page.slice(1)}
-              </div>
-            )
-          )}
-        </aside>
+          <nav className="space-y-1.5">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPage === item.id;
 
-        {/* ================= MAIN AREA ================= */}
-        <div className="flex-1 flex flex-col">
-          {/* Desktop Header */}
-          {/* <header className="hidden md:flex justify-between items-center px-8 py-4 shadow border-b border-(--border) bg-(--bg)">
-            <h2 className="text-xl font-semibold">
-              {currentPage.charAt(0).toUpperCase() +
-                currentPage.slice(1)}
-            </h2>
-          </header> */}
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => setCurrentPage(item.id)}
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 font-medium group ${isActive
+                    ? "bg-(--accent)/10 text-(--accent)"
+                    : "text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/60"
+                    }`}
+                >
+                  <Icon size={20} className={`${isActive ? "text-(--accent)" : "opacity-80 group-hover:opacity-100"} transition-colors`} />
+                  {item.label}
+                </div>
+              );
+            })}
+          </nav>
+        </div>
 
-          {/* Page Content */}
-          <div className="flex-1 min-w-0 overflow-x-hidden px-5 py-8 md:px-10 md:py-8 w-full mx-auto">
-            {renderPage()}
+        {/* User Mini Profile */}
+        <div className="mt-auto p-4 border-t border-(--border)">
+          <div
+            onClick={() => setCurrentPage('profile')}
+            className="flex items-center gap-3 cursor-pointer hover:bg-(--border)/60 p-2.5 rounded-2xl transition"
+          >
+            <div className="w-10 h-10 rounded-full bg-linear-to-tr from-(--gradient-start) to-(--gradient-end) shadow-md flex items-center justify-center text-white font-bold text-sm shrink-0">
+              U
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-semibold truncate">My Workspace</span>
+              <span className="text-xs opacity-60">Pro Plan</span>
+            </div>
           </div>
         </div>
+      </aside>
+
+      {/* ================= MAIN AREA ================= */}
+      <div className="flex-1 flex flex-col h-full relative">
+        {/* Desktop Header */}
+        <header className="hidden md:flex justify-between items-center px-8 py-5 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-10 transition-colors">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="opacity-50 font-medium">TaskFlow</span>
+            <span className="opacity-40">/</span>
+            <span className="font-semibold text-(--accent) capitalize">
+              {currentPage === 'home' ? 'Dashboard' : currentPage}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-5">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 rounded-full hover:bg-(--border) transition text-(--text-primary) opacity-70 hover:opacity-100 focus:outline-none"
+              aria-label="Toggle Theme"
+            >
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-(--accent) text-white font-medium hover:brightness-110 active:scale-95 shadow-md shadow-(--gradient-start)/20 transition-all duration-200"
+            >
+              <Plus size={18} />
+              Create Task
+            </button>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-5 md:p-8 w-full">
+          <div className="max-w-6xl mx-auto h-full">
+            <Routes>
+              <Route path="/" element={
+                <Todos
+                  todos={todos}
+                  fetchTodos={fetchTodos}
+                  onLogout={handleLogout}
+                  setCurrentPage={setCurrentPage}
+                />
+              } />
+              <Route path="/schedule" element={<Schedule todos={todos} />} />
+              <Route path="/insights" element={<Insights setCurrentPage={setCurrentPage} todos={todos} />} />
+              <Route path="/profile" element={<Profile onLogout={handleLogout} setCurrentPage={setCurrentPage} />} />
+              <Route path="/settings" element={
+                <Settings setCurrentPage={setCurrentPage} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} colorTheme={colorTheme} setColorTheme={setColorTheme} />
+              } />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </div>
+        </main>
       </div>
 
-      {/* ================= MOBILE NAVBAR ================= */}
-      <div className="md:hidden">
+      {/* ================= MOBILE EXTRAS ================= */}
+
+      {/* Mobile Desktop-like FAB */}
+      <button
+        onClick={() => setShowModal(true)}
+        className="md:hidden fixed bottom-32 right-5 w-14 h-14 rounded-full bg-(--accent) text-white flex items-center justify-center shadow-md shadow-(--gradient-start)/30 hover:scale-105 active:scale-95 transition-transform z-40"
+      >
+        <Plus size={26} />
+      </button>
+
+      {/* Mobile Navbar */}
+      <div className="md:hidden z-50 relative bg-(--bg)">
         <Navbar
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
@@ -219,8 +304,11 @@ export default function App() {
 
       {/* ================= MODAL ================= */}
       {showModal && (
-        <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-transparent rounded-xl p-6 w-[95%] max-w-md flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] transition-opacity duration-300">
+          <div
+            className="bg-transparent rounded-2xl w-[95%] max-w-md flex items-center justify-center z-[101]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <CreateTodo
               fetchTodos={fetchTodos}
               closeModal={() => setShowModal(false)}
@@ -228,6 +316,15 @@ export default function App() {
           </div>
         </div>
       )}
-    </>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <Toaster position="top-right" />
+      <AppContent />
+    </Router>
   );
 }

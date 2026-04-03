@@ -1,105 +1,19 @@
 import toast from "react-hot-toast";
-import { useEffect, useState, useRef } from "react";
-import { DeleteIcon, SettingsIcon } from "lucide-react";
+import { useState, useRef } from "react";
+import { Trash2, Circle, CheckCircle2, ClipboardList } from "lucide-react";
 
-export default function Todos({ todos = [], fetchTodos, onLogout, setCurrentPage }) {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
-  const username =
-    localStorage.getItem("username") ||
-    sessionStorage.getItem("username");
+export default function Todos({ todos = [], fetchTodos }) {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const [activeFilter, setActiveFilter] = useState("focused");
-  const [showMenu, setShowMenu] = useState(false);
-  const menuRef = useRef(null);
-
-  const [profilePhoto, setProfilePhoto] = useState("");
-  const fileInputRef = useRef(null);
 
   const [dragX, setDragX] = useState(0);
   const [draggingId, setDraggingId] = useState(null);
   const startXRef = useRef(0);
   const [openId, setOpenId] = useState(null);
-  const ACTION_WIDTH = 55;
-
-  /* ================= PROFILE FETCH ================= */
-
-useEffect(() => {
-  if (!token) return;
-
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch(
-        "https://to-do-app-616k.onrender.com/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to fetch profile");
-
-      const data = await res.json();
-      setProfilePhoto(data.profilePhoto);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  fetchProfile();
-}, [token]);
-
-  
-
-  /* ================= PROFILE UPLOAD ================= */
-
-  const handleProfileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const toastId = toast.loading("Uploading profile photo...");
-
-    try {
-      const formData = new FormData();
-      formData.append("profilePhoto", file);
-
-      const res = await fetch(
-        "https://to-do-app-616k.onrender.com/upload-profile",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (!res.ok) throw new Error("Upload failed");
-
-      const data = await res.json();
-      setProfilePhoto(data.profilePhoto);
-
-      toast.success("Profile photo updated!", { id: toastId });
-    } catch (err) {
-      toast.error(err.message, { id: toastId });
-    }
-  };
-
-  /* ================= CLOSE MENU ================= */
-
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const ACTION_WIDTH = 60; // Slightly larger for better touch target
 
   /* ================= DATE LOGIC ================= */
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -122,9 +36,10 @@ useEffect(() => {
   });
 
   /* ================= DELETE ================= */
+  const handleDelete = async (id, e) => {
+    if (e) e.stopPropagation();
 
-  const handleDelete = async (id) => {
-    const toastId = toast.loading("Deleting task...");
+    // Only show quick toast, no blocking loader popup needed since it's an inline action
     try {
       const response = await fetch(
         `https://to-do-app-616k.onrender.com/todos/${id}`,
@@ -134,18 +49,21 @@ useEffect(() => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to delete todo");
+      if (!response.ok) throw new Error("Failed to delete task");
 
+      // Instead of waiting, close swipe silently
+      setOpenId(null);
+      setDragX(0);
       await fetchTodos();
-      toast.success("Task deleted", { id: toastId });
     } catch (err) {
-      toast.error(err.message, { id: toastId });
+      toast.error(err.message);
     }
   };
 
   /* ================= TOGGLE COMPLETE ================= */
+  const handleToggleComplete = async (todo, e) => {
+    if (e) e.stopPropagation();
 
-  const handleToggleComplete = async (todo) => {
     try {
       const response = await fetch(
         `https://to-do-app-616k.onrender.com/todos/${todo._id}`,
@@ -162,8 +80,7 @@ useEffect(() => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to update todo");
-
+      if (!response.ok) throw new Error("Failed to update task");
       await fetchTodos();
     } catch (err) {
       console.error(err);
@@ -171,15 +88,11 @@ useEffect(() => {
   };
 
   /* ================= PROGRESS ================= */
-
   const completedCount = todos.filter((t) => t.completed).length;
   const progressPercentage =
-    todos.length > 0
-      ? Math.round((completedCount / todos.length) * 100)
-      : 0;
+    todos.length > 0 ? Math.round((completedCount / todos.length) * 100) : 0;
 
   /* ================= SWIPE LOGIC ================= */
-
   const handleStart = (clientX, id) => {
     startXRef.current = clientX;
     setDraggingId(id);
@@ -188,6 +101,7 @@ useEffect(() => {
   const handleMove = (clientX, id) => {
     if (draggingId !== id) return;
     const delta = startXRef.current - clientX;
+    // Only allow swiping left
     if (delta > 0) setDragX(Math.min(delta, ACTION_WIDTH));
     else setDragX(0);
   };
@@ -204,193 +118,167 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-(--bg) text-(--text-primary) pb-24 md:px-10 overflow-x-hidden transition-colors duration-300">
+    <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
 
-      <div className="flex items-center justify-between mb-6">
-
-        <div className="relative" ref={menuRef}>
-          <div
-            onClick={() => setShowMenu(!showMenu)}
-            className="w-11 h-11 rounded-full bg-(--card-bg) shadow-md flex items-center justify-center cursor-pointer overflow-hidden"
-          >
-            {profilePhoto ? (
-              <img
-                src={profilePhoto}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="font-semibold text-(--accent)">
-                {username?.charAt(0).toUpperCase() || "U"}
-              </span>
-            )}
+      {/* ================= PROGRESS CARD ================= */}
+      <div className="bg-linear-to-br from-(--card-bg) to-(--bg) p-6 sm:p-8 rounded-[2rem] mb-8 shadow-sm border border-(--border)/60 relative overflow-hidden">
+        {/* Decorative background blob */}
+        <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] bg-(--gradient-start)/20 rounded-full blur-[50px] pointer-events-none"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <p className="text-sm font-medium opacity-60 mb-1 tracking-wide uppercase">Your Progress</p>
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-3xl font-bold bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">
+                {progressPercentage}%
+              </h2>
+              <span className="text-sm opacity-60 font-medium">Completed</span>
+            </div>
           </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={handleProfileUpload}
-            className="hidden"
-          />
-
-          {showMenu && (
-            <div className="absolute left-0 mt-2 w-42 bg-(--card-bg) border border-(--border) rounded-xl p-3 shadow-lg z-50">
-              <p className="text-sm mb-2 p-2">{username}</p>
-
-              <button
-                onClick={() => fileInputRef.current.click()}
-                className="text-sm w-full text-left p-2 rounded-lg hover:bg-(--border)"
-              >
-                Change Profile Photo
-              </button>
-
-              <button
-                onClick={onLogout}
-                className="text-sm w-full text-left mt-2 p-2 rounded-lg text-red-500 hover:bg-red-500/10"
-              >
-                Logout
-              </button>
+          <div className="w-full md:max-w-md flex flex-col gap-2">
+            <div className="flex justify-between text-xs font-medium opacity-70 px-1">
+              <span>{completedCount} Tasks Done</span>
+              <span>{todos.length - completedCount} Remaining</span>
             </div>
-          )}
-        </div>
-
-        <h1 className="text-xl font-semibold">TaskFlow</h1>
-
-        <SettingsIcon
-          className="cursor-pointer text-accent opacity-70 hover:opacity-100"
-          onClick={() => setCurrentPage("settings")}
-        />
-      </div>
-
-      <div className="bg-(--card-bg) rounded-2xl p-5 mb-6 shadow-md border border-(--border)">
-        <p className="text-xs mb-1">Daily Progress</p>
-
-        <div className="flex items-start gap-2">
-          <h2 className="text-lg font-medium">
-            {completedCount} / {todos.length} <span>Tasks</span>
-          </h2>
-          <span className="text-xl font-semibold text-(--accent)">
-            {progressPercentage}%
-          </span>
-        </div>
-
-        <div className="mt-3 h-2 bg-(--border) rounded-full overflow-hidden">
-          <div
-            className="h-2 bg-(--accent) rounded-full transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }}
-          />
+            <div className="w-full h-3 bg-(--border)/50 rounded-full overflow-hidden shadow-inner">
+              <div
+                className="h-full bg-linear-to-r from-(--gradient-start) to-(--gradient-end) rounded-full transition-all duration-700 ease-out relative"
+                style={{ width: `${progressPercentage}%` }}
+              >
+                <div className="absolute top-0 right-0 bottom-0 w-8 bg-white/20"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-2 mb-5 pb-1 overflow-x-auto scrollbar-none">
-        {["all", "focused", "upcoming", "completed"].map((filter) => (
+      {/* ================= FILTERS ================= */}
+      <div className="flex gap-2 mb-6 pb-2 overflow-x-auto scrollbar-none snap-x">
+        {["focused", "upcoming", "completed", "all"].map((filter) => (
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`px-4 py-2 rounded-full bg-(--card-bg) text-sm transition whitespace-nowrap ${
-              activeFilter === filter
-                ? "bg-accent text-(--accent) border border-(--accent)"
-                : "bg-(--card-bg) text-(--text-secondary) hover:opacity-80 shadow-md border border-(--border)"
-            }`}
+            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 snap-start whitespace-nowrap outline-none ${activeFilter === filter
+                ? "bg-(--accent) text-white shadow-md shadow-(--gradient-start)/20 scale-105"
+                : "bg-(--card-bg) text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/50 border border-transparent"
+              }`}
           >
             {filter.charAt(0).toUpperCase() + filter.slice(1)}
           </button>
         ))}
       </div>
 
+      {/* ================= TASK LIST ================= */}
       {filteredTodos.length === 0 ? (
-        <div className="text-center py-10 bg-(--card-bg) border border-(--border) rounded-2xl opacity-70 shadow-md">
-          No tasks here 🎉
+        <div className="flex flex-col items-center justify-center py-20 px-4 mt-8 bg-(--card-bg)/30 border border-dashed border-(--border) rounded-3xl opacity-80">
+          <div className="w-16 h-16 rounded-full bg-(--border)/50 flex items-center justify-center mb-4 text-(--text-secondary)">
+            <ClipboardList size={32} />
+          </div>
+          <h3 className="text-lg font-semibold mb-1">You're all caught up!</h3>
+          <p className="text-sm opacity-60 text-center max-w-[250px]">
+            {activeFilter === 'completed' ? "You haven't finished any tasks yet." : "There are no pending tasks in this view. Enjoy your day!"}
+          </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredTodos.map((todo) => (
-            <div key={todo._id} className="relative w-full max-w-full overflow-hidden shadow-md rounded-2xl">
+            <div key={todo._id} className="relative w-full max-w-full overflow-hidden rounded-2xl group">
 
-              <div className="absolute right-0 top-0 bottom-0 w-[55px] flex items-center justify-center pointer-events-auto border border-(--border)">
+              {/* Swipe Background (Delete Action) */}
+              <div className="absolute right-0 top-0 bottom-0 w-[60px] flex items-center justify-center bg-red-500 rounded-r-2xl">
                 <button
-                  onClick={() => handleDelete(todo._id)}
-                  className="w-[55px] h-full bg-red-500/10 text-red-500 text-xs font-semibold rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-red-500/20 transition"
+                  onClick={(e) => handleDelete(todo._id, e)}
+                  className="w-full h-full flex items-center justify-center text-white"
                 >
-                  <DeleteIcon size={18} />
-                  DELETE
+                  <Trash2 size={20} />
                 </button>
               </div>
 
+              {/* Foreground Task Card */}
               <div
-                className="bg-(--card-bg) rounded-2xl p-4 flex gap-3 transition-transform duration-300 w-full shadow-md border border-(--border)"
+                className="bg-(--card-bg) rounded-2xl p-4 sm:p-5 flex items-center gap-4 w-full shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow relative z-10"
                 style={{
                   transform:
                     openId === todo._id
                       ? `translateX(-${ACTION_WIDTH}px)`
                       : draggingId === todo._id
-                      ? `translateX(-${dragX}px)`
-                      : "translateX(0px)",
-                  transition:
-                    draggingId === todo._id
-                      ? "none"
-                      : "transform 0.25s ease",
+                        ? `translateX(-${dragX}px)`
+                        : "translateX(0px)",
+                  transition: draggingId === todo._id ? "none" : "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
-                onTouchStart={(e) =>
-                  handleStart(e.targetTouches[0].clientX, todo._id)
-                }
-                onTouchMove={(e) =>
-                  handleMove(e.targetTouches[0].clientX, todo._id)
-                }
-                onTouchEnd={() => handleEnd(todo._id)}
-                onMouseDown={(e) => handleStart(e.clientX, todo._id)}
-                onMouseMove={(e) =>
-                  draggingId && handleMove(e.clientX, todo._id)
-                }
-                onMouseUp={() => handleEnd(todo._id)}
-                onMouseLeave={() =>
-                  draggingId && handleEnd(todo._id)
-                }
-              >
-                <input
-                  type="checkbox"
-                  checked={todo.completed}
-                  onChange={() => handleToggleComplete(todo)}
-                  className="w-5 h-5 bg-(--accent) text-(--accent) mt-1 cursor-pointer rounded-xl"
-                />
 
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
+                // Touch events for Mobile Swipe
+                onTouchStart={(e) => handleStart(e.targetTouches[0].clientX, todo._id)}
+                onTouchMove={(e) => handleMove(e.targetTouches[0].clientX, todo._id)}
+                onTouchEnd={() => handleEnd(todo._id)}
+
+                // Mouse events for Desktop Swipe
+                onMouseDown={(e) => handleStart(e.clientX, todo._id)}
+                onMouseMove={(e) => draggingId && handleMove(e.clientX, todo._id)}
+                onMouseUp={() => handleEnd(todo._id)}
+                onMouseLeave={() => draggingId && handleEnd(todo._id)}
+              >
+
+                {/* Custom Checkbox */}
+                <button
+                  onClick={(e) => handleToggleComplete(todo, e)}
+                  className="shrink-0 flex items-center justify-center focus:outline-none rounded-full transition-transform active:scale-90"
+                >
+                  {todo.completed ? (
+                    <CheckCircle2 size={24} className="text-(--accent) fill-(--accent)/10" />
+                  ) : (
+                    <Circle size={24} className="text-(--text-secondary) opacity-50 hover:opacity-100 transition-opacity" />
+                  )}
+                </button>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 pointer-events-none sm:pointer-events-auto cursor-pointer" onClick={(e) => handleToggleComplete(todo, e)}>
+                  <div className="flex justify-between items-start gap-2">
                     <h3
-                      className={`text-sm font-medium ${
-                        todo.completed
-                          ? "line-through opacity-50"
-                          : ""
-                      }`}
+                      className={`text-base sm:text-lg font-semibold truncate transition-colors duration-300 ${todo.completed ? "opacity-40 line-through" : "text-(--text-primary)"
+                        }`}
                     >
                       {todo.title}
                     </h3>
 
-                    <span
-                      className={`text-[10px] px-2 py-1 rounded-full font-semibold ${
-                        todo.priority === "high"
-                          ? "bg-red-500/15 text-red-500"
-                          : todo.priority === "low"
-                          ? "bg-green-500/15 text-green-500"
-                          : "bg-yellow-500/15 text-yellow-500"
-                      }`}
-                    >
-                      {(todo.priority || "medium").toUpperCase()}
-                    </span>
+                    {/* Priority Badge */}
+                    {todo.priority && (
+                      <span
+                        className={`text-[10px] sm:text-xs px-2.5 py-1 rounded-md font-bold uppercase tracking-wider shrink-0 mt-0.5 ${todo.priority === "high"
+                            ? "bg-red-500/10 text-red-500"
+                            : todo.priority === "low"
+                              ? "bg-green-500/10 text-green-500"
+                              : "bg-yellow-500/10 text-yellow-500"
+                          } ${todo.completed ? 'opacity-40' : ''}`}
+                      >
+                        {todo.priority}
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-sm opacity-70 mt-1 font-extralight">
-                    {todo.description}
-                  </p>
+                  {todo.description && (
+                    <p className={`text-sm mt-0.5 line-clamp-2 transition-opacity duration-300 ${todo.completed ? "opacity-30" : "opacity-60"}`}>
+                      {todo.description}
+                    </p>
+                  )}
 
                   {todo.dueDate && (
-                    <div className="text-xs opacity-60 mt-2">
-                      {new Date(todo.dueDate).toLocaleDateString()}
+                    <div className={`text-xs mt-2 font-medium flex items-center gap-1 ${todo.completed ? "opacity-30" : "text-(--accent)/80"}`}>
+                      {new Date(todo.dueDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                       {todo.dueTime && ` • ${todo.dueTime}`}
                     </div>
                   )}
                 </div>
+
+                {/* Desktop Hover Delete Action (Hidden on touch devices, shown on parent group hover) */}
+                <button
+                  onClick={(e) => handleDelete(todo._id, e)}
+                  className="hidden sm:flex shrink-0 w-10 h-10 items-center justify-center rounded-xl text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 transition-all active:scale-95"
+                  aria-label="Delete Task"
+                >
+                  <Trash2 size={18} />
+                </button>
               </div>
             </div>
           ))}

@@ -1,5 +1,5 @@
-import { ArrowLeft, Settings } from "lucide-react";
 import { useMemo } from "react";
+import { Activity, Award, Zap, TrendingUp } from "lucide-react";
 
 /* ================= SAFE DATE HELPER ================= */
 
@@ -27,12 +27,8 @@ export default function Insights({
   todos = [],
   focusSessions = [],
 }) {
-  console.log("INSIGHTS RENDERED");
-console.log("Todos received:", todos);
-console.log("Todos length:", todos.length);
-  /* ================= WEEKLY EFFICIENCY ================= */
-  /* Based on tasks COMPLETED in last 7 days */
 
+  /* ================= WEEKLY EFFICIENCY ================= */
   const weeklyData = useMemo(() => {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
@@ -57,14 +53,12 @@ console.log("Todos length:", todos.length);
       completed: weekCompleted.length,
       efficiency:
         weekCreated.length > 0
-          ? Math.round((weekCompleted.length / weekCreated.length) * 100)
+          ? Math.min(Math.round((weekCompleted.length / weekCreated.length) * 100), 100)
           : 0,
     };
   }, [todos]);
 
   /* ================= STREAK ================= */
-  /* Consecutive completion days */
-
   const streak = useMemo(() => {
     const completedDays = todos
       .filter((t) => t.completed)
@@ -75,16 +69,18 @@ console.log("Todos length:", todos.length);
     if (!uniqueDays.length) return 0;
 
     const todayFormatted = formatDay(new Date());
+    const yesterdayFormatted = formatDay(new Date(Date.now() - 86400000));
 
-    // If no task completed today → streak is 0
-    if (uniqueDays[0] !== todayFormatted) return 0;
+    if (uniqueDays[0] !== todayFormatted && uniqueDays[0] !== yesterdayFormatted) {
+      return 0;
+    }
 
     let count = 1;
 
     for (let i = 1; i < uniqueDays.length; i++) {
       const prev = new Date(uniqueDays[i - 1]);
       const curr = new Date(uniqueDays[i]);
-      const diff = (prev - curr) / (1000 * 60 * 60 * 24);
+      const diff = Math.round((prev - curr) / (1000 * 60 * 60 * 24));
 
       if (diff === 1) count++;
       else break;
@@ -94,7 +90,6 @@ console.log("Todos length:", todos.length);
   }, [todos]);
 
   /* ================= TOP CATEGORY ================= */
-
   const topCategory = useMemo(() => {
     const map = {};
 
@@ -118,7 +113,6 @@ console.log("Todos length:", todos.length);
   }, [todos]);
 
   /* ================= PEAK HOUR ================= */
-
   const peakHour = useMemo(() => {
     const map = {};
 
@@ -138,12 +132,12 @@ console.log("Todos length:", todos.length);
       }
     });
 
-    return peak !== null ? `${peak}:00` : "N/A";
+    return peak !== null
+      ? new Date(0, 0, 0, peak).toLocaleTimeString([], { hour: 'numeric' })
+      : "N/A";
   }, [focusSessions]);
 
   /* ================= MONTHLY COMPLETION ================= */
-  /* Based on completed tasks this month */
-
   const monthlyCompletion = useMemo(() => {
     const now = new Date();
     const month = now.getMonth();
@@ -174,58 +168,110 @@ console.log("Todos length:", todos.length);
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-(--bg) text-(--text-primary) md:px-10 space-y-6 pb-20">
+    <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
+      
+      {/* HERO METRIC */}
+      <div className="relative bg-(--card-bg) rounded-3xl p-6 sm:p-8 mb-6 shadow-sm border border-(--border)/60 overflow-hidden group">
+        <div className="absolute top-[-50px] right-[-50px] w-[200px] h-[200px] bg-linear-to-bl from-(--gradient-start)/20 to-(--gradient-end)/10 rounded-full blur-[50px] pointer-events-none transition-all duration-700 group-hover:scale-110"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp size={20} className="text-(--accent)" />
+              <p className="text-sm font-bold tracking-widest opacity-60 uppercase">Weekly Efficiency</p>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <h1 className="text-5xl sm:text-6xl font-extrabold bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent drop-shadow-sm">
+                {weeklyData.efficiency}%
+              </h1>
+            </div>
+            <p className="text-sm font-medium mt-2">
+              <span className="text-(--text-primary)">{weeklyData.completed} out of {weeklyData.total}</span> tasks completed this week.
+            </p>
+          </div>
 
-      <div className="flex items-center justify-between">
-        <ArrowLeft
-          onClick={() => setCurrentPage("home")}
-          className="cursor-pointer"
-        />
-        <h3 className="text-lg font-semibold">Insights</h3>
-        <Settings
-          onClick={() => setCurrentPage("settings")}
-          className="cursor-pointer"
-        />
+          {/* Simple Decorative Graph */}
+          <div className="hidden md:flex flex-1 max-w-[200px] h-16 items-end gap-2 opacity-80 pointer-events-none">
+            {[40, 70, 45, 90, 60, 80, weeklyData.efficiency].map((val, i) => (
+               <div key={i} className={`flex-1 rounded-t-sm ${i === 6 ? 'bg-linear-to-t from-(--gradient-end) to-(--gradient-start)' : 'bg-(--border)'}`} style={{ height: `${val || 10}%` }}></div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* WEEKLY */}
-      <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4 border border-(--border)">
-        <p className="text-xs opacity-60">WEEKLY EFFICIENCY</p>
-        <h1 className="text-4xl font-bold text-(--accent)">
-          {weeklyData.efficiency}%
-        </h1>
-        <p className="text-sm opacity-70">
-          {weeklyData.completed} / {weeklyData.total} Tasks completed
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
 
         {/* STREAK */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-4 border border-(--border)">
-          <div className="text-3xl">🔥</div>
-          <p className="text-sm opacity-70">Current Streak</p>
-          <h2 className="text-3xl font-bold">{streak} Days</h2>
-        </div>
-
-        {/* TOP CATEGORY */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-md space-y-3 border border-(--border)">
-          <p className="text-xs opacity-60">TOP CATEGORY</p>
-          <h3 className="text-xl font-semibold">{topCategory}</h3>
+        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Current Streak</p>
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+              <Activity size={20} />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-4xl font-black mb-1">{streak} <span className="text-lg font-medium opacity-50">Days</span></h2>
+            <p className="text-sm font-medium opacity-70">Keep the momentum going!</p>
+          </div>
         </div>
 
         {/* PEAK HOUR */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 shadow-lg space-y-3 border border-(--border)">
-          <p className="text-xs opacity-60">PEAK ENERGY</p>
-          <h3 className="text-xl font-semibold">{peakHour}</h3>
+        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Peak Focus</p>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+              <Zap size={20} />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-black mb-1 text-(--text-primary)">{peakHour}</h2>
+            <p className="text-sm font-medium opacity-70">Your most productive period.</p>
+          </div>
         </div>
 
-        {/* MONTHLY */}
-        <div className="bg-(--card-bg) rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-lg border border-(--border)">
-          <p className="text-xs opacity-60">MONTHLY COMPLETION</p>
-          <div className="relative w-28 h-28 rounded-full bg-linear-to-tr from-cyan-500 to-blue-500 flex items-center justify-center">
-            <div className="absolute w-20 h-20 bg-(--card-bg) rounded-full flex items-center justify-center text-lg font-semibold">
-              {monthlyCompletion}%
+        {/* TOP CATEGORY */}
+        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Top Topic</p>
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
+              <Award size={20} />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-black mb-1 truncate">{topCategory}</h2>
+            <p className="text-sm font-medium opacity-70">Your most frequent label.</p>
+          </div>
+        </div>
+
+        {/* MONTHLY COMPLETION */}
+        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex-1 w-full box-border">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-(--accent)/10 text-(--accent) flex items-center justify-center">
+                <TrendingUp size={20} />
+              </div>
+              <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Monthly Progress</p>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold mb-2">You're tracking well</h3>
+            <p className="text-sm font-medium opacity-70 max-w-[280px]">Complete the remaining tasks to fill your productivity circle for this month.</p>
+          </div>
+
+          <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
+            <svg className="w-full h-full transform -rotate-90 select-none drop-shadow-sm" viewBox="0 0 100 100">
+              {/* Background Map Ring */}
+              <circle cx="50" cy="50" r="40" className="stroke-(--border) fill-transparent" strokeWidth="8" />
+              {/* Foreground Glow Ring */}
+              <circle
+                cx="50" cy="50" r="40"
+                className="stroke-(--gradient-start) fill-transparent transition-all duration-1000 ease-out"
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray="251.2"
+                strokeDashoffset={251.2 - (251.2 * monthlyCompletion) / 100}
+              />
+            </svg>
+            <div className="absolute flex flex-col items-center justify-center mt-1">
+              <span className="text-2xl font-black bg-linear-to-br from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">{monthlyCompletion}%</span>
             </div>
           </div>
         </div>

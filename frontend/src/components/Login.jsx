@@ -89,14 +89,7 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-(--bg) flex justify-center items-center text-(--text-primary) px-8 transition-colors duration-300">
-
-      {/* Brand */}
-      <div className="w-full max-w-md">
-        <h1 className="text-center text-3xl font-bold mb-2">Welcome back</h1>
-        <p className="text-center text-(--text-secondary) mb-8">
-          Sign in to continue
-        </p>
+    <div className="w-full">
 
         <form onSubmit={handleLogin} className="space-y-5">
 
@@ -203,7 +196,7 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
         </form>
 
         {/* Switch */}
-        <p className="mt-8 text-sm text-[var(--text-secondary)]">
+        <p className="mt-8 text-sm text-[var(--text-secondary)] text-center mb-2">
           Don’t have an account?
           <span
             onClick={() => setIsLogin(false)}
@@ -212,7 +205,6 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
             Create one
           </span>
         </p>
-      </div>
     </div>
   );
 }

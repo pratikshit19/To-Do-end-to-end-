@@ -1,5 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { X } from "lucide-react";
 
 export function CreateTodo({ fetchTodos, closeModal }) {
   const today = new Date().toISOString().split("T")[0];
@@ -10,9 +11,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
   const [dueDate, setDueDate] = useState(today);
   const [dueTime, setDueTime] = useState("");
 
-  const token =
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token");
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,42 +24,33 @@ export function CreateTodo({ fetchTodos, closeModal }) {
     const toastId = toast.loading("Creating task...");
 
     try {
-      const response = await fetch(
-        "https://to-do-app-616k.onrender.com/todo",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            title,
-            description,
-            priority,
-            dueDate,
-            dueTime,
-          }),
-        }
-      );
+      const response = await fetch("https://to-do-app-616k.onrender.com/todo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          priority,
+          dueDate,
+          dueTime,
+        }),
+      });
 
       if (response.status === 403) {
         localStorage.clear();
         sessionStorage.clear();
-        toast.error(
-          "Session expired. Please login again.",
-          { id: toastId }
-        );
+        toast.error("Session expired. Please login again.", { id: toastId });
         window.location.reload();
         return;
       }
 
-      if (!response.ok)
-        throw new Error("Failed to create task");
+      if (!response.ok) throw new Error("Failed to create task");
 
       await fetchTodos();
-      toast.success("Task created!", {
-        id: toastId,
-      });
+      toast.success("Task created!", { id: toastId });
 
       setTitle("");
       setDescription("");
@@ -69,133 +59,128 @@ export function CreateTodo({ fetchTodos, closeModal }) {
       setDueTime("");
       closeModal();
     } catch (err) {
-      toast.error(err.message, {
-        id: toastId,
-      });
+      toast.error(err.message, { id: toastId });
     }
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-(--createbg) rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+    <div className="w-full relative bg-(--card-bg) rounded-3xl p-6 sm:p-8 shadow-2xl shadow-(--gradient-start)/10 border border-(--border)/80">
 
-      <h2 className="text-xl md:text-2xl font-semibold text-center">
-        Create New Task
-      </h2>
+      {/* Decorative Blur */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-(--gradient-end)/10 rounded-full blur-[40px] pointer-events-none"></div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5"
-      >
+      <div className="flex items-center justify-between mb-6 relative z-10">
+        <h2 className="text-xl sm:text-2xl font-bold bg-linear-to-r from-(--text-primary) to-(--text-secondary) bg-clip-text text-transparent">
+          Create New Task
+        </h2>
+        <button
+          onClick={closeModal}
+          className="w-8 h-8 rounded-full flex items-center justify-center bg-(--border)/50 hover:bg-(--border) text-(--text-secondary) transition-colors"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
         {/* Title */}
-        <input
-          type="text"
-          placeholder="Task title..."
-          value={title}
-          onChange={(e) =>
-            setTitle(e.target.value)
-          }
-          required
-          className="w-full  bg-(--card-bg) px-4 py-3 rounded-xl text-(--text-primary) focus:outline-none focus:ring focus:ring-(--accent) transition"
-        />
+        <div>
+          <input
+            type="text"
+            placeholder="What needs to be done?"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            autoFocus
+            className="w-full bg-(--bg) px-5 py-3.5 rounded-xl text-lg font-medium text-(--text-primary) border border-transparent focus:border-(--accent) focus:ring-4 ring-(--accent)/10 transition-all outline-none"
+          />
+        </div>
 
         {/* Description */}
-        <textarea
-          placeholder="Task description..."
-          value={description}
-          onChange={(e) =>
-            setDescription(e.target.value)
-          }
-          required
-          rows={4}
-          className="w-full  px-4 py-3 rounded-xl bg-(--card-bg) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent) transition resize-none"
-        />
+        <div>
+          <textarea
+            placeholder="Add context or notes... (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="w-full px-5 py-3 rounded-xl bg-(--bg) text-sm text-(--text-secondary) border border-transparent focus:border-(--accent) focus:ring-4 ring-(--accent)/10 transition-all resize-none outline-none"
+          />
+        </div>
 
-        {/* Date & Time */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col space-y-1">
-            <label className="text-sm opacity-70">
+        {/* Date & Time Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-xs font-semibold tracking-wide uppercase opacity-60">
               Due Date
             </label>
             <input
               type="date"
               value={dueDate}
-              onChange={(e) =>
-                setDueDate(e.target.value)
-              }
+              onChange={(e) => setDueDate(e.target.value)}
               required
-              className="px-4 py-3 bg-(--card-bg) rounded-xl text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
+              className="px-4 py-3 bg-(--bg) rounded-xl text-sm font-medium text-(--text-primary) border border-transparent focus:border-(--accent) focus:ring-4 ring-(--accent)/10 outline-none transition-all"
             />
           </div>
 
-          <div className="flex flex-col space-y-1">
-            <label className="text-sm opacity-70">
-              Time
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-xs font-semibold tracking-wide uppercase opacity-60">
+              Time (Optional)
             </label>
             <input
               type="time"
               value={dueTime}
-              onChange={(e) =>
-                setDueTime(e.target.value)
-              }
-              className="px-4 py-3 rounded-xl bg-(--card-bg) text-(--text-secondary) focus:outline-none focus:ring focus:ring-(--accent)"
+              onChange={(e) => setDueTime(e.target.value)}
+              className="px-4 py-3 bg-(--bg) rounded-xl text-sm font-medium text-(--text-primary) border border-transparent focus:border-(--accent) focus:ring-4 ring-(--accent)/10 outline-none transition-all"
             />
           </div>
         </div>
 
-        {/* Priority */}
-        <div className="space-y-2">
-          <label className="text-sm opacity-70">
-            Priority
+        {/* Priority Tabs */}
+        <div className="pt-2 space-y-2.5">
+          <label className="text-xs font-semibold tracking-wide uppercase opacity-60">
+            Priority Level
           </label>
+          <div className="flex gap-2 p-1.5 bg-(--bg) rounded-xl border border-(--border)/50">
+            {["low", "medium", "high"].map((level) => {
+              const isActive = priority === level;
 
-          <div className="flex gap-3">
-            {["low", "medium", "high"].map(
-              (level) => {
-                const isActive =
-                  priority === level;
+              let activeColors = "";
+              if (level === "low") activeColors = "bg-green-500 text-white shadow-md shadow-green-500/20";
+              else if (level === "medium") activeColors = "bg-yellow-500 text-white shadow-md shadow-yellow-500/20";
+              else if (level === "high") activeColors = "bg-red-500 text-white shadow-md shadow-red-500/20";
 
-                return (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() =>
-                      setPriority(level)
-                    }
-                    className={`flex-1 py-2 rounded-xl text-sm font-medium transition 
-                      ${
-                        isActive
-                          ? level === "high"
-                            ? "bg-red-500/30 text-red-500"
-                            : level === "medium"
-                            ? "bg-yellow-500/20 text-yellow-500"
-                            : "bg-emerald-500/30 text-emerald-400"
-                          : "bg-(--bg) text-(--text-secondary) opacity-70 hover:opacity-100"
-                      }`}
-                  >
-                    {level.charAt(0).toUpperCase() +
-                      level.slice(1)}
-                  </button>
-                );
-              }
-            )}
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setPriority(level)}
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 outline-none
+                    ${isActive
+                      ? activeColors
+                      : "text-(--text-secondary) hover:bg-(--border)/80"
+                    }`}
+                >
+                  {level}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-end gap-3 pt-4">
+        {/* Footer Actions */}
+        <div className="flex justify-end gap-3 pt-6 border-t border-(--border)/50 mt-4">
           <button
             type="button"
             onClick={closeModal}
-            className="px-5 py-2 rounded-xl bg-(--border) hover:opacity-80 transition"
+            className="px-6 py-2.5 rounded-xl font-medium text-(--text-secondary) hover:bg-(--border) transition-colors focus:outline-none"
           >
             Cancel
           </button>
 
           <button
             type="submit"
-            className="px-5 py-2 rounded-xl bg-(--accent) text-white hover:opacity-90 transition"
+            className="px-8 py-2.5 rounded-xl bg-(--accent) text-white font-medium hover:brightness-110 shadow-md shadow-(--gradient-start)/20 active:scale-95 transition-all focus:outline-none"
           >
-            Create Task
+            Save Task
           </button>
         </div>
       </form>

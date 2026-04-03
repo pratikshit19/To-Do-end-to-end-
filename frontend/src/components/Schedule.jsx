@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, CalendarOff, Circle, CheckCircle2 } from "lucide-react";
 
 export default function Schedule({ todos = [] }) {
   const today = new Date();
 
   const [currentDate, setCurrentDate] = useState(today);
   const [selectedDate, setSelectedDate] = useState(today);
-  const [viewMode, setViewMode] = useState("month");
+  const [viewMode, setViewMode] = useState("week");
 
   useEffect(() => {
     if (viewMode === "month") {
@@ -86,169 +87,172 @@ export default function Schedule({ todos = [] }) {
   const completedCount = filteredTasks.filter((t) => t.completed).length;
 
   return (
-    <div className="min-h-screen bg-(--bg) text-(--text-primary) md:p-8">
+    <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
 
-      {/* HEADER */}
-      <div className="max-w-5xl mx-auto">
-
-        <div className="mb-6">
-          <p className="text-xs tracking-widest text-(--accent)">
-            TIMELINE
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <p className="text-xs font-semibold tracking-widest bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent uppercase mb-1">
+            Timeline
           </p>
-
-          <div className="flex items-center justify-between mt-2">
-            <button
-              onClick={() =>
-                viewMode === "month"
-                  ? changeMonth(-1)
-                  : changeWeek(-1)
-              }
-              className="text-xl px-3 py-1 hover:text-(--accent)"
-            >
-              ‹
-            </button>
-
-            <h1 className="text-xl md:text-2xl font-semibold">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-extrabold tracking-tight">
               {viewMode === "month"
-                ? currentDate.toLocaleString("default", {
-                    month: "long",
-                    year: "numeric",
-                  })
-                : `Week of ${selectedDate.toLocaleDateString("default", {
-                    month: "short",
-                    day: "numeric",
-                  })}`}
+                ? currentDate.toLocaleString("default", { month: "long", year: "numeric" })
+                : `Week of ${selectedDate.toLocaleDateString("default", { month: "short", day: "numeric" })}`}
             </h1>
-
-            <button
-              onClick={() =>
-                viewMode === "month"
-                  ? changeMonth(1)
-                  : changeWeek(1)
-              }
-              className="text-xl px-3 py-1 hover:text-[var(--accent)]"
-            >
-              ›
-            </button>
-          </div>
-
-          {/* VIEW TOGGLE */}
-          <div className="flex gap-2 mt-4">
-            {["month", "week"].map((mode) => (
+            <div className="flex gap-1 ml-2">
               <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={`px-4 py-1 rounded-full text-sm transition ${
-                  viewMode === mode
-                    ? "bg-[var(--accent)] text-white"
-                    : "bg-[var(--card-bg)] text-[var(--text-secondary)] shadow-md"
-                }`}
+                onClick={() => viewMode === "month" ? changeMonth(-1) : changeWeek(-1)}
+                className="p-1.5 rounded-lg bg-(--card-bg) border border-(--border)/60 hover:bg-(--border) transition-colors"
               >
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                <ChevronLeft size={20} />
               </button>
-            ))}
+              <button
+                onClick={() => viewMode === "month" ? changeMonth(1) : changeWeek(1)}
+                className="p-1.5 rounded-lg bg-(--card-bg) border border-(--border)/60 hover:bg-(--border) transition-colors"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* WEEKDAY ROW */}
-        <div className="grid grid-cols-7 text-center text-sm text-(--text-secondary) mb-2">
+        {/* View Toggle */}
+        <div className="bg-(--card-bg) p-1.5 rounded-xl border border-(--border)/60 flex inline-block w-fit">
+          {["week", "month"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 outline-none 
+                ${viewMode === mode
+                  ? "bg-(--accent) text-white shadow-md shadow-(--gradient-start)/20 scale-100"
+                  : "text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg)"
+                }`}
+            >
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CALENDAR SCROLLER */}
+      <div className="bg-(--card-bg) rounded-3xl p-5 sm:p-6 shadow-sm border border-(--border)/60 mb-8 overflow-hidden">
+        {/* Days Header */}
+        <div className={`grid ${viewMode === "month" ? "grid-cols-7" : "grid-cols-7"} text-center text-[10px] sm:text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-4`}>
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
             <span key={d}>{d}</span>
           ))}
         </div>
 
-        {/* CALENDAR GRID */}
-        <div
-          className={`grid  ${
-            viewMode === "month"
-              ? "grid-cols-7 grid-rows-2"
-              : "grid-cols-7"
-          } gap-2 `}
-        >
+        {/* Calendar Grid */}
+        <div className={`grid gap-2 sm:gap-3 ${viewMode === "month" ? "grid-cols-7 grid-rows-2" : "grid-cols-7"} transition-all duration-300`}>
           {calendarDays.map((date, i) => {
-            const isSelected =
-              formatKey(date) === formatKey(selectedDate);
-
-            const hasTasks = todos.some((t) =>
-              t.dueDate &&
-              formatKey(new Date(t.dueDate)) === formatKey(date)
-            );
+            const isSelected = formatKey(date) === formatKey(selectedDate);
+            const isToday = formatKey(date) === formatKey(today);
+            const hasTasks = todos.some((t) => t.dueDate && formatKey(new Date(t.dueDate)) === formatKey(date));
 
             return (
-              <div
+              <button
                 key={i}
                 onClick={() => setSelectedDate(date)}
-                className={`relative flex items-center justify-center h-12 rounded-lg cursor-pointer transition shadow-md
-                  ${
-                    isSelected
-                      ? "bg-(--accent) text-white"
-                      : "bg-(--card-bg) hover:bg-(--border)"
+                className={`relative flex flex-col items-center justify-center h-14 sm:h-16 rounded-2xl cursor-pointer transition-all duration-300 outline-none focus:ring-2 focus:ring-(--accent)/50
+                  ${isSelected
+                    ? "bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white shadow-lg shadow-(--gradient-start)/30 scale-105 z-10"
+                    : "bg-(--bg) hover:bg-(--border) text-(--text-primary) border border-transparent"
                   }
+                  ${isToday && !isSelected ? "ring-2 ring-(--accent)/30" : ""}
                 `}
               >
-                {date.getDate()}
+                <span className={`text-base sm:text-lg font-bold ${isSelected ? "text-white" : ""}`}>
+                  {date.getDate()}
+                </span>
 
-                {hasTasks && (
-                  <span className="absolute bottom-1 w-1.5 h-1.5 bg-(--accent) rounded-full"></span>
-                )}
-              </div>
+                {/* Dot Indicator */}
+                <div className={`h-1.5 w-1.5 rounded-full mt-1 transition-all ${hasTasks ? (isSelected ? "bg-white" : "bg-(--accent)") : "bg-transparent"
+                  }`} />
+              </button>
             );
           })}
         </div>
+      </div>
 
-        {/* TASK HEADER */}
-        <div className="mt-8 flex justify-between items-center">
-          <h3 className="text-lg font-semibold">
-            Tasks for{" "}
-            {selectedDate.toLocaleDateString("default", {
-              month: "short",
-              day: "numeric",
-            })}
+      {/* TASKS AREA */}
+      <div>
+        <div className="flex items-center justify-between mb-5 px-1">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            Schedule
+            <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-(--border) text-(--text-secondary)">
+              {selectedDate.toLocaleDateString("default", { month: "short", day: "numeric" })}
+            </span>
           </h3>
 
-          <span className="text-sm text-(--text-secondary)">
-            {pendingCount} Pending · {completedCount} Completed
-          </span>
+          <div className="flex gap-3 text-sm font-medium">
+            <span className="text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-lg">{completedCount} Done</span>
+            <span className="text-amber-500 bg-amber-500/10 px-3 py-1 rounded-lg">{pendingCount} Left</span>
+          </div>
         </div>
 
-        {/* TASK LIST */}
-        <div className="mt-4 space-y-3">
-          {filteredTasks.length === 0 ? (
-            <p className="text-(--text-secondary)">
-              No tasks for this day
+        {/* Tasks List */}
+        {filteredTasks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 mt-2 bg-(--card-bg)/30 border border-dashed border-(--border) rounded-3xl opacity-80">
+            <div className="w-16 h-16 rounded-full bg-(--border)/50 flex items-center justify-center mb-4 text-(--text-secondary)">
+              <CalendarOff size={32} />
+            </div>
+            <h3 className="text-lg font-semibold mb-1">A completely free day!</h3>
+            <p className="text-sm opacity-60 text-center max-w-[250px]">
+              You have no tasks scheduled for this date.
             </p>
-          ) : (
-            filteredTasks.map((task) => (
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredTasks.map((task) => (
               <div
                 key={task._id}
-                className={`p-4 rounded-xl bg-(--card-bg) flex justify-between items-center transition shadow-md border border-(--border)
-                  ${
-                    task.completed
-                      ? "opacity-60 line-through"
-                      : ""
-                  }
+                className={`flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-(--card-bg) shadow-sm border border-(--border)/60 transition-all duration-300
+                  ${task.completed ? "opacity-50" : "hover:shadow-md hover:border-(--border)"}
                 `}
               >
-                <div>
-                  <h4 className="font-medium">
-                    {task.title}
-                  </h4>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    {task.dueTime
-                      ? `⏰ ${task.dueTime}`
-                      : "No time set"}
-                  </p>
+                {/* SVG Icon Checkbox Mock (Schedule is read-only) */}
+                <div className="shrink-0 flex items-center justify-center pointer-events-none">
+                  {task.completed ? (
+                    <CheckCircle2 size={24} className="text-(--accent) fill-(--accent)/10" />
+                  ) : (
+                    <Circle size={24} className="text-(--text-secondary) opacity-50" />
+                  )}
                 </div>
 
-                <span className="text-xs px-3 py-1 rounded-full bg-[var(--border-color)]">
-                  {task.dueTime || "--:--"}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start gap-2">
+                    <h4 className={`text-base font-semibold truncate ${task.completed ? 'line-through' : ''}`}>
+                      {task.title}
+                    </h4>
 
+                    {/* Time Badge */}
+                    <span className="text-xs font-bold px-3 py-1 rounded-lg bg-(--bg) border border-(--border)/50 text-(--text-secondary) shrink-0 shadow-inner">
+                      {task.dueTime || "All Day"}
+                    </span>
+                  </div>
+
+                  {task.priority && (
+                    <span
+                      className={`inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${task.priority === "high"
+                        ? "bg-red-500/10 text-red-500"
+                        : task.priority === "low"
+                          ? "bg-green-500/10 text-green-500"
+                          : "bg-yellow-500/10 text-yellow-500"
+                        }`}
+                    >
+                      {task.priority} Priority
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
     </div>
   );
 }

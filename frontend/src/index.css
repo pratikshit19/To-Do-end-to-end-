@@ -1,40 +1,78 @@
 @import "tailwindcss";
 
-/* ===== LIGHT THEME ===== */
+/* ===== LAYOUT VARIABLES (LIGHT MODE) ===== */
 :root {
   --bg: #EFF1F3;
   --card-bg: #ffffff;
   --border: #e2e8f0;
-  --primary: #3b82f6;
-  --accent: #3b82f6;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
   --createbg: #EFF1F3;
+
+  /* Default variables (Matches Blue) */
+  --accent: #3b82f6;
+  --gradient-start: #3b82f6;
+  --gradient-end: #06b6d4;
+  --blob-one: rgba(59, 130, 246, 0.1);
+  --blob-two: rgba(6, 182, 212, 0.1);
 }
 
-/* ===== DARK THEME ===== */
+/* ===== LAYOUT VARIABLES (DARK MODE BASE) ===== */
 [data-theme="dark"] {
-  --bg:radial-gradient(circle at 20% 30%, rgba(45, 167, 238, 0.15), transparent 0%),
-    radial-gradient(circle at 80% 50%, rgba(45, 167, 238, 0.12), transparent 25%),
-    radial-gradient(circle at 0% 20%, rgba(45, 167, 238, 0.08), transparent 40%),
-    rgb(10, 10, 12);
+  --bg: rgb(10, 10, 12);
   --card-bg: #14171f;
   --border: #283241;
-  --primary: #3b82f6;
-  --accent: #60a5fa;
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --createbg: #0c1118;
+
+  /* Enhanced default dark mode glow */
+  --bg: radial-gradient(circle at 20% 30%, var(--blob-one), transparent 45%),
+    radial-gradient(circle at 80% 50%, var(--blob-two), transparent 35%),
+    rgb(10, 10, 12);
 }
-html, body {
+
+/* ===== COLOR THEME: BLUE ===== */
+:root[data-color-theme="blue"] {
+  --accent: #3b82f6;
+  --gradient-start: #3b82f6;
+  --gradient-end: #06b6d4;
+  --blob-one: rgba(59, 130, 246, 0.15);
+  --blob-two: rgba(6, 182, 212, 0.12);
+}
+
+[data-theme="dark"][data-color-theme="blue"] {
+  --accent: #60a5fa;
+  --blob-one: rgba(59, 130, 246, 0.12);
+  --blob-two: rgba(6, 85, 212, 0.1);
+}
+
+/* ===== COLOR THEME: PURPLE ===== */
+:root[data-color-theme="purple"] {
+  --accent: #a855f7;
+  --gradient-start: #a855f7;
+  --gradient-end: #ec4899;
+  --blob-one: rgba(168, 85, 247, 0.15);
+  --blob-two: rgba(236, 72, 153, 0.12);
+}
+
+[data-theme="dark"][data-color-theme="purple"] {
+  --accent: #c084fc;
+  --blob-one: rgba(168, 85, 247, 0.12);
+  --blob-two: rgba(236, 72, 153, 0.10);
+}
+
+html,
+body {
   margin: 0;
   min-height: 100vh;
   font-family: "Outfit", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text-primary);
-
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }

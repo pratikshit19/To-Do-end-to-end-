@@ -65,16 +65,7 @@ export default function ForgotPassword({ setIsLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-(--bg) flex justify-center items-center text-(--text-primary) px-8 transition-colors duration-300">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center">
-          Reset Password
-        </h1>
-
-        <p className="text-center text-(--text-secondary) mt-2 mb-8">
-          Enter your username and new password
-        </p>
-
+    <div className="w-full">
         <form onSubmit={handleReset} className="space-y-5">
           {/* Username */}
           <div>
@@ -164,7 +155,7 @@ export default function ForgotPassword({ setIsLogin }) {
         </form>
 
         {/* Switch */}
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6 mb-2">
           Remembered your password?
           <span
             onClick={() => setIsLogin(true)}
@@ -173,7 +164,6 @@ export default function ForgotPassword({ setIsLogin }) {
             Login
           </span>
         </p>
-      </div>
     </div>
   );
 }

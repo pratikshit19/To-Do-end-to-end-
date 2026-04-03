@@ -209,6 +209,33 @@ app.put("/reset-password", async (req, res) => {
   }
 });
 
+// Settings: Secure Change Password
+app.put("/change-password", authMiddleware, async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ message: "Both old and new passwords are required" });
+  }
+
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(403).json({ message: "Incorrect current password" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 app.get("/user/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password");
