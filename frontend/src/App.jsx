@@ -28,7 +28,13 @@ function AppContent() {
   );
   const [isLogin, setIsLogin] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingTodo, setEditingTodo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const openModal = (todo = null) => {
+    setEditingTodo(todo);
+    setShowModal(true);
+  };
 
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("darkMode") === "false" ? false : true
@@ -251,7 +257,7 @@ function AppContent() {
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => openModal()}
               className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-(--accent) text-white font-medium hover:brightness-110 active:scale-95 shadow-md shadow-(--gradient-start)/20 transition-all duration-200"
             >
               <Plus size={18} />
@@ -270,6 +276,7 @@ function AppContent() {
                   fetchTodos={fetchTodos}
                   onLogout={handleLogout}
                   setCurrentPage={setCurrentPage}
+                  onEdit={openModal}
                 />
               } />
               <Route path="/schedule" element={<Schedule todos={todos} />} />
@@ -288,7 +295,7 @@ function AppContent() {
 
       {/* Mobile Desktop-like FAB */}
       <button
-        onClick={() => setShowModal(true)}
+        onClick={() => openModal()}
         className="md:hidden fixed bottom-32 right-5 w-14 h-14 rounded-full bg-(--accent) text-white flex items-center justify-center shadow-md shadow-(--gradient-start)/30 hover:scale-105 active:scale-95 transition-transform z-40"
       >
         <Plus size={26} />
@@ -311,7 +318,11 @@ function AppContent() {
           >
             <CreateTodo
               fetchTodos={fetchTodos}
-              closeModal={() => setShowModal(false)}
+              closeModal={() => {
+                setShowModal(false);
+                setEditingTodo(null);
+              }}
+              currentTodo={editingTodo}
             />
           </div>
         </div>

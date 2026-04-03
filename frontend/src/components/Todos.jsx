@@ -1,8 +1,8 @@
 import toast from "react-hot-toast";
 import { useState, useRef } from "react";
-import { Trash2, Circle, CheckCircle2, ClipboardList } from "lucide-react";
+import { Trash2, Circle, CheckCircle2, ClipboardList, Pencil } from "lucide-react";
 
-export default function Todos({ todos = [], fetchTodos }) {
+export default function Todos({ todos = [], fetchTodos, onEdit }) {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const [activeFilter, setActiveFilter] = useState("focused");
@@ -11,7 +11,7 @@ export default function Todos({ todos = [], fetchTodos }) {
   const [draggingId, setDraggingId] = useState(null);
   const startXRef = useRef(0);
   const [openId, setOpenId] = useState(null);
-  const ACTION_WIDTH = 60; // Slightly larger for better touch target
+  const ACTION_WIDTH = 120; // Expanded to fit both Edit and Delete
 
   /* ================= DATE LOGIC ================= */
   const today = new Date();
@@ -124,7 +124,7 @@ export default function Todos({ todos = [], fetchTodos }) {
       <div className="bg-linear-to-br from-(--card-bg) to-(--bg) p-6 sm:p-8 rounded-[2rem] mb-8 shadow-sm border border-(--border)/60 relative overflow-hidden">
         {/* Decorative background blob */}
         <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] bg-(--gradient-start)/20 rounded-full blur-[50px] pointer-events-none"></div>
-        
+
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <p className="text-sm font-medium opacity-60 mb-1 tracking-wide uppercase">Your Progress</p>
@@ -154,14 +154,14 @@ export default function Todos({ todos = [], fetchTodos }) {
       </div>
 
       {/* ================= FILTERS ================= */}
-      <div className="flex gap-2 mb-6 pb-2 overflow-x-auto scrollbar-none snap-x">
+      <div className="flex gap-2 mb-6 pb-2 pt-1 px-1 overflow-x-auto scrollbar-none snap-x -mx-1">
         {["focused", "upcoming", "completed", "all"].map((filter) => (
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
             className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 snap-start whitespace-nowrap outline-none ${activeFilter === filter
-                ? "bg-(--accent) text-white shadow-md shadow-(--gradient-start)/20 scale-105"
-                : "bg-(--card-bg) text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/50 border border-transparent"
+              ? "bg-(--accent) text-white shadow-md shadow-(--gradient-start)/20 scale-105"
+              : "bg-(--card-bg) text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/50 border border-transparent"
               }`}
           >
             {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -185,11 +185,17 @@ export default function Todos({ todos = [], fetchTodos }) {
           {filteredTodos.map((todo) => (
             <div key={todo._id} className="relative w-full max-w-full overflow-hidden rounded-2xl group">
 
-              {/* Swipe Background (Delete Action) */}
-              <div className="absolute right-0 top-0 bottom-0 w-[60px] flex items-center justify-center bg-red-500 rounded-r-2xl">
+              {/* Swipe Background (Actions) */}
+              <div className="absolute right-0 top-0 bottom-0 w-[120px] flex rounded-r-2xl overflow-hidden">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setOpenId(null); onEdit && onEdit(todo); }}
+                  className="w-[60px] h-full flex items-center justify-center bg-blue-500 text-white"
+                >
+                  <Pencil size={20} />
+                </button>
                 <button
                   onClick={(e) => handleDelete(todo._id, e)}
-                  className="w-full h-full flex items-center justify-center text-white"
+                  className="w-[60px] h-full flex items-center justify-center bg-red-500 text-white"
                 >
                   <Trash2 size={20} />
                 </button>
@@ -246,10 +252,10 @@ export default function Todos({ todos = [], fetchTodos }) {
                     {todo.priority && (
                       <span
                         className={`text-[10px] sm:text-xs px-2.5 py-1 rounded-md font-bold uppercase tracking-wider shrink-0 mt-0.5 ${todo.priority === "high"
-                            ? "bg-red-500/10 text-red-500"
-                            : todo.priority === "low"
-                              ? "bg-green-500/10 text-green-500"
-                              : "bg-yellow-500/10 text-yellow-500"
+                          ? "bg-red-500/10 text-red-500"
+                          : todo.priority === "low"
+                            ? "bg-green-500/10 text-green-500"
+                            : "bg-yellow-500/10 text-yellow-500"
                           } ${todo.completed ? 'opacity-40' : ''}`}
                       >
                         {todo.priority}
@@ -271,13 +277,13 @@ export default function Todos({ todos = [], fetchTodos }) {
                   )}
                 </div>
 
-                {/* Desktop Hover Delete Action (Hidden on touch devices, shown on parent group hover) */}
+                {/* Desktop Hover Edit Action (Hidden on touch devices, shown on parent group hover) */}
                 <button
-                  onClick={(e) => handleDelete(todo._id, e)}
-                  className="hidden sm:flex shrink-0 w-10 h-10 items-center justify-center rounded-xl text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 transition-all active:scale-95"
-                  aria-label="Delete Task"
+                  onClick={(e) => { e.stopPropagation(); onEdit && onEdit(todo); }}
+                  className="hidden sm:flex shrink-0 w-10 h-10 items-center justify-center rounded-xl text-blue-500 opacity-0 group-hover:opacity-100 hover:bg-blue-500/10 transition-all active:scale-95"
+                  aria-label="Edit Task"
                 >
-                  <Trash2 size={18} />
+                  <Pencil size={18} />
                 </button>
               </div>
             </div>

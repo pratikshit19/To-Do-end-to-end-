@@ -2,14 +2,19 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
 
-export function CreateTodo({ fetchTodos, closeModal }) {
+export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
   const today = new Date().toISOString().split("T")[0];
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("medium");
-  const [dueDate, setDueDate] = useState(today);
-  const [dueTime, setDueTime] = useState("");
+  const [title, setTitle] = useState(currentTodo ? currentTodo.title : "");
+  const [description, setDescription] = useState(currentTodo ? currentTodo.description : "");
+  const [priority, setPriority] = useState(currentTodo && currentTodo.priority ? currentTodo.priority : "medium");
+  
+  const [dueDate, setDueDate] = useState(
+    currentTodo && currentTodo.dueDate 
+      ? new Date(currentTodo.dueDate).toISOString().split("T")[0] 
+      : today
+  );
+  const [dueTime, setDueTime] = useState(currentTodo && currentTodo.dueTime ? currentTodo.dueTime : "");
 
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -21,11 +26,17 @@ export function CreateTodo({ fetchTodos, closeModal }) {
       return;
     }
 
-    const toastId = toast.loading("Creating task...");
+    const toastId = toast.loading(currentTodo ? "Updating task..." : "Creating task...");
 
     try {
-      const response = await fetch("https://to-do-app-616k.onrender.com/todo", {
-        method: "POST",
+      const endpoint = currentTodo 
+        ? `https://to-do-app-616k.onrender.com/todos/${currentTodo._id}`
+        : "https://to-do-app-616k.onrender.com/todo";
+        
+      const method = currentTodo ? "PUT" : "POST";
+
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -47,10 +58,10 @@ export function CreateTodo({ fetchTodos, closeModal }) {
         return;
       }
 
-      if (!response.ok) throw new Error("Failed to create task");
+      if (!response.ok) throw new Error(currentTodo ? "Failed to update task" : "Failed to create task");
 
       await fetchTodos();
-      toast.success("Task created!", { id: toastId });
+      toast.success(currentTodo ? "Task updated!" : "Task created!", { id: toastId });
 
       setTitle("");
       setDescription("");
@@ -71,7 +82,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
 
       <div className="flex items-center justify-between mb-6 relative z-10">
         <h2 className="text-xl sm:text-2xl font-bold bg-linear-to-r from-(--text-primary) to-(--text-secondary) bg-clip-text text-transparent">
-          Create New Task
+          {currentTodo ? "Edit Task" : "Create New Task"}
         </h2>
         <button
           onClick={closeModal}
@@ -180,7 +191,7 @@ export function CreateTodo({ fetchTodos, closeModal }) {
             type="submit"
             className="px-8 py-2.5 rounded-xl bg-(--accent) text-white font-medium hover:brightness-110 shadow-md shadow-(--gradient-start)/20 active:scale-95 transition-all focus:outline-none"
           >
-            Save Task
+            {currentTodo ? "Save Changes" : "Save Task"}
           </button>
         </div>
       </form>
