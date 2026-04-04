@@ -120,7 +120,7 @@ export default function Todos({ onEdit }) {
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
 
       {/* ================= MOBILE SEARCH (Top) ================= */}
-      <div className="md:hidden relative group mb-6">
+      <div className="md:hidden relative group mb-6 pt-[env(safe-area-inset-top,0px)] mt-2">
         <input
           type="text"
           placeholder="Search tasks..."

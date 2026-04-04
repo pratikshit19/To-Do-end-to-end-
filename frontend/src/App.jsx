@@ -190,7 +190,7 @@ function AppContent() {
   return (
     <div className="md:flex h-screen bg-(--bg) text-(--text-primary) overflow-hidden">
       {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className="hidden md:flex md:flex-col w-64 bg-(--card-bg) border-r border-(--border) relative shadow-sm z-20">
+      <aside className="hidden md:flex md:flex-col w-64 bg-(--card-bg) border-r border-(--border) relative shadow-sm z-20 pt-[env(safe-area-inset-top,0px)]">
         <div className="p-6">
           <div className="text-2xl font-bold mb-8 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-lg shadow-lg">
@@ -255,7 +255,7 @@ function AppContent() {
       {/* ================= MAIN AREA ================= */}
       <div className="flex-1 flex flex-col h-full relative">
         {/* Desktop Header */}
-        <header className="hidden md:flex justify-between items-center px-8 py-5 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-10 transition-colors">
+        <header className="hidden md:flex justify-between items-center px-8 py-5 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-10 transition-colors pt-[calc(1.25rem+env(safe-area-inset-top,0px))]">
           <div className="flex items-center gap-2 text-sm">
             <span className="opacity-50 font-medium">TaskFlow</span>
             <span className="opacity-40">/</span>
