@@ -72,6 +72,13 @@ function AppContent() {
       darkMode ? "dark" : "light"
     );
     localStorage.setItem("darkMode", darkMode);
+
+    // Update theme-color meta tag dynamically for Chrome/iOS mobile browser branding
+    const themeColor = darkMode ? "#0f172a" : "#ffffff";
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', themeColor);
+    }
   }, [darkMode]);
 
   useEffect(() => {
