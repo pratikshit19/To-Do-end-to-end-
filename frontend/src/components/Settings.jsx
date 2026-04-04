@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronRight, Bell, Moon, Sun, Lock, Shield, HelpCircle, FileText, MessageSquare } from "lucide-react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
+import useStore from "../store/useStore";
 
 export default function Settings({
   setCurrentPage,
@@ -11,10 +12,8 @@ export default function Settings({
   setColorTheme,
   onLogout,
 }) {
+  const { focusMode, setFocusMode } = useStore();
   const [notifications, setNotifications] = useState(false);
-  const [focusMode, setFocusMode] = useState(
-    localStorage.getItem("focusMode") === "true"
-  );
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -81,11 +80,6 @@ export default function Settings({
       toast.error(err.message, { id: toastId });
     }
   };
-
-  /* ================= LOCAL STORAGE ================= */
-  useEffect(() => {
-    localStorage.setItem("focusMode", focusMode);
-  }, [focusMode]);
 
   /* ================= SUPPORT HANDLERS ================= */
   const triggerSupport = (item) => {

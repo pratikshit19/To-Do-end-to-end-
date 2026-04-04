@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import API_BASE_URL from "../config";
 
 export default function ForgotPassword({ setIsLogin }) {
   const [form, setForm] = useState({ username: "", newPassword: "" });

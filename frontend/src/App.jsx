@@ -12,29 +12,39 @@ import Onboarding from "./components/Onboarding";
 import Navbar from "./components/Navbar";
 import Insights from "./components/Insights";
 import { Toaster } from "react-hot-toast";
-import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus } from "lucide-react";
+import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap } from "lucide-react";
 import API_BASE_URL from "./config";
+import useStore from "./store/useStore";
+import FocusTimer from "./components/FocusTimer";
 
 function AppContent() {
   /* ================= STATE ================= */
   const navigate = useNavigate();
   const location = useLocation();
 
+  const {
+    todos,
+    userProfile,
+    isLoading,
+    focusMode,
+    fetchTodos,
+    fetchUserProfile,
+    fetchFocusSessions,
+    searchQuery,
+    setSearchQuery
+  } = useStore();
+
   const [showOnboarding, setShowOnboarding] = useState(
     !localStorage.getItem("onboardingDone")
   );
-  const [todos, setTodos] = useState([]);
+
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!(localStorage.getItem("token") || sessionStorage.getItem("token"))
   );
   const [isLogin, setIsLogin] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showFocusTimer, setShowFocusTimer] = useState(false);
   const [editingTodo, setEditingTodo] = useState(null);
-  const [userProfile, setUserProfile] = useState({
-    username: localStorage.getItem("username") || sessionStorage.getItem("username") || "User",
-    profilePhoto: localStorage.getItem("profilePhoto") || ""
-  });
-  const [isLoading, setIsLoading] = useState(true);
 
   const openModal = (todo = null) => {
     setEditingTodo(todo);
@@ -75,63 +85,11 @@ function AppContent() {
   /* ================= TOKEN ================= */
   const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
-  const fetchTodos = async () => {
-    const token = getToken();
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/todos`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.status === 403) {
-        handleLogout();
-        return;
-      }
-
-      const data = await response.json();
-      setTodos(data.todos || []);
-    } catch (err) {
-      console.error("Failed to fetch todos:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchUserProfile = async () => {
-    const token = getToken();
-    if (!token) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const newProfile = {
-          username: data.username || "User",
-          profilePhoto: data.profilePhoto || ""
-        };
-        setUserProfile(newProfile);
-        // Cache in localStorage for instant retrieval on next refresh
-        if (newProfile.profilePhoto) {
-          localStorage.setItem("profilePhoto", newProfile.profilePhoto);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch profile:", err);
-    }
-  };
-
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
     setIsAuthenticated(false);
-    setUserProfile({ username: "User", profilePhoto: "" });
+    useStore.setState({ todos: [], focusSessions: [], userProfile: { username: "User", profilePhoto: "" } });
     setCurrentPage("home");
   };
 
@@ -139,10 +97,11 @@ function AppContent() {
     if (isAuthenticated) {
       fetchTodos();
       fetchUserProfile();
+      fetchFocusSessions();
     } else {
-      setIsLoading(false);
+      useStore.setState({ isLoading: false });
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchTodos, fetchUserProfile, fetchFocusSessions]);
 
   /* ================= FLOW ================= */
 
@@ -189,8 +148,6 @@ function AppContent() {
               <Login
                 setIsAuthenticated={setIsAuthenticated}
                 setIsLogin={setIsLogin}
-                setUserProfile={setUserProfile}
-                fetchUserProfile={fetchUserProfile}
               />
             ) : isLogin === false ? (
               <Signup setIsLogin={setIsLogin} />
@@ -254,6 +211,16 @@ function AppContent() {
                 </div>
               );
             })}
+
+            {focusMode && (
+              <div
+                onClick={() => setShowFocusTimer(true)}
+                className="flex items-center gap-3.5 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 font-bold bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 mt-4 group"
+              >
+                <Zap size={20} className="text-amber-500 group-hover:scale-110 transition-transform" />
+                Focus Mode
+              </div>
+            )}
           </nav>
         </div>
 
@@ -291,6 +258,20 @@ function AppContent() {
           </div>
 
           <div className="flex items-center gap-5">
+            {/* Desktop Search */}
+            <div className="relative hidden lg:block w-64 xl:w-80 group">
+              <input
+                type="text"
+                placeholder="Search anything..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-(--card-bg) border border-(--border)/60 text-sm focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all shadow-sm"
+              />
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">
+                <Plus size={16} className="rotate-45" />
+              </div>
+            </div>
+
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-full hover:bg-(--border) transition text-(--text-primary) opacity-70 hover:opacity-100 focus:outline-none"
@@ -325,12 +306,8 @@ function AppContent() {
               <Route path="/insights" element={<Insights setCurrentPage={setCurrentPage} todos={todos} />} />
               <Route path="/profile" element={
                 <Profile
-                  userProfile={userProfile}
-                  setUserProfile={setUserProfile}
-                  fetchUserProfile={fetchUserProfile}
                   onLogout={handleLogout}
                   setCurrentPage={setCurrentPage}
-                  todos={todos}
                 />
               } />
               <Route path="/settings" element={
@@ -344,13 +321,25 @@ function AppContent() {
 
       {/* ================= MOBILE EXTRAS ================= */}
 
-      {/* Mobile Desktop-like FAB */}
-      <button
-        onClick={() => openModal()}
-        className="md:hidden fixed bottom-32 right-5 w-14 h-14 rounded-full bg-(--accent) text-white flex items-center justify-center shadow-md shadow-(--gradient-start)/30 hover:scale-105 active:scale-95 transition-transform z-40"
-      >
-        <Plus size={26} />
-      </button>
+      {/* Floating buttons for mobile */}
+      {!showOnboarding && isAuthenticated && (
+        <div className="md:hidden fixed bottom-32 right-5 flex flex-col gap-4 z-40">
+          {focusMode && (
+            <button
+              onClick={() => setShowFocusTimer(true)}
+              className="w-14 h-14 rounded-2xl bg-(--card-bg) text-amber-500 flex items-center justify-center shadow-lg border border-amber-500/20 active:scale-95 transition-all"
+            >
+              <Zap size={24} fill="currentColor" className="opacity-20" />
+            </button>
+          )}
+          <button
+            onClick={() => openModal()}
+            className="w-16 h-16 bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white rounded-2xl flex items-center justify-center shadow-xl shadow-(--gradient-start)/30 active:scale-95 transition-all"
+          >
+            <Plus size={32} strokeWidth={3} />
+          </button>
+        </div>
+      )}
 
       {/* Mobile Navbar */}
       <div className="md:hidden z-50 relative bg-(--bg)">
@@ -360,7 +349,7 @@ function AppContent() {
         />
       </div>
 
-      {/* ================= MODAL ================= */}
+      {/* ================= MODALS ================= */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] transition-opacity duration-300">
           <div
@@ -377,6 +366,10 @@ function AppContent() {
             />
           </div>
         </div>
+      )}
+
+      {showFocusTimer && (
+        <FocusTimer closeModal={() => setShowFocusTimer(false)} />
       )}
     </div>
   );

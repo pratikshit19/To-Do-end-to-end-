@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
+import useStore from "../store/useStore";
 
 export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, fetchUserProfile }) {
   const [form, setForm] = useState({
@@ -21,8 +22,11 @@ export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, 
       sessionStorage.getItem("token");
     if (token) {
       setIsAuthenticated(true);
+      useStore.getState().fetchTodos();
+      useStore.getState().fetchUserProfile();
+      useStore.getState().fetchFocusSessions();
     }
-  }, []);
+  }, [setIsAuthenticated]);
 
   /* ================= VALIDATION ================= */
   const validate = (name, value) => {
@@ -82,15 +86,11 @@ export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, 
 
       toast.success("Welcome back 🎉", { id: toastId });
       
-      // Update the name immediately so the sidebar doesn't show "User"
-      if (setUserProfile) {
-        setUserProfile((prev) => ({ ...prev, username: data.username }));
-      }
-      
-      // Trigger a profile photo fetch right now instead of waiting for the next effect loop
-      if (fetchUserProfile) {
-        fetchUserProfile();
-      }
+      const store = useStore.getState();
+      store.setUserProfile({ username: data.username });
+      store.fetchTodos();
+      store.fetchUserProfile();
+      store.fetchFocusSessions();
       
       setIsAuthenticated(true);
     } catch (err) {

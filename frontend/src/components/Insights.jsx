@@ -1,169 +1,54 @@
 import { useMemo } from "react";
-import { Activity, Award, Zap, TrendingUp } from "lucide-react";
+import { Activity, Zap, TrendingUp, BarChart3, PieChart as PieChartIcon, Calendar as CalendarIcon } from "lucide-react";
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, Cell, PieChart, Pie, AreaChart, Area
+} from "recharts";
+import useStore from "../store/useStore";
 
-/* ================= SAFE DATE HELPER ================= */
+export default function Insights() {
+  const { todos, focusSessions, getStats } = useStore();
+  const stats = getStats();
 
-const getDateOnly = (date) => {
-  const d = new Date(date);
-  if (isNaN(d)) return null;
-
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const formatDay = (date) => {
-  const d = getDateOnly(date);
-  if (!d) return null;
-
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
-
-export default function Insights({
-  setCurrentPage,
-  todos = [],
-  focusSessions = [],
-}) {
-
-  /* ================= WEEKLY EFFICIENCY ================= */
-  const weeklyData = useMemo(() => {
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-
-    const start = new Date();
-    start.setDate(start.getDate() - 6);
-    start.setHours(0, 0, 0, 0);
-
-    const weekCompleted = todos.filter((t) => {
-      if (!t.completed) return false;
-      const date = getDateOnly(t.updatedAt || t.createdAt);
-      return date && date >= start && date <= today;
+  /* ================= WEEKLY DATA FOR LINE CHART ================= */
+  const chartData = useMemo(() => {
+    const last7Days = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d.toDateString();
     });
 
-    const weekCreated = todos.filter((t) => {
-      const date = getDateOnly(t.createdAt);
-      return date && date >= start && date <= today;
+    return last7Days.map(day => {
+      const completedCount = todos.filter(t => 
+        t.completed && t.completedAt && new Date(t.completedAt).toDateString() === day
+      ).length;
+      
+      const sessionCount = focusSessions.filter(s => 
+        new Date(s.date).toDateString() === day
+      ).length;
+
+      return {
+        name: day.split(' ')[0], // Mon, Tue...
+        tasks: completedCount,
+        focus: sessionCount
+      };
     });
+  }, [todos, focusSessions]);
 
-    return {
-      total: weekCreated.length,
-      completed: weekCompleted.length,
-      efficiency:
-        weekCreated.length > 0
-          ? Math.min(Math.round((weekCompleted.length / weekCreated.length) * 100), 100)
-          : 0,
-    };
-  }, [todos]);
-
-  /* ================= STREAK ================= */
-  const streak = useMemo(() => {
-    const completedDays = todos
-      .filter((t) => t.completed)
-      .map((t) => formatDay(t.updatedAt || t.createdAt))
-      .filter(Boolean);
-
-    const uniqueDays = [...new Set(completedDays)].sort().reverse();
-    if (!uniqueDays.length) return 0;
-
-    const todayFormatted = formatDay(new Date());
-    const yesterdayFormatted = formatDay(new Date(Date.now() - 86400000));
-
-    if (uniqueDays[0] !== todayFormatted && uniqueDays[0] !== yesterdayFormatted) {
-      return 0;
-    }
-
-    let count = 1;
-
-    for (let i = 1; i < uniqueDays.length; i++) {
-      const prev = new Date(uniqueDays[i - 1]);
-      const curr = new Date(uniqueDays[i]);
-      const diff = Math.round((prev - curr) / (1000 * 60 * 60 * 24));
-
-      if (diff === 1) count++;
-      else break;
-    }
-
-    return count;
-  }, [todos]);
-
-  /* ================= TOP CATEGORY ================= */
-  const topCategory = useMemo(() => {
+  /* ================= CATEGORY DATA FOR PIE CHART ================= */
+  const categoryData = useMemo(() => {
     const map = {};
-
-    todos.forEach((t) => {
-      if (t.completed && t.category) {
-        map[t.category] = (map[t.category] || 0) + 1;
+    todos.forEach(t => {
+      if (t.completed) {
+        const cat = t.priority || "medium";
+        map[cat] = (map[cat] || 0) + 1;
       }
     });
 
-    let max = 0;
-    let top = "None";
-
-    Object.entries(map).forEach(([cat, value]) => {
-      if (value > max) {
-        max = value;
-        top = cat;
-      }
-    });
-
-    return top;
+    return Object.entries(map).map(([name, value]) => ({ name: name.toUpperCase(), value }));
   }, [todos]);
 
-  /* ================= PEAK HOUR ================= */
-  const peakHour = useMemo(() => {
-    const map = {};
-
-    focusSessions.forEach((s) => {
-      if (!s.date) return;
-      const hour = new Date(s.date).getHours();
-      map[hour] = (map[hour] || 0) + 1;
-    });
-
-    let max = 0;
-    let peak = null;
-
-    Object.entries(map).forEach(([hour, value]) => {
-      if (value > max) {
-        max = value;
-        peak = hour;
-      }
-    });
-
-    return peak !== null
-      ? new Date(0, 0, 0, peak).toLocaleTimeString([], { hour: 'numeric' })
-      : "N/A";
-  }, [focusSessions]);
-
-  /* ================= MONTHLY COMPLETION ================= */
-  const monthlyCompletion = useMemo(() => {
-    const now = new Date();
-    const month = now.getMonth();
-    const year = now.getFullYear();
-
-    const monthCreated = todos.filter((t) => {
-      const d = new Date(t.createdAt);
-      return (
-        d.getMonth() === month &&
-        d.getFullYear() === year
-      );
-    });
-
-    const monthCompleted = todos.filter((t) => {
-      if (!t.completed) return false;
-      const d = new Date(t.updatedAt || t.createdAt);
-      return (
-        d.getMonth() === month &&
-        d.getFullYear() === year
-      );
-    });
-
-    return monthCreated.length > 0
-      ? Math.round((monthCompleted.length / monthCreated.length) * 100)
-      : 0;
-  }, [todos]);
+  const COLORS = ["#3b82f6", "#8b5cf6", "#f59e0b"];
 
   /* ================= UI ================= */
 
@@ -171,112 +56,130 @@ export default function Insights({
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
       
       {/* HERO METRIC */}
-      <div className="relative bg-(--card-bg) rounded-3xl p-6 sm:p-8 mb-6 shadow-sm border border-(--border)/60 overflow-hidden group">
-        <div className="absolute top-[-50px] right-[-50px] w-[200px] h-[200px] bg-linear-to-bl from-(--gradient-start)/20 to-(--gradient-end)/10 rounded-full blur-[50px] pointer-events-none transition-all duration-700 group-hover:scale-110"></div>
+      <div className="relative bg-(--card-bg) rounded-[2.5rem] p-8 mb-8 shadow-sm border border-(--border)/60 overflow-hidden group">
+        <div className="absolute top-[-50px] right-[-50px] w-[250px] h-[250px] bg-linear-to-bl from-(--gradient-start)/20 to-(--gradient-end)/10 rounded-full blur-[60px] pointer-events-none"></div>
         
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp size={20} className="text-(--accent)" />
-              <p className="text-sm font-bold tracking-widest opacity-60 uppercase">Weekly Efficiency</p>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-(--accent)/10 flex items-center justify-center text-(--accent)">
+                <TrendingUp size={22} />
+              </div>
+              <p className="text-sm font-black tracking-widest opacity-60 uppercase">Productivity Index</p>
             </div>
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-5xl sm:text-6xl font-extrabold bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent drop-shadow-sm">
-                {weeklyData.efficiency}%
-              </h1>
-            </div>
-            <p className="text-sm font-medium mt-2">
-              <span className="text-(--text-primary)">{weeklyData.completed} out of {weeklyData.total}</span> tasks completed this week.
+            
+            <h1 className="text-6xl sm:text-7xl font-black bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent mb-4">
+              {stats.completionRate}%
+            </h1>
+            
+            <p className="text-lg font-medium opacity-80 max-w-md leading-relaxed">
+              You've crushed <span className="text-(--text-primary) font-black">{stats.completedCount} tasks</span> across <span className="text-(--text-primary) font-black">{stats.streak} days</span> of consistent effort.
             </p>
           </div>
 
-          {/* Simple Decorative Graph */}
-          <div className="hidden md:flex flex-1 max-w-[200px] h-16 items-end gap-2 opacity-80 pointer-events-none">
-            {[40, 70, 45, 90, 60, 80, weeklyData.efficiency].map((val, i) => (
-               <div key={i} className={`flex-1 rounded-t-sm ${i === 6 ? 'bg-linear-to-t from-(--gradient-end) to-(--gradient-start)' : 'bg-(--border)'}`} style={{ height: `${val || 10}%` }}></div>
-            ))}
+          <div className="flex-1 min-h-[220px] w-full">
+             <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--gradient-start)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--gradient-start)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <Area type="monotone" dataKey="tasks" stroke="var(--gradient-start)" strokeWidth={4} fillOpacity={1} fill="url(#colorTasks)" />
+                </AreaChart>
+             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-
-        {/* STREAK */}
-        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Current Streak</p>
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
-              <Activity size={20} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        
+        {/* Weekly Activity Line Chart */}
+        <div className="bg-(--card-bg) p-8 rounded-[2.5rem] border border-(--border)/60 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                 <BarChart3 size={20} />
+               </div>
+               <p className="text-sm font-black uppercase tracking-widest opacity-50">Workload Trends</p>
             </div>
           </div>
-          <div>
-            <h2 className="text-4xl font-black mb-1">{streak} <span className="text-lg font-medium opacity-50">Days</span></h2>
-            <p className="text-sm font-medium opacity-70">Keep the momentum going!</p>
+          <div className="h-[250px] w-full min-h-[250px]">
+            <ResponsiveContainer width="100%" height="100%" debounce={50}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.4} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 700, opacity: 0.5}} dy={10} />
+                <YAxis hide />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)', fontWeight: 700, fontSize: '12px' }}
+                />
+                <Line type="monotone" dataKey="tasks" stroke="#3b82f6" strokeWidth={4} dot={{ r: 6, fill: "#3b82f6", strokeWidth: 2 }} activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="focus" stroke="#8b5cf6" strokeWidth={4} dot={{ r: 6, fill: "#8b5cf6", strokeWidth: 2 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* PEAK HOUR */}
-        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Peak Focus</p>
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-              <Zap size={20} />
+        {/* Priority Distribution Pie Chart */}
+        <div className="bg-(--card-bg) p-8 rounded-[2.5rem] border border-(--border)/60 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                 <PieChartIcon size={20} />
+               </div>
+               <p className="text-sm font-black uppercase tracking-widest opacity-50">Priority Focus</p>
             </div>
           </div>
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-black mb-1 text-(--text-primary)">{peakHour}</h2>
-            <p className="text-sm font-medium opacity-70">Your most productive period.</p>
-          </div>
-        </div>
-
-        {/* TOP CATEGORY */}
-        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group flex flex-col justify-between sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Top Topic</p>
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
-              <Award size={20} />
-            </div>
-          </div>
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-black mb-1 truncate">{topCategory}</h2>
-            <p className="text-sm font-medium opacity-70">Your most frequent label.</p>
-          </div>
-        </div>
-
-        {/* MONTHLY COMPLETION */}
-        <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow group col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex-1 w-full box-border">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-(--accent)/10 text-(--accent) flex items-center justify-center">
-                <TrendingUp size={20} />
-              </div>
-              <p className="text-xs font-bold tracking-widest opacity-50 uppercase">Monthly Progress</p>
-            </div>
-            <h3 className="text-2xl sm:text-3xl font-extrabold mb-2">You're tracking well</h3>
-            <p className="text-sm font-medium opacity-70 max-w-[280px]">Complete the remaining tasks to fill your productivity circle for this month.</p>
-          </div>
-
-          <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
-            <svg className="w-full h-full transform -rotate-90 select-none drop-shadow-sm" viewBox="0 0 100 100">
-              {/* Background Map Ring */}
-              <circle cx="50" cy="50" r="40" className="stroke-(--border) fill-transparent" strokeWidth="8" />
-              {/* Foreground Glow Ring */}
-              <circle
-                cx="50" cy="50" r="40"
-                className="stroke-(--gradient-start) fill-transparent transition-all duration-1000 ease-out"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray="251.2"
-                strokeDashoffset={251.2 - (251.2 * monthlyCompletion) / 100}
-              />
-            </svg>
-            <div className="absolute flex flex-col items-center justify-center mt-1">
-              <span className="text-2xl font-black bg-linear-to-br from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">{monthlyCompletion}%</span>
-            </div>
+          <div className="h-[250px] w-full flex items-center justify-center min-h-[250px]">
+            {categoryData.length > 0 ? (
+               <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={8}
+                    dataKey="value"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+                <div className="text-center opacity-30 font-bold uppercase tracking-widest text-xs">No Data Yet</div>
+            )}
           </div>
         </div>
 
       </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <StatBox icon={<Activity className="text-orange-500" />} label="Avg Daily Tasks" value={Math.round(stats.completedCount / 7)} />
+          <StatBox icon={<Zap className="text-amber-500" />} label="Peak Work Intensity" value="High" />
+          <StatBox icon={<CalendarIcon className="text-emerald-500" />} label="Days Tracked" value={stats.streak} />
+      </div>
+
+    </div>
+  );
+}
+
+function StatBox({ icon, label, value }) {
+  return (
+    <div className="bg-(--card-bg) p-6 rounded-3xl shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow">
+       <div className="flex items-center justify-between mb-4">
+         <p className="text-xs font-bold tracking-widest opacity-50 uppercase">{label}</p>
+         <div className="w-10 h-10 rounded-xl bg-linear-to-br from-(--bg) to-(--border)/30 flex items-center justify-center">
+           {icon}
+         </div>
+       </div>
+       <h2 className="text-3xl font-black">{value}</h2>
     </div>
   );
 }

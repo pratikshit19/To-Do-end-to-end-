@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { image } = require("./cloudinary");
 
 mongoose.connect(process.env.MONGO_URL)
 .then(()=>{
@@ -16,6 +15,11 @@ const todoSchema = new mongoose.Schema({
   completed: {
     type: Boolean,
     default: false
+  },
+
+  completedAt: {
+    type: Date,
+    default: null
   },
 
   priority: {
@@ -38,7 +42,19 @@ const todoSchema = new mongoose.Schema({
     ref: "User"
   },
   
-}, { timestamps: true });  // good practice
+}, { timestamps: true });
+
+const focusSessionSchema = new mongoose.Schema({
+  duration: Number, // in minutes
+  date: {
+    type: Date,
+    default: Date.now
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
+});
 
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true },
@@ -51,8 +67,10 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 const todo = mongoose.model('todos', todoSchema);
+const FocusSession = mongoose.model('FocusSession', focusSessionSchema);
 
 module.exports = {
     todo,
-    User
+    User,
+    FocusSession
 }

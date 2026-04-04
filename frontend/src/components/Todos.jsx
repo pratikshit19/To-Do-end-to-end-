@@ -2,11 +2,16 @@ import toast from "react-hot-toast";
 import { useState, useRef } from "react";
 import { Trash2, Circle, CheckCircle2, ClipboardList, Pencil } from "lucide-react";
 import API_BASE_URL from "../config";
+import useStore from "../store/useStore";
+import confetti from "canvas-confetti";
 
-export default function Todos({ todos = [], fetchTodos, onEdit }) {
+export default function Todos({ onEdit }) {
+  const { todos, updateTodo, deleteTodo } = useStore();
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const [activeFilter, setActiveFilter] = useState("focused");
+  const { searchQuery, setSearchQuery } = useStore();
+  const [priorityFilter, setPriorityFilter] = useState("all");
 
   const [dragX, setDragX] = useState(0);
   const [draggingId, setDraggingId] = useState(null);
@@ -24,67 +29,60 @@ export default function Todos({ todos = [], fetchTodos, onEdit }) {
     d1.getDate() === d2.getDate();
 
   const filteredTodos = todos.filter((todo) => {
-    if (activeFilter === "all") return true;
-    if (!todo.dueDate) return false;
+    // 1. Filter by Search Query
+    const matchesSearch = todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (todo.description && todo.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (!matchesSearch) return false;
 
+    // 2. Filter by Priority
+    if (priorityFilter !== "all" && todo.priority !== priorityFilter) return false;
+
+    // 3. Filter by Tab (Active Filter)
+    if (activeFilter === "all") return true;
+    if (activeFilter === "completed") return todo.completed;
+
+    // Date-based filters (focused/upcoming)
+    if (!todo.dueDate) return false;
     const due = new Date(todo.dueDate);
     due.setHours(0, 0, 0, 0);
 
-    if (activeFilter === "focused") return isSameDay(due, today);
-    if (activeFilter === "upcoming") return due > today;
-    if (activeFilter === "completed") return todo.completed;
+    if (activeFilter === "focused") return isSameDay(due, today) && !todo.completed;
+    if (activeFilter === "upcoming") return due > today && !todo.completed;
+
     return true;
   });
 
   /* ================= DELETE ================= */
   const handleDelete = async (id, e) => {
     if (e) e.stopPropagation();
-
-    // Only show quick toast, no blocking loader popup needed since it's an inline action
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/todos/${id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to delete task");
-
-      // Instead of waiting, close swipe silently
+      await deleteTodo(id);
       setOpenId(null);
       setDragX(0);
-      await fetchTodos();
+      toast.success("Task crushed!");
     } catch (err) {
-      toast.error(err.message);
+      toast.error("Failed to delete task.");
     }
   };
 
   /* ================= TOGGLE COMPLETE ================= */
   const handleToggleComplete = async (todo, e) => {
     if (e) e.stopPropagation();
-
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/todos/${todo._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            completed: !todo.completed,
-            priority: todo.priority,
-          }),
-        }
-      );
+      const isCompleting = !todo.completed;
+      await updateTodo(todo._id, { completed: isCompleting });
 
-      if (!response.ok) throw new Error("Failed to update task");
-      await fetchTodos();
+      if (isCompleting) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#3b82f6', '#8b5cf6', '#22c55e']
+        });
+        toast.success("Awesome work!");
+      }
     } catch (err) {
-      console.error(err);
+      toast.error("Failed to update task.");
     }
   };
 
@@ -121,6 +119,20 @@ export default function Todos({ todos = [], fetchTodos, onEdit }) {
   return (
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
 
+      {/* ================= MOBILE SEARCH (Top) ================= */}
+      <div className="md:hidden relative group mb-6">
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-12 pr-4 py-4 rounded-2xl bg-(--card-bg) border border-(--border)/60 text-sm font-medium focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all shadow-sm"
+        />
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">
+          <ClipboardList size={20} />
+        </div>
+      </div>
+
       {/* ================= PROGRESS CARD ================= */}
       <div className="bg-linear-to-br from-(--card-bg) to-(--bg) p-6 sm:p-8 rounded-[2rem] mb-8 shadow-sm border border-(--border)/60 relative overflow-hidden">
         {/* Decorative background blob */}
@@ -155,19 +167,50 @@ export default function Todos({ todos = [], fetchTodos, onEdit }) {
       </div>
 
       {/* ================= FILTERS ================= */}
-      <div className="flex gap-2 mb-6 pb-2 pt-1 px-1 overflow-x-auto scrollbar-none snap-x -mx-1">
-        {["focused", "upcoming", "completed", "all"].map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
-            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 snap-start whitespace-nowrap outline-none ${activeFilter === filter
-              ? "bg-(--accent) text-white shadow-md shadow-(--gradient-start)/20 scale-105"
-              : "bg-(--card-bg) text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/50 border border-transparent"
-              }`}
-          >
-            {filter.charAt(0).toUpperCase() + filter.slice(1)}
-          </button>
-        ))}
+      <div className="space-y-4 mb-6 pt-1">
+        <div className="flex gap-2 pb-2 overflow-x-auto scrollbar-none snap-x -mx-1 px-1">
+          {["focused", "upcoming", "completed", "all"].map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 snap-start whitespace-nowrap outline-none border ${activeFilter === filter
+                ? "bg-(--accent) text-white border-(--accent) shadow-md shadow-(--gradient-start)/20 scale-105"
+                : "bg-(--card-bg) text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/50 border-(--border)/60"
+                }`}
+            >
+              {filter.charAt(0).toUpperCase() + filter.slice(1)}
+            </button>
+          ))}
+
+          <div className="w-[1px] bg-(--border)/60 mx-2 shrink-0"></div>
+
+          {/* Desktop Only Inline Search (Fallback for smaller desktops) */}
+          <div className="hidden md:flex lg:hidden relative group w-48">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-(--card-bg) border border-(--border)/60 text-xs focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all"
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30">
+              <ClipboardList size={14} />
+            </div>
+          </div>
+
+          {["all", "high", "medium", "low"].map((p) => (
+            <button
+              key={p}
+              onClick={() => setPriorityFilter(p)}
+              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 snap-start whitespace-nowrap outline-none border ${priorityFilter === p
+                ? "bg-slate-800 text-white border-slate-800 scale-105"
+                : "bg-(--card-bg) text-(--text-primary) opacity-50 hover:opacity-100 border-(--border)/60"
+                }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ================= TASK LIST ================= */}

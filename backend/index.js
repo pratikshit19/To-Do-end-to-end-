@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 
 const { createTodo, updateTodo } = require("./types");
-const { todo, User } = require("./db");
+const { todo, User, FocusSession } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -161,9 +161,18 @@ app.delete("/todos/:id", authMiddleware, async (req, res) => {
 
 app.put("/todos/:id", authMiddleware, async (req, res) => {
   try {
+    const body = req.body;
+    
+    // If completed is being set to true, set completedAt
+    if (body.completed === true) {
+      body.completedAt = new Date();
+    } else if (body.completed === false) {
+      body.completedAt = null;
+    }
+
     const updated = await todo.findOneAndUpdate(
       { _id: req.params.id, userId: req.userId },
-      req.body,
+      body,
       { new: true }
     );
 
@@ -278,9 +287,39 @@ app.post(
 app.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    res.json({ profilePhoto: user.profilePhoto });
+    res.json({ 
+      username: user.username,
+      profilePhoto: user.profilePhoto 
+    });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch profile" });
+  }
+});
+
+/* =========================
+        FOCUS ROUTES
+========================= */
+
+app.post("/focus-sessions", authMiddleware, async (req, res) => {
+  try {
+    const { duration } = req.body;
+    const newSession = await FocusSession.create({
+      duration,
+      userId: req.userId,
+      date: new Date()
+    });
+    res.json(newSession);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/focus-sessions", authMiddleware, async (req, res) => {
+  try {
+    const sessions = await FocusSession.find({ userId: req.userId }).sort({ date: -1 });
+    res.json({ focusSessions: sessions });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 
