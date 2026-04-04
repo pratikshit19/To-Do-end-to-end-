@@ -31,7 +31,9 @@ function AppContent() {
     fetchUserProfile,
     fetchFocusSessions,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    proSettings,
+    isPro
   } = useStore();
 
   const [showOnboarding, setShowOnboarding] = useState(
@@ -188,7 +190,18 @@ function AppContent() {
   /* ================= MAIN APP ================= */
 
   return (
-    <div className="md:flex h-screen bg-(--bg) text-(--text-primary) overflow-hidden">
+    <div className="md:flex h-screen bg-(--bg) text-(--text-primary) overflow-hidden relative">
+
+      {/* Dynamic Pro Background */}
+      {proSettings?.customBackground && (
+        <div
+          className="fixed inset-0 z-0 bg-cover bg-center transition-all duration-1000"
+          style={{
+            backgroundImage: `url(${proSettings.customBackground})`,
+            filter: darkMode ? 'brightness(0.3) contrast(1.1)' : 'brightness(0.95) contrast(1.05)'
+          }}
+        />
+      )}
       {/* ================= DESKTOP SIDEBAR ================= */}
       <aside className="hidden md:flex md:flex-col w-64 bg-(--card-bg) border-r border-(--border) relative shadow-sm z-20 pt-[env(safe-area-inset-top,0px)]">
         <div className="p-6">
@@ -275,7 +288,7 @@ function AppContent() {
                 className="w-full pl-10 pr-4 py-2 rounded-xl bg-(--card-bg) border border-(--border)/60 text-sm focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all shadow-sm"
               />
               <div className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">
-                <Search size={16} /> 
+                <Search size={16} />
               </div>
             </div>
 
@@ -385,7 +398,7 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-<Toaster position="bottom-center" />
+      <Toaster position="bottom-center" />
       <AppContent />
     </Router>
   );

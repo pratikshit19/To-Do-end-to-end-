@@ -9,6 +9,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
   const [title, setTitle] = useState(currentTodo ? currentTodo.title : "");
   const [description, setDescription] = useState(currentTodo ? currentTodo.description : "");
   const [priority, setPriority] = useState(currentTodo && currentTodo.priority ? currentTodo.priority : "medium");
+  const [recurrence, setRecurrence] = useState(currentTodo && currentTodo.recurrence ? currentTodo.recurrence : "none");
   
   const [dueDate, setDueDate] = useState(
     currentTodo && currentTodo.dueDate 
@@ -48,6 +49,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
           priority,
           dueDate,
           dueTime,
+          recurrence,
         }),
       });
 
@@ -69,6 +71,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
       setPriority("medium");
       setDueDate(today);
       setDueTime("");
+      setRecurrence("none");
       closeModal();
     } catch (err) {
       toast.error(err.message, { id: toastId });
@@ -76,7 +79,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
   };
 
   return (
-    <div className="w-full relative bg-(--card-bg) rounded-3xl p-6 sm:p-8 shadow-2xl shadow-(--gradient-start)/10 border border-(--border)/80">
+    <div className="w-full max-w-2xl mx-auto relative bg-(--card-bg) rounded-[2.5rem] p-6 sm:p-10 shadow-2xl shadow-(--gradient-start)/10 border border-(--border)/80 animate-in fade-in zoom-in-95 duration-500">
 
       {/* Decorative Blur */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-(--gradient-end)/10 rounded-full blur-[40px] pointer-events-none"></div>
@@ -172,6 +175,32 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
                     }`}
                 >
                   {level}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Recurrence */}
+        <div className="pt-2 space-y-2.5">
+          <label className="text-xs font-semibold tracking-wide uppercase opacity-60">
+             Repeat Task
+          </label>
+          <div className="flex gap-2 p-1.5 bg-(--bg) rounded-xl border border-(--border)/50">
+            {["none", "daily", "weekly", "monthly"].map((option) => {
+              const isActive = recurrence === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setRecurrence(option)}
+                  className={`flex-1 py-2 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 outline-none
+                    ${isActive
+                      ? "bg-(--accent) text-white shadow-md shadow-(--accent)/20"
+                      : "text-(--text-secondary) hover:bg-(--border)/80"
+                    }`}
+                >
+                  {option}
                 </button>
               );
             })}

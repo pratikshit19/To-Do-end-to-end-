@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 
 const { createTodo, updateTodo } = require("./types");
-const { todo, User, FocusSession } = require("./db");
+const { todo, User, FocusSession, Feedback } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -82,7 +82,7 @@ app.post("/signin", async (req, res) => {
 
 app.post("/todo", authMiddleware, async (req, res) => {
   try {
-    const { title, description, priority, dueDate, dueTime } = req.body;
+    const { title, description, priority, dueDate, dueTime, recurrence } = req.body;
 
     if (!dueDate) {
       return res.status(400).json({ message: "Due date is required" });
@@ -101,7 +101,8 @@ app.post("/todo", authMiddleware, async (req, res) => {
       priority: priority || "medium",
       dueDate: parsedDate,
       dueTime: dueTime || null,
-      userId: req.userId
+      userId: req.userId,
+      recurrence: recurrence || "none"
     });
 
     res.json({
@@ -318,6 +319,56 @@ app.get("/focus-sessions", authMiddleware, async (req, res) => {
     res.json({ focusSessions: sessions });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+app.post("/feedback", authMiddleware, async (req, res) => {
+  try {
+    const { category, message } = req.body;
+
+    if (!category || !message) {
+      return res.status(400).json({ message: "Category and message are required" });
+    }
+
+    if (!["bug", "feature", "love", "other"].includes(category)) {
+      return res.status(400).json({ message: "Invalid category" });
+    }
+
+    await Feedback.create({
+      userId: req.userId,
+      category,
+      message
+    });
+
+    res.json({ message: "Feedback received! Thank you for helping us improve." });
+
+  } catch (err) {
+    console.error("FEEDBACK ERROR:", err);
+    res.status(500).json({ message: "Failed to send feedback" });
+  }
+});
+
+app.put("/user/pro-settings", authMiddleware, async (req, res) => {
+  try {
+    const { proSettings, dailyFocusTarget } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (proSettings) {
+      user.proSettings = { ...user.proSettings, ...proSettings };
+    }
+    if (dailyFocusTarget !== undefined) {
+      user.dailyFocusTarget = dailyFocusTarget;
+    }
+
+    await user.save();
+    res.json({
+      proSettings: user.proSettings,
+      dailyFocusTarget: user.dailyFocusTarget
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update pro settings" });
   }
 });
 

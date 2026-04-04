@@ -77,9 +77,47 @@ export default function Todos({ onEdit }) {
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#3b82f6', '#8b5cf6', '#22c55e']
+          colors: ["#3b82f6", "#8b5cf6", "#22c55e"],
         });
         toast.success("Awesome work!");
+
+        // Handle Recurrence (Pro Feature)
+        if (todo.recurrence && todo.recurrence !== "none") {
+          const nextDate = new Date(todo.dueDate);
+          if (todo.recurrence === "daily")
+            nextDate.setDate(nextDate.getDate() + 1);
+          else if (todo.recurrence === "weekly")
+            nextDate.setDate(nextDate.getDate() + 7);
+          else if (todo.recurrence === "monthly")
+            nextDate.setMonth(nextDate.getMonth() + 1);
+
+          try {
+            const resp = await fetch(`${API_BASE_URL}/todo`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                title: todo.title,
+                description: todo.description,
+                priority: todo.priority,
+                dueDate: nextDate.toISOString().split("T")[0],
+                dueTime: todo.dueTime || "",
+                recurrence: todo.recurrence,
+              }),
+            });
+            if (resp.ok) {
+              const { todo: newTodo } = await resp.json();
+              useStore.getState().addTodo(newTodo);
+              toast.success(
+                `Recurring task created for ${nextDate.toLocaleDateString()}`
+              );
+            }
+          } catch (err) {
+            console.error("Failed to create recurring task:", err);
+          }
+        }
       }
     } catch (err) {
       toast.error("Failed to update task.");
@@ -175,7 +213,7 @@ export default function Todos({ onEdit }) {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 snap-start whitespace-nowrap outline-none border ${activeFilter === filter
+              className={`px-5 py-2.5 rounded-3xl text-sm font-bold transition-all duration-300 snap-start whitespace-nowrap outline-none border ${activeFilter === filter
                 ? "bg-(--accent) text-white border-(--accent) shadow-md shadow-(--gradient-start)/20 scale-105"
                 : "bg-(--card-bg) text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/50 border-(--border)/60"
                 }`}
@@ -204,7 +242,7 @@ export default function Todos({ onEdit }) {
             <button
               key={p}
               onClick={() => setPriorityFilter(p)}
-              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 snap-start whitespace-nowrap outline-none border ${priorityFilter === p
+              className={`px-5 py-2.5 rounded-4xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 snap-start whitespace-nowrap outline-none border ${priorityFilter === p
                 ? "bg-slate-800 text-white border-slate-800 scale-105"
                 : "bg-(--card-bg) text-(--text-primary) opacity-50 hover:opacity-100 border-(--border)/60"
                 }`}
@@ -232,7 +270,7 @@ export default function Todos({ onEdit }) {
             <div key={todo._id} className="relative w-full max-w-full overflow-hidden rounded-2xl group">
 
               {/* Swipe Background (Actions) */}
-              <div className="absolute right-0 top-0 bottom-0 w-[120px] flex rounded-r-2xl overflow-hidden">
+              <div className="absolute right-0 top-0 bottom-0 w-[120px] flex rounded-r-4xl overflow-hidden">
                 <button
                   onClick={(e) => { e.stopPropagation(); setOpenId(null); onEdit && onEdit(todo); }}
                   className="w-[60px] h-full flex items-center justify-center bg-blue-500 text-white"
@@ -249,7 +287,7 @@ export default function Todos({ onEdit }) {
 
               {/* Foreground Task Card */}
               <div
-                className="bg-(--card-bg) rounded-2xl p-4 sm:p-5 flex items-center gap-4 w-full shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow relative z-10"
+                className="bg-(--card-bg) rounded-3xl p-4 sm:p-5 flex items-center gap-4 w-full shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow relative z-10"
                 style={{
                   transform:
                     openId === todo._id

@@ -17,6 +17,14 @@ const useStore = create((set, get) => ({
   focusMode: localStorage.getItem("focusMode") === "true",
   isLoading: true,
   searchQuery: "",
+  
+  // Pro Features
+  isPro: false,
+  proSettings: {
+    accentColor: null,
+    customBackground: null
+  },
+  dailyFocusTarget: 60,
 
   /* ================= APP SETTINGS ================= */
   setFocusMode: (enabled) => {
@@ -24,6 +32,36 @@ const useStore = create((set, get) => ({
     set({ focusMode: enabled });
   },
   setSearchQuery: (query) => set({ searchQuery: query }),
+  
+  updateProSettings: async (settings) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/pro-settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(settings),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        set((state) => ({
+          proSettings: { ...state.proSettings, ...data.proSettings },
+          dailyFocusTarget: data.dailyFocusTarget ?? state.dailyFocusTarget
+        }));
+        
+        // Apply secondary branding if accent color changed
+        if (data.proSettings?.accentColor) {
+          document.documentElement.style.setProperty("--accent", data.proSettings.accentColor);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update pro settings", err);
+    }
+  },
 
   /* ================= AUTH ================= */
   setAuthenticated: (status) => set({ isAuthenticated: status }),
@@ -49,14 +87,27 @@ const useStore = create((set, get) => ({
 
         const profile = {
           username: data.username || "User",
-          profilePhoto: photo
+          profilePhoto: photo,
+          isPro: data.isPro || false,
+          proSettings: data.proSettings || { accentColor: null, customBackground: null },
+          dailyFocusTarget: data.dailyFocusTarget || 60
         };
         
         if (data.username && data.username !== "User") {
           localStorage.setItem("username", data.username);
         }
 
-        set({ userProfile: profile });
+        set({ 
+          userProfile: profile,
+          isPro: profile.isPro,
+          proSettings: profile.proSettings,
+          dailyFocusTarget: profile.dailyFocusTarget
+        });
+
+        // Apply Pro Branding
+        if (profile.proSettings?.accentColor) {
+           document.documentElement.style.setProperty("--accent", profile.proSettings.accentColor);
+        }
         if (profile.profilePhoto) {
           localStorage.setItem("profilePhoto", profile.profilePhoto);
         } else {

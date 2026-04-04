@@ -42,6 +42,12 @@ const todoSchema = new mongoose.Schema({
     ref: "User"
   },
   
+  recurrence: {
+    type: String,
+    enum: ["none", "daily", "weekly", "monthly"],
+    default: "none"
+  },
+  
 }, { timestamps: true });
 
 const focusSessionSchema = new mongoose.Schema({
@@ -62,15 +68,49 @@ const userSchema = new mongoose.Schema({
   profilePhoto: {
     type: String,   // will store image URL
     default: ""
+  },
+  isPro: {
+    type: Boolean,
+    default: false
+  },
+  proSettings: {
+    type: Object,
+    default: {
+      accentColor: null,
+      customBackground: null
+    }
+  },
+  dailyFocusTarget: {
+    type: Number,
+    default: 60 // Default to 60 minutes
   }
 });
+
+const feedbackSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  category: {
+    type: String,
+    enum: ["bug", "feature", "love", "other"],
+    required: true
+  },
+  message: {
+    type: String,
+    required: true
+  }
+}, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
 const todo = mongoose.model('todos', todoSchema);
 const FocusSession = mongoose.model('FocusSession', focusSessionSchema);
+const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 module.exports = {
     todo,
     User,
-    FocusSession
+    FocusSession,
+    Feedback
 }

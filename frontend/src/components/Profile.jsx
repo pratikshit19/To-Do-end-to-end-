@@ -1,14 +1,80 @@
-import { Edit, Flame, Timer, CheckCircle, Trophy, LogOut, Settings } from "lucide-react";
+import { Edit, Flame, Timer, CheckCircle, Trophy, LogOut, Settings, Crown, Zap, Activity, Calendar, Palette, ArrowRight, Check } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
 import useStore from "../store/useStore";
 
+const ProFeaturesCard = ({ isPro }) => {
+  if (isPro) return null;
+
+  const features = [
+    { 
+      icon: <Activity size={18} />, 
+      title: "Deep Insights", 
+      desc: "90-day heatmap & productivity correlations.",
+      color: "text-blue-500",
+      bg: "bg-blue-500/10"
+    },
+    { 
+      icon: <Palette size={18} />, 
+      title: "Custom Branding", 
+      desc: "Premium themes & immersive backgrounds.",
+      color: "text-purple-500",
+      bg: "bg-purple-500/10"
+    }
+  ];
+
+  return (
+    <div className="relative bg-(--card-bg) rounded-[2.5rem] p-8 border border-(--border)/60 shadow-2xl overflow-hidden group mb-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
+      <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] bg-orange-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-orange-500/15 transition-all duration-1000"></div>
+      <div className="relative z-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-orange-500">
+              <Crown size={20} className="animate-bounce" />
+              <span className="text-xs font-black uppercase tracking-[0.2em]">TaskFlow Pro</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight">
+              Supercharge your <span className="bg-linear-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">Production.</span>
+            </h2>
+          </div>
+          <button className="px-8 py-4 bg-linear-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center gap-2 group/btn">
+             Get Pro Now
+             <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {features.map((f, i) => (
+            <div key={i} className="p-5 rounded-3xl bg-(--bg)/50 border border-(--border)/40 hover:border-orange-500/30 transition-all hover:shadow-lg group/item">
+              <div className="flex items-start gap-4">
+                <div className={`w-10 h-10 rounded-xl ${f.bg} ${f.color} flex items-center justify-center shrink-0 group-hover/item:scale-110 transition-transform shadow-sm`}>
+                  {f.icon}
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-sm">{f.title}</h4>
+                  <p className="text-[11px] font-medium opacity-60 leading-relaxed">{f.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex items-center gap-2 justify-center opacity-40">
+           <Check size={14} className="text-orange-500" />
+           <span className="text-[10px] font-black uppercase tracking-widest text-(--text-primary)">Secure Checkout</span>
+           <span className="mx-2 text-(--text-primary)">•</span>
+           <Check size={14} className="text-orange-500" />
+           <span className="text-[10px] font-black uppercase tracking-widest text-(--text-primary)">Instant Activation</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Profile({
   onLogout,
   setCurrentPage,
 }) {
-  const { userProfile, setUserProfile, getStats } = useStore();
+  const { userProfile, setUserProfile, getStats, isPro } = useStore();
   const stats = getStats();
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const fileInputRef = useRef(null);
@@ -56,7 +122,7 @@ export default function Profile({
     <div className="w-full pb-30 md:pb-6 transition-colors duration-300">
 
       {/* Avatar Card */}
-      <div className="flex items-center justify-between bg-(--card-bg) p-6 rounded-3xl mb-8 shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow relative overflow-hidden group">
+      <div className="flex items-center justify-between bg-(--card-bg) p-6 rounded-3xl mb-8 shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow relative overflow-hidden group z-10">
         <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] bg-(--gradient-start)/5 rounded-full blur-[40px] pointer-events-none transition-all group-hover:bg-(--gradient-start)/10"></div>
 
         <div className="flex items-center gap-5 relative z-10">
@@ -82,8 +148,10 @@ export default function Profile({
         <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
       </div>
 
+      <ProFeaturesCard isPro={isPro} />
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 relative z-10">
         <div className="bg-(--card-bg) p-5 rounded-[2rem] border border-(--border)/60 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
           <p className="text-xs font-medium opacity-60 mb-1 tracking-wider">STREAK</p>
           <div className="flex items-center gap-2">
@@ -104,7 +172,7 @@ export default function Profile({
       </div>
 
       {/* Performance Circle & Goals */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative z-10">
         <div className="bg-(--card-bg) p-8 rounded-[2.5rem] border border-(--border)/60 flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-(--gradient-start) to-(--gradient-end)"></div>
            <div className="relative w-40 h-40 flex items-center justify-center mb-4">
@@ -146,8 +214,9 @@ export default function Profile({
         </div>
       </div>
 
+
       {/* Actions */}
-      <div className="space-y-4 pt-4 border-t border-(--border)/40">
+      <div className="space-y-4 pt-4 border-t border-(--border)/40 relative z-10">
         <button
           onClick={() => setCurrentPage("settings")}
           className="w-full bg-(--card-bg) hover:bg-(--border)/50 text-(--text-primary) font-bold py-4 rounded-3xl flex items-center justify-center gap-2 transition-colors border border-(--border)/60 shadow-sm focus:outline-none focus:ring-4 focus:ring-(--accent)/20"

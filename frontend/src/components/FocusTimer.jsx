@@ -8,7 +8,16 @@ export default function FocusTimer({ closeModal }) {
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [initialMinutes, setInitialMinutes] = useState(25);
-  const { addFocusSession } = useStore();
+  const { addFocusSession, focusSessions, dailyFocusTarget, isPro } = useStore();
+  
+  const [selectedSound, setSelectedSound] = useState(null);
+  const audioRef = useRef(null);
+  
+  const sounds = [
+    { id: 'rain', name: 'Real Rainstorm', url: 'https://cdn.pixabay.com/audio/2022/03/15/audio_1e1cf906e5.mp3' },
+    { id: 'nature', name: 'Deep Nature', url: 'https://cdn.pixabay.com/audio/2025/02/03/audio_7599bcb342.mp3' },
+    { id: 'lofi', name: 'Lofi Focus', url: 'https://cdn.pixabay.com/audio/2026/02/09/audio_42f493ea02.mp3' }
+  ];
 
   const intervalRef = useRef(null);
 
@@ -24,11 +33,59 @@ export default function FocusTimer({ closeModal }) {
           handleComplete();
         }
       }, 1000);
-    } else {
-      clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
   }, [isActive, minutes, seconds]);
+
+  // Dedicated Audio Cleanup on Unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedSound) {
+      const sound = sounds.find(s => s.id === selectedSound);
+      if (sound) {
+        try {
+          if (!audioRef.current) {
+            audioRef.current = document.createElement('audio');
+            audioRef.current.loop = true;
+          }
+          if (audioRef.current.src !== sound.url) {
+            audioRef.current.src = sound.url;
+          }
+          
+          if (isActive) {
+            audioRef.current.play().catch(e => console.warn("Audio play blocked", e));
+          } else {
+            // This handles the "Preview on Toggle" requirement
+            // If the user just changed the sound, we play it briefly or let it stay playing 
+            // until the timer logic (which might be in another effect or next tick) kicks in.
+            // But to satisfy "starts and stops" synchronization, we should pause if not active.
+            audioRef.current.pause();
+          }
+        } catch (err) {
+          console.error("Audio initialization failed", err);
+        }
+      }
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    }
+  }, [isActive, selectedSound]);
+
+  // Separate effect to handle instant preview when toggling sound
+  useEffect(() => {
+    if (selectedSound && !isActive && audioRef.current) {
+      audioRef.current.play().catch(e => console.warn("Preview play blocked", e));
+    }
+  }, [selectedSound]);
 
   const handleComplete = async () => {
     setIsActive(false);
@@ -74,21 +131,65 @@ export default function FocusTimer({ closeModal }) {
         </button>
 
         <div className="flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-8">
+          <div className="flex items-center gap-2 mb-4">
             <Zap size={20} className="text-amber-500 fill-amber-500/20" />
             <h2 className="text-sm font-black tracking-widest uppercase opacity-50">Deep Focus</h2>
           </div>
 
-          {/* Time Display */}
-          <div className="relative mb-12 flex flex-col items-center justify-center">
-             <div className="text-8xl font-black tracking-tighter flex items-baseline tabular-nums">
-                {String(minutes).padStart(2, "0")}
-                <span className="text-5xl opacity-30 mx-1">:</span>
-                {String(seconds).padStart(2, "0")}
+          {/* Progress Ring (Pro Feature) */}
+          <div className="relative mb-8 group">
+             <div className="absolute inset-0 flex items-center justify-center -rotate-90">
+                <svg className="w-64 h-64">
+                   <circle
+                      cx="128"
+                      cy="128"
+                      r="120"
+                      className="stroke-(--border)/20 fill-none"
+                      strokeWidth="4"
+                   />
+                   <circle
+                      cx="128"
+                      cy="128"
+                      r="120"
+                      style={{
+                        strokeDasharray: '754',
+                        strokeDashoffset: (754 - (754 * Math.min(1, (focusSessions.reduce((a,b)=>a+b.duration,0) / dailyFocusTarget))))
+                      }}
+                      className="stroke-(--accent) fill-none transition-all duration-1000"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                   />
+                </svg>
              </div>
-             <p className="text-xs font-bold opacity-30 mt-2 uppercase tracking-widest">
-                {isActive ? "Flow State Active" : "Ready to Start?"}
-             </p>
+             
+             {/* Time Display */}
+             <div className="relative flex flex-col items-center justify-center h-64 w-64">
+                <div className="text-7xl font-black tracking-tighter flex items-baseline tabular-nums">
+                   {String(minutes).padStart(2, "0")}
+                   <span className="text-4xl opacity-30 mx-0.5">:</span>
+                   {String(seconds).padStart(2, "0")}
+                </div>
+                <div className="flex flex-col items-center gap-1 mt-1">
+                   <p className="text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">
+                      {isActive ? "Zone Locked" : "Target: " + dailyFocusTarget + "m"}
+                   </p>
+                </div>
+             </div>
+          </div>
+
+          {/* Sound Selector */}
+          <div className="flex gap-2 mb-8 bg-(--bg) p-1 rounded-2xl border border-(--border)/50">
+             {sounds.map(s => (
+                <button
+                   key={s.id}
+                   onClick={() => setSelectedSound(selectedSound === s.id ? null : s.id)}
+                   className={`px-3 py-1.5 rounded-xl text-[10px] font-black transition-all uppercase tracking-wider
+                      ${selectedSound === s.id ? 'bg-(--accent) text-white shadow-lg shadow-(--accent)/20' : 'opacity-40 hover:opacity-100'}
+                   `}
+                >
+                   {s.name}
+                </button>
+             ))}
           </div>
 
           {/* Presets */}
