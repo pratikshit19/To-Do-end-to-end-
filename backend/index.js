@@ -295,7 +295,10 @@ app.get("/profile", authMiddleware, async (req, res) => {
     const user = await User.findById(req.userId);
     res.json({ 
       username: user.username,
-      profilePhoto: user.profilePhoto 
+      profilePhoto: user.profilePhoto,
+      isPro: user.isPro || false,
+      proSettings: user.proSettings || { accentColor: null, customBackground: null },
+      dailyFocusTarget: user.dailyFocusTarget || 60
     });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch profile" });
