@@ -20,9 +20,7 @@ const cloudinary = require("./cloudinary");
 const upload = require("./upload");
 
 app.use(express.json());
-app.use(cors({
-  origin: ["192.168.29.199:5173","http://localhost:5173","https://to-do-app-gilt-tau.vercel.app"], credentials: true
-}));
+app.use(cors()); // Allow all for production troubleshooting, or specifically: origin: "*"
 app.use("/uploads", express.static("uploads"));
 
 app.post("/signup", async (req, res) => {
