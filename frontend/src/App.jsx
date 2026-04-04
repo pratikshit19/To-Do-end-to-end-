@@ -12,7 +12,7 @@ import Onboarding from "./components/Onboarding";
 import Navbar from "./components/Navbar";
 import Insights from "./components/Insights";
 import { Toaster } from "react-hot-toast";
-import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap } from "lucide-react";
+import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search } from "lucide-react";
 import API_BASE_URL from "./config";
 import useStore from "./store/useStore";
 import FocusTimer from "./components/FocusTimer";
@@ -126,7 +126,7 @@ function AppContent() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden bg-(--bg) text-(--text-primary)">
+      <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden bg-(--bg) text-(--text-primary) pt-[env(safe-area-inset-top,0px)]">
         {/* Subtle Background Elements */}
         <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-(--gradient-start)/10 blur-[120px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-(--gradient-end)/10 blur-[120px] pointer-events-none translate-x-1/2 translate-y-1/2"></div>
@@ -275,7 +275,7 @@ function AppContent() {
                 className="w-full pl-10 pr-4 py-2 rounded-xl bg-(--card-bg) border border-(--border)/60 text-sm focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all shadow-sm"
               />
               <div className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">
-                <Plus size={16} className="rotate-45" />
+                <Search size={16} /> 
               </div>
             </div>
 
@@ -297,7 +297,7 @@ function AppContent() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-5 md:p-8 w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-5 md:p-8 w-full pt-[calc(1.25rem+env(safe-area-inset-top,0px))] md:pt-8">
           <div className="max-w-6xl mx-auto h-full">
             <Routes>
               <Route path="/" element={

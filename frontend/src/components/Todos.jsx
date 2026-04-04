@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { useState, useRef } from "react";
-import { Trash2, Circle, CheckCircle2, ClipboardList, Pencil } from "lucide-react";
+import { Trash2, Circle, CheckCircle2, ClipboardList, Pencil, Search } from "lucide-react";
 import API_BASE_URL from "../config";
 import useStore from "../store/useStore";
 import confetti from "canvas-confetti";
@@ -129,7 +129,7 @@ export default function Todos({ onEdit }) {
           className="w-full pl-12 pr-4 py-4 rounded-2xl bg-(--card-bg) border border-(--border)/60 text-sm font-medium focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all shadow-sm"
         />
         <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">
-          <ClipboardList size={20} />
+          <Search size={20} />
         </div>
       </div>
 
