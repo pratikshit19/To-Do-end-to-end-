@@ -120,16 +120,18 @@ export default function Todos({ onEdit }) {
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
 
       {/* ================= MOBILE SEARCH (Top) ================= */}
-      <div className="md:hidden relative group mb-6 pt-[env(safe-area-inset-top,0px)] mt-2">
-        <input
-          type="text"
-          placeholder="Search tasks..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 rounded-2xl bg-(--card-bg) border border-(--border)/60 text-sm font-medium focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all shadow-sm"
-        />
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">
-          <Search size={20} />
+      <div className="md:hidden pt-[env(safe-area-inset-top,0px)] mb-6 mt-2">
+        <div className="relative group">
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 rounded-2xl bg-(--card-bg) border border-(--border)/60 text-sm font-medium focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all shadow-sm"
+          />
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">
+            <Search size={20} />
+          </div>
         </div>
       </div>
 
