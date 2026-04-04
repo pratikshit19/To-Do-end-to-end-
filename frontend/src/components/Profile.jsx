@@ -1,83 +1,38 @@
-import { Edit, Flame, Timer, CheckCircle, Trophy, LogOut, Settings, Crown, Zap, Activity, Calendar, Palette, ArrowRight, Check } from "lucide-react";
+import { Edit, Flame, Timer, CheckCircle, Trophy, LogOut, Settings, Crown, Zap, Activity, Calendar, Palette, ArrowRight, Check, FileSpreadsheet } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
 import useStore from "../store/useStore";
 
-const ProFeaturesCard = ({ isPro }) => {
-  if (isPro) return null;
-
-  const features = [
-    { 
-      icon: <Activity size={18} />, 
-      title: "Deep Insights", 
-      desc: "90-day heatmap & productivity correlations.",
-      color: "text-blue-500",
-      bg: "bg-blue-500/10"
-    },
-    { 
-      icon: <Palette size={18} />, 
-      title: "Custom Branding", 
-      desc: "Premium themes & immersive backgrounds.",
-      color: "text-purple-500",
-      bg: "bg-purple-500/10"
-    }
-  ];
-
-  return (
-    <div className="relative bg-(--card-bg) rounded-[2.5rem] p-8 border border-(--border)/60 shadow-2xl overflow-hidden group mb-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
-      <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] bg-orange-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-orange-500/15 transition-all duration-1000"></div>
-      <div className="relative z-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-orange-500">
-              <Crown size={20} className="animate-bounce" />
-              <span className="text-xs font-black uppercase tracking-[0.2em]">TaskFlow Pro</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight">
-              Supercharge your <span className="bg-linear-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">Production.</span>
-            </h2>
-          </div>
-          <button className="px-8 py-4 bg-linear-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center gap-2 group/btn">
-             Get Pro Now
-             <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {features.map((f, i) => (
-            <div key={i} className="p-5 rounded-3xl bg-(--bg)/50 border border-(--border)/40 hover:border-orange-500/30 transition-all hover:shadow-lg group/item">
-              <div className="flex items-start gap-4">
-                <div className={`w-10 h-10 rounded-xl ${f.bg} ${f.color} flex items-center justify-center shrink-0 group-hover/item:scale-110 transition-transform shadow-sm`}>
-                  {f.icon}
-                </div>
-                <div className="space-y-1">
-                  <h4 className="font-bold text-sm">{f.title}</h4>
-                  <p className="text-[11px] font-medium opacity-60 leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 flex items-center gap-2 justify-center opacity-40">
-           <Check size={14} className="text-orange-500" />
-           <span className="text-[10px] font-black uppercase tracking-widest text-(--text-primary)">Secure Checkout</span>
-           <span className="mx-2 text-(--text-primary)">•</span>
-           <Check size={14} className="text-orange-500" />
-           <span className="text-[10px] font-black uppercase tracking-widest text-(--text-primary)">Instant Activation</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default function Profile({
-  onLogout,
-  setCurrentPage,
-}) {
-  const { userProfile, setUserProfile, getStats, isPro } = useStore();
+export default function Profile({ onLogout, setCurrentPage }) {
+  const { userProfile, setUserProfile, getStats, isPro, upgradeToPro } = useStore();
   const stats = getStats();
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const fileInputRef = useRef(null);
+
+  const handleUpgrade = async () => {
+    const upgradePromise = new Promise(async (resolve, reject) => {
+      setTimeout(async () => {
+        const success = await upgradeToPro();
+        if (success) resolve("Welcome to the Pro Tier! 👑");
+        else reject("Checkout interrupted. Please try again.");
+      }, 2000);
+    });
+
+    toast.promise(upgradePromise, {
+      loading: "Establishing Secure Connection...",
+      success: (msg) => msg,
+      error: (err) => err,
+    }, {
+      style: {
+        borderRadius: '16px',
+        background: 'var(--card-bg)',
+        color: 'var(--text-primary)',
+        border: '1px solid var(--border)',
+        fontWeight: '700',
+      }
+    });
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -118,6 +73,82 @@ export default function Profile({
     ];
   }, [stats]);
 
+  const ProFeaturesCard = () => {
+    if (isPro) return null;
+
+    const features = [
+      {
+        icon: <Activity size={18} />,
+        title: "Deep Insights",
+        desc: "90-day heatmap & productivity correlations.",
+        color: "text-blue-500",
+        bg: "bg-blue-500/10"
+      },
+      {
+        icon: <Palette size={18} />,
+        title: "Custom Branding",
+        desc: "Premium themes & immersive backgrounds.",
+        color: "text-purple-500",
+        bg: "bg-purple-500/10"
+      },
+      {
+        icon: <FileSpreadsheet size={18} />,
+        title: "Productivity Reports",
+        desc: "Export your progress as professional CSV reports.",
+        color: "text-indigo-500",
+        bg: "bg-indigo-500/10"
+      }
+    ];
+
+    return (
+      <div className="bg-(--card-bg) p-8 rounded-[3rem] border border-(--border)/60 shadow-2xl relative overflow-hidden mb-12 animate-in zoom-in-95 fade-in duration-700">
+        <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-orange-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-[-100px] right-[-100px] w-[300px] h-[300px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+          <div className="flex-1 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 text-orange-600 mb-6 border border-orange-500/20">
+               <Crown size={14} className="fill-orange-500/20" />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Unlimited Growth</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-black tracking-tight mb-4 leading-tight">
+              Unlock the <span className="bg-linear-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">Full Power</span> of TaskFlow
+            </h2>
+          </div>
+          <button 
+            onClick={handleUpgrade}
+            className="px-8 py-4 bg-linear-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center gap-2 group/btn"
+          >
+            Get Pro Now
+            <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12">
+          {features.map((f, i) => (
+            <div key={i} className="p-5 rounded-3xl bg-(--bg)/50 border border-(--border)/40 hover:border-orange-500/30 transition-all hover:shadow-lg group/item">
+              <div className="flex items-start gap-4">
+                <div className={`w-10 h-10 rounded-xl ${f.bg} ${f.color} flex items-center justify-center shrink-0 group-hover/item:scale-110 transition-transform shadow-sm`}>
+                  {f.icon}
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-sm">{f.title}</h4>
+                  <p className="text-[11px] font-medium opacity-60 leading-relaxed">{f.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex items-center gap-2 justify-center opacity-40">
+          <Check size={14} className="text-orange-500" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-(--text-primary)">Secure Checkout</span>
+          <span className="mx-2 text-(--text-primary)">•</span>
+          <Check size={14} className="text-orange-500" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-(--text-primary)">Instant Activation</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full pb-30 md:pb-6 transition-colors duration-300">
 
@@ -135,11 +166,13 @@ export default function Profile({
           </div>
           <div>
             <h2 className="text-2xl font-black tracking-tight">{userProfile.username}</h2>
-            <p className="text-xs font-bold text-(--accent) tracking-widest uppercase opacity-80">Pro Member</p>
+            <p className="text-xs font-bold text-(--accent) tracking-widest uppercase opacity-80">
+              {isPro ? "Pro Member" : "Free Member"}
+            </p>
           </div>
         </div>
 
-        <button 
+        <button
           onClick={() => fileInputRef.current?.click()}
           className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-(--card-bg) border border-(--border) hover:bg-(--border)/50 transition-colors text-(--text-secondary) hover:text-(--accent) focus:outline-none"
         >
@@ -148,15 +181,15 @@ export default function Profile({
         <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
       </div>
 
-      <ProFeaturesCard isPro={isPro} />
+      <ProFeaturesCard />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 relative z-10">
         <div className="bg-(--card-bg) p-5 rounded-[2rem] border border-(--border)/60 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
           <p className="text-xs font-medium opacity-60 mb-1 tracking-wider">STREAK</p>
           <div className="flex items-center gap-2">
-             <h3 className="text-2xl font-black">{stats.streak}</h3>
-             <Flame size={18} className="text-orange-500 fill-orange-500/20" />
+            <h3 className="text-2xl font-black">{stats.streak}</h3>
+            <Flame size={18} className="text-orange-500 fill-orange-500/20" />
           </div>
         </div>
 
@@ -174,25 +207,25 @@ export default function Profile({
       {/* Performance Circle & Goals */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative z-10">
         <div className="bg-(--card-bg) p-8 rounded-[2.5rem] border border-(--border)/60 flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
-           <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-(--gradient-start) to-(--gradient-end)"></div>
-           <div className="relative w-40 h-40 flex items-center justify-center mb-4">
-              <svg className="w-full h-full transform -rotate-90 select-none" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" className="stroke-(--border) fill-transparent" strokeWidth="8" />
-                <circle
-                  cx="50" cy="50" r="40"
-                  className="stroke-(--gradient-start) fill-transparent transition-all duration-1000 ease-out"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray="251.2"
-                  strokeDashoffset={251.2 - (251.2 * stats.completionRate) / 100}
-                />
-              </svg>
-              <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-4xl font-black">{stats.completionRate}%</span>
-                <span className="text-[10px] font-bold opacity-50 uppercase tracking-tighter">Efficiency</span>
-              </div>
-           </div>
-           <p className="text-sm font-bold opacity-70">Weekly Efficiency Rate</p>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-(--gradient-start) to-(--gradient-end)"></div>
+          <div className="relative w-40 h-40 flex items-center justify-center mb-4">
+            <svg className="w-full h-full transform -rotate-90 select-none" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" className="stroke-(--border) fill-transparent" strokeWidth="8" />
+              <circle
+                cx="50" cy="50" r="40"
+                className="stroke-(--gradient-start) fill-transparent transition-all duration-1000 ease-out"
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray="251.2"
+                strokeDashoffset={251.2 - (251.2 * stats.completionRate) / 100}
+              />
+            </svg>
+            <div className="absolute flex flex-col items-center justify-center">
+              <span className="text-4xl font-black">{stats.completionRate}%</span>
+              <span className="text-[10px] font-bold opacity-50 uppercase tracking-tighter">Efficiency</span>
+            </div>
+          </div>
+          <p className="text-sm font-bold opacity-70">Weekly Efficiency Rate</p>
         </div>
 
         <div className="flex flex-col gap-4">

@@ -1,10 +1,11 @@
 import { useMemo } from "react";
-import { Activity, Zap, TrendingUp, BarChart3, PieChart as PieChartIcon, Calendar as CalendarIcon, Lock } from "lucide-react";
+import { Activity, Zap, TrendingUp, BarChart3, PieChart as PieChartIcon, Calendar as CalendarIcon, Lock, Download, FileSpreadsheet } from "lucide-react";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   BarChart, Bar, Cell, PieChart, Pie, AreaChart, Area
 } from "recharts";
 import useStore from "../store/useStore";
+import API_BASE_URL from "../config";
 
 export default function Insights() {
   const { todos, focusSessions, getStats, isPro } = useStore();
@@ -88,6 +89,35 @@ export default function Insights() {
 
     return { bestHour: formattedHour, bestDay };
   }, [todos]);
+
+  /* ================= DOWNLOAD REPORT ================= */
+  const handleDownloadReport = async (type) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/generate-report?type=${type}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || sessionStorage.getItem("token")}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `TaskFlow_${type}_Report.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const data = await response.json();
+        console.error("Report generation failed:", data.message);
+      }
+    } catch (err) {
+      console.error("Network error during report download:", err);
+    }
+  };
 
   /* ================= UI ================= */
 
@@ -258,6 +288,78 @@ export default function Insights() {
           <StatBox icon={<Activity className="text-orange-500" />} label="Peak Productive Day" value={correlations.bestDay} />
           <StatBox icon={<Zap className="text-amber-500" />} label="Prime Work Hour" value={correlations.bestHour} />
           <StatBox icon={<CalendarIcon className="text-emerald-500" />} label="Avg Daily Session" value={Math.round((stats.completedCount / stats.streak) || 0) + " Tasks"} />
+      </div>
+
+      {/* REPORT CENTER (PRO) */}
+      <div className="bg-(--card-bg) p-8 rounded-[2.5rem] border border-(--border)/60 shadow-sm mt-8 overflow-hidden relative">
+          
+          {/* PRO LOCK OVERLAY */}
+          {!isPro && (
+            <div className="absolute inset-0 z-20 bg-linear-to-b from-transparent via-(--card-bg)/60 to-(--card-bg) backdrop-blur-md flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/10 border border-indigo-500/20">
+                  <Lock size={32} />
+                </div>
+                <h3 className="text-2xl font-black mb-2 tracking-tight">Export Your Progress</h3>
+                <p className="text-sm font-medium opacity-70 max-w-xs mb-6 leading-relaxed">
+                  Download professional **Productivity Reports** to analyze your performance in Excel or Sheets.
+                </p>
+                <button 
+                  className="px-8 py-3 bg-linear-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-105 transition-transform uppercase tracking-widest text-xs"
+                >
+                  Upgrade to Pro
+                </button>
+            </div>
+          )}
+
+          <div className={`transition-all duration-700 ${!isPro ? 'blur-sm opacity-30 select-none grayscale' : ''}`}>
+             <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                     <FileSpreadsheet size={20} />
+                   </div>
+                   <p className="text-sm font-black uppercase tracking-widest opacity-50">Productivity Reports</p>
+                </div>
+                <span className="text-[10px] bg-indigo-500/20 text-indigo-500 px-2 py-0.5 rounded-full font-black">PRO EXPORT</span>
+             </div>
+
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button 
+                  onClick={() => handleDownloadReport('weekly')}
+                  className="group p-6 rounded-3xl bg-(--bg)/50 border border-(--border)/40 hover:border-indigo-500/50 transition-all flex items-center justify-between"
+                >
+                   <div className="flex items-center gap-4 text-left">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Download size={22} />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-base">Weekly Summary</h4>
+                        <p className="text-xs opacity-50">Past 7 days of performance</p>
+                      </div>
+                   </div>
+                   <div className="w-8 h-8 rounded-full bg-(--border)/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <TrendingUp size={14} className="text-indigo-500" />
+                   </div>
+                </button>
+
+                <button 
+                  onClick={() => handleDownloadReport('monthly')}
+                  className="group p-6 rounded-3xl bg-(--bg)/50 border border-(--border)/40 hover:border-indigo-500/50 transition-all flex items-center justify-between"
+                >
+                   <div className="flex items-center gap-4 text-left">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Download size={22} />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-base">Monthly Audit</h4>
+                        <p className="text-xs opacity-50">Complete 30-day productivity log</p>
+                      </div>
+                   </div>
+                   <div className="w-8 h-8 rounded-full bg-(--border)/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <TrendingUp size={14} className="text-indigo-500" />
+                   </div>
+                </button>
+             </div>
+          </div>
       </div>
 
     </div>

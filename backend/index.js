@@ -372,6 +372,81 @@ app.put("/user/pro-settings", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/generate-report", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user || !user.isPro) {
+      return res.status(403).json({ message: "Pro membership required for reports." });
+    }
+
+    const { type } = req.query; // 'weekly' or 'monthly'
+    const days = type === 'monthly' ? 30 : 7;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Fetch Completed Tasks in range
+    const completedTodos = await todo.find({
+      userId: req.userId,
+      completed: true,
+      completedAt: { $gte: startDate }
+    }).sort({ completedAt: -1 });
+
+    // Fetch Focus Sessions in range
+    const sessions = await FocusSession.find({
+      userId: req.userId,
+      date: { $gte: startDate }
+    }).sort({ date: -1 });
+
+    // Generate CSV String
+    let csv = "Date,Type,Title/Duration,Detail/Priority\n";
+    
+    // Add Tasks
+    completedTodos.forEach(t => {
+      const dateStr = new Date(t.completedAt).toLocaleDateString();
+      const title = t.title.replace(/,/g, ""); // Clean commas
+      csv += `${dateStr},Task,${title},${t.priority}\n`;
+    });
+
+    // Add Sessions
+    sessions.forEach(s => {
+      const dateStr = new Date(s.date).toLocaleDateString();
+      csv += `${dateStr},Focus Session,${s.duration} mins,Completed\n`;
+    });
+
+    // Send as Downloadable File
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=TaskFlow_${type}_Report.csv`);
+    res.send(csv);
+
+  } catch (err) {
+    console.error("REPORT ERROR:", err);
+    res.status(500).json({ message: "Failed to generate report" });
+  }
+});
+
+app.post("/upgrade-to-pro", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.userId, 
+      { isPro: true }, 
+      { new: true }
+    );
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ 
+      message: "Welcome to Pro! Your features are now unlocked.", 
+      isPro: true 
+    });
+
+  } catch (err) {
+    console.error("UPGRADE ERROR:", err);
+    res.status(500).json({ message: "Failed to process upgrade" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -63,6 +63,25 @@ const useStore = create((set, get) => ({
     }
   },
 
+  upgradeToPro: async () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return false;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/upgrade-to-pro`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        set({ isPro: true });
+        return true;
+      }
+    } catch (err) {
+      console.error("Upgrade failed", err);
+    }
+    return false;
+  },
+
   /* ================= AUTH ================= */
   setAuthenticated: (status) => set({ isAuthenticated: status }),
   
