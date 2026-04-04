@@ -385,7 +385,7 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <Toaster position="top-right" />
+<Toaster position="bottom-center" />
       <AppContent />
     </Router>
   );

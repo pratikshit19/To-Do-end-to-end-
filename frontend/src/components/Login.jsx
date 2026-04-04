@@ -85,14 +85,13 @@ export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, 
       }
 
       toast.success("Welcome back 🎉", { id: toastId });
+      setIsAuthenticated(true);
       
       const store = useStore.getState();
       store.setUserProfile({ username: data.username });
       store.fetchTodos();
       store.fetchUserProfile();
       store.fetchFocusSessions();
-      
-      setIsAuthenticated(true);
     } catch (err) {
       toast.error(err.message || "Login failed", { id: toastId });
     } finally {
