@@ -1,37 +1,19 @@
-import { Edit, Flame, Timer, CheckCircle, Trophy, LogOut, Settings, Crown, Zap, Activity, Calendar, Palette, ArrowRight, Check, FileSpreadsheet } from "lucide-react";
+import { Edit, Flame, LogOut, Settings, Crown, Zap, Activity, Palette, ArrowRight, Check, FileSpreadsheet } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
 import useStore from "../store/useStore";
+import PricingModal from "./PricingModal";
 
 export default function Profile({ onLogout, setCurrentPage }) {
-  const { userProfile, setUserProfile, getStats, isPro, upgradeToPro } = useStore();
+  const { userProfile, setUserProfile, getStats, isPro } = useStore();
   const stats = getStats();
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const fileInputRef = useRef(null);
 
-  const handleUpgrade = async () => {
-    const upgradePromise = new Promise(async (resolve, reject) => {
-      setTimeout(async () => {
-        const success = await upgradeToPro();
-        if (success) resolve("Welcome to the Pro Tier! 👑");
-        else reject("Checkout interrupted. Please try again.");
-      }, 2000);
-    });
-
-    toast.promise(upgradePromise, {
-      loading: "Establishing Secure Connection...",
-      success: (msg) => msg,
-      error: (err) => err,
-    }, {
-      style: {
-        borderRadius: '16px',
-        background: 'var(--card-bg)',
-        color: 'var(--text-primary)',
-        border: '1px solid var(--border)',
-        fontWeight: '700',
-      }
-    });
+  const handleUpgrade = () => {
+    setShowPricingModal(true);
   };
 
   const handleImageUpload = async (e) => {
@@ -266,6 +248,13 @@ export default function Profile({ onLogout, setCurrentPage }) {
           Sign Out Workspace
         </button>
       </div>
+
+      {/* Pricing / Payment Modal */}
+      {showPricingModal && (
+        <PricingModal
+          onClose={() => setShowPricingModal(false)}
+        />
+      )}
 
     </div>
   );
