@@ -37,7 +37,7 @@ export default function ForgotPassword({ setIsLogin }) {
 
     try {
       const response = await fetch(
-        "https://to-do-app-616k.onrender.com/reset-password",
+        `${API_BASE_URL}/reset-password`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

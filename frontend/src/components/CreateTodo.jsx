@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
+import API_BASE_URL from "../config";
 
 export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
   const today = new Date().toISOString().split("T")[0];
@@ -30,8 +31,8 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
 
     try {
       const endpoint = currentTodo 
-        ? `https://to-do-app-616k.onrender.com/todos/${currentTodo._id}`
-        : "https://to-do-app-616k.onrender.com/todo";
+        ? `${API_BASE_URL}/todos/${currentTodo._id}`
+        : `${API_BASE_URL}/todo`;
         
       const method = currentTodo ? "PUT" : "POST";
 

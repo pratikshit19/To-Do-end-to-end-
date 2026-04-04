@@ -16,19 +16,8 @@ const { todo, User } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
+const cloudinary = require("./cloudinary");
+const upload = require("./upload");
 
 app.use(express.json());
 app.use(cors({
@@ -256,25 +245,32 @@ app.post(
   upload.single("profilePhoto"),
   async (req, res) => {
     try {
-      console.log("USER:", req.user);
-      console.log("FILE:", req.file);
-
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      const userId = req.userId;
+      // Upload to Cloudinary using buffer
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "profile_photos" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
 
-      const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      const imageUrl = uploadResult.secure_url;
 
-      await User.findByIdAndUpdate(userId, {
+      await User.findByIdAndUpdate(req.userId, {
         profilePhoto: imageUrl,
       });
 
       res.json({ profilePhoto: imageUrl });
     } catch (err) {
       console.error("UPLOAD ERROR:", err);
-      res.status(500).json({ message: err.message });
+      res.status(500).json({ message: "Failed to upload to Cloudinary" });
     }
   }
 );

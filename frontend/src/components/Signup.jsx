@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import API_BASE_URL from "../config";
 
 export default function Signup({ setIsLogin, setIsAuthenticated }) {
   const [form, setForm] = useState({
@@ -77,7 +78,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
 
     try {
       const response = await fetch(
-        "https://to-do-app-616k.onrender.com/signup",
+        `${API_BASE_URL}/signup`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

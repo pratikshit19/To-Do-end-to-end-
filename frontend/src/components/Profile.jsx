@@ -1,17 +1,18 @@
 import { Edit, Flame, Timer, CheckCircle, Trophy, LogOut, Settings } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
+import API_BASE_URL from "../config";
 
 export default function Profile({
   todos = [],
   focusSessions = [],
   onLogout,
   setCurrentPage,
+  userProfile,
+  setUserProfile,
 }) {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
-  const [username, setUsername] = useState("");
-  const [profilePhoto, setProfilePhoto] = useState("");
 
   const fileInputRef = useRef(null);
 
@@ -29,7 +30,7 @@ export default function Profile({
     formData.append("profilePhoto", file);
 
     try {
-      const res = await fetch("https://to-do-app-616k.onrender.com/upload-profile", {
+      const res = await fetch(`${API_BASE_URL}/upload-profile`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,7 +43,9 @@ export default function Profile({
       }
 
       const data = await res.json();
-      setProfilePhoto(data.profilePhoto);
+      setUserProfile((prev) => ({ ...prev, profilePhoto: data.profilePhoto }));
+      // Cache the new Cloudinary URL immediately
+      localStorage.setItem("profilePhoto", data.profilePhoto);
       toast.success("Profile photo updated!", { id: toastId });
     } catch (err) {
       console.error("Upload error:", err);
@@ -50,41 +53,7 @@ export default function Profile({
     }
   };
 
-  useEffect(() => {
-    const storedUsername =
-      localStorage.getItem("username") ||
-      sessionStorage.getItem("username");
-
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!token) return;
-
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch(
-          "https://to-do-app-616k.onrender.com/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch profile");
-
-        const data = await res.json();
-        setProfilePhoto(data.profilePhoto || "");
-      } catch (err) {
-        console.error("Profile fetch failed:", err);
-      }
-    };
-
-    fetchProfile();
-  }, [token]);
+  // Profile data is now handled centrally in App.jsx via userProfile prop
 
   /* ---------------- TOTAL COMPLETED ---------------- */
   const totalCompleted = useMemo(() => {
@@ -185,16 +154,16 @@ export default function Profile({
 
         <div className="flex items-center gap-5 relative z-10">
           <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white text-2xl font-semibold shadow-lg shadow-(--gradient-start)/20 ring-4 ring-(--gradient-start)/10 overflow-hidden">
-            {profilePhoto ? (
-              <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+            {userProfile.profilePhoto ? (
+              <img src={userProfile.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              username?.charAt(0).toUpperCase() || "U"
+              userProfile.username?.charAt(0).toUpperCase() || "U"
             )}
           </div>
 
           <div>
             <h3 className="font-bold text-xl tracking-wide bg-linear-to-br from-(--text-primary) to-(--text-secondary) bg-clip-text text-transparent">
-              {username || "User"}
+              {userProfile.username || "User"}
             </h3>
             <span className="inline-block mt-1 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-(--accent)/10 text-(--accent)">
               Pro Workspace

@@ -13,6 +13,7 @@ import Navbar from "./components/Navbar";
 import Insights from "./components/Insights";
 import { Toaster } from "react-hot-toast";
 import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus } from "lucide-react";
+import API_BASE_URL from "./config";
 
 function AppContent() {
   /* ================= STATE ================= */
@@ -29,6 +30,10 @@ function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTodo, setEditingTodo] = useState(null);
+  const [userProfile, setUserProfile] = useState({
+    username: localStorage.getItem("username") || sessionStorage.getItem("username") || "User",
+    profilePhoto: localStorage.getItem("profilePhoto") || ""
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const openModal = (todo = null) => {
@@ -78,7 +83,7 @@ function AppContent() {
     }
 
     try {
-      const response = await fetch("https://to-do-app-616k.onrender.com/todos", {
+      const response = await fetch(`${API_BASE_URL}/todos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -96,16 +101,44 @@ function AppContent() {
     }
   };
 
+  const fetchUserProfile = async () => {
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newProfile = {
+          username: data.username || "User",
+          profilePhoto: data.profilePhoto || ""
+        };
+        setUserProfile(newProfile);
+        // Cache in localStorage for instant retrieval on next refresh
+        if (newProfile.profilePhoto) {
+          localStorage.setItem("profilePhoto", newProfile.profilePhoto);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
     setIsAuthenticated(false);
+    setUserProfile({ username: "User", profilePhoto: "" });
     setCurrentPage("home");
   };
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchTodos();
+      fetchUserProfile();
     } else {
       setIsLoading(false);
     }
@@ -153,7 +186,12 @@ function AppContent() {
 
           <div className="w-full">
             {isLogin === true ? (
-              <Login setIsAuthenticated={setIsAuthenticated} setIsLogin={setIsLogin} />
+              <Login
+                setIsAuthenticated={setIsAuthenticated}
+                setIsLogin={setIsLogin}
+                setUserProfile={setUserProfile}
+                fetchUserProfile={fetchUserProfile}
+              />
             ) : isLogin === false ? (
               <Signup setIsLogin={setIsLogin} />
             ) : (
@@ -225,11 +263,15 @@ function AppContent() {
             onClick={() => setCurrentPage('profile')}
             className="flex items-center gap-3 cursor-pointer hover:bg-(--border)/60 p-2.5 rounded-2xl transition"
           >
-            <div className="w-10 h-10 rounded-full bg-linear-to-tr from-(--gradient-start) to-(--gradient-end) shadow-md flex items-center justify-center text-white font-bold text-sm shrink-0">
-              U
+            <div className="w-10 h-10 rounded-full bg-linear-to-tr from-(--gradient-start) to-(--gradient-end) shadow-md flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
+              {userProfile.profilePhoto ? (
+                <img src={userProfile.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                userProfile.username?.charAt(0).toUpperCase() || "U"
+              )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-semibold truncate">My Workspace</span>
+              <span className="text-sm font-semibold truncate">{userProfile.username || "My Workspace"}</span>
               <span className="text-xs opacity-60">Pro Plan</span>
             </div>
           </div>
@@ -281,7 +323,16 @@ function AppContent() {
               } />
               <Route path="/schedule" element={<Schedule todos={todos} />} />
               <Route path="/insights" element={<Insights setCurrentPage={setCurrentPage} todos={todos} />} />
-              <Route path="/profile" element={<Profile onLogout={handleLogout} setCurrentPage={setCurrentPage} />} />
+              <Route path="/profile" element={
+                <Profile
+                  userProfile={userProfile}
+                  setUserProfile={setUserProfile}
+                  fetchUserProfile={fetchUserProfile}
+                  onLogout={handleLogout}
+                  setCurrentPage={setCurrentPage}
+                  todos={todos}
+                />
+              } />
               <Route path="/settings" element={
                 <Settings setCurrentPage={setCurrentPage} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} colorTheme={colorTheme} setColorTheme={setColorTheme} />
               } />

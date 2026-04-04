@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { useState, useRef } from "react";
 import { Trash2, Circle, CheckCircle2, ClipboardList, Pencil } from "lucide-react";
+import API_BASE_URL from "../config";
 
 export default function Todos({ todos = [], fetchTodos, onEdit }) {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -42,7 +43,7 @@ export default function Todos({ todos = [], fetchTodos, onEdit }) {
     // Only show quick toast, no blocking loader popup needed since it's an inline action
     try {
       const response = await fetch(
-        `https://to-do-app-616k.onrender.com/todos/${id}`,
+        `${API_BASE_URL}/todos/${id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -66,7 +67,7 @@ export default function Todos({ todos = [], fetchTodos, onEdit }) {
 
     try {
       const response = await fetch(
-        `https://to-do-app-616k.onrender.com/todos/${todo._id}`,
+        `${API_BASE_URL}/todos/${todo._id}`,
         {
           method: "PUT",
           headers: {

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
+import API_BASE_URL from "../config";
 
-export default function Login({ setIsAuthenticated, setIsLogin }) {
+export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, fetchUserProfile }) {
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -59,7 +60,7 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
 
     try {
       const response = await fetch(
-        "https://to-do-app-616k.onrender.com/signin",
+        `${API_BASE_URL}/signin`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -80,6 +81,17 @@ export default function Login({ setIsAuthenticated, setIsLogin }) {
       }
 
       toast.success("Welcome back 🎉", { id: toastId });
+      
+      // Update the name immediately so the sidebar doesn't show "User"
+      if (setUserProfile) {
+        setUserProfile((prev) => ({ ...prev, username: data.username }));
+      }
+      
+      // Trigger a profile photo fetch right now instead of waiting for the next effect loop
+      if (fetchUserProfile) {
+        fetchUserProfile();
+      }
+      
       setIsAuthenticated(true);
     } catch (err) {
       toast.error(err.message || "Login failed", { id: toastId });

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, Bell, Moon, Sun, Lock, Shield, HelpCircle, FileText } from "lucide-react";
+import { ChevronRight, Bell, Moon, Sun, Lock, Shield, HelpCircle, FileText, MessageSquare } from "lucide-react";
 import toast from "react-hot-toast";
+import API_BASE_URL from "../config";
 
 export default function Settings({
   setCurrentPage,
@@ -59,7 +60,7 @@ export default function Settings({
     const toastId = toast.loading("Updating password...");
 
     try {
-      const res = await fetch("https://to-do-app-616k.onrender.com/change-password", {
+      const res = await fetch(`${API_BASE_URL}/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -253,6 +254,7 @@ export default function Settings({
       <h3 className="text-xl font-bold mb-4 px-2">Legal & Support</h3>
       <div className="bg-(--card-bg) rounded-3xl shadow-sm border border-(--border)/60 mb-8 overflow-hidden">
         {[
+          { label: "Send Feedback", icon: MessageSquare },
           { label: "Help Center & FAQ", icon: HelpCircle },
           { label: "Terms of Service", icon: FileText },
           { label: "Privacy Policy", icon: Shield }
@@ -263,7 +265,7 @@ export default function Settings({
               key={item.label}
               onClick={() => triggerSupport(item.label)}
               className={`flex items-center justify-between p-5 cursor-pointer hover:bg-(--border)/40 transition-colors
-                ${index !== 2 ? "border-b border-(--border)/40" : ""}
+                ${index !== 3 ? "border-b border-(--border)/40" : ""}
               `}
             >
               <div className="flex items-center gap-3">
