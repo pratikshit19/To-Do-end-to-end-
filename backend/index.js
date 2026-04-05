@@ -125,6 +125,26 @@ app.post("/todo", authMiddleware, async (req, res) => {
       });
     }
 
+    // Send notification to all team members if it's a team task
+    if (teamId) {
+      const team = await Team.findById(teamId);
+      if (team) {
+        const creator = await User.findById(req.userId);
+        const memberNotifications = team.members
+          .filter(m => m.toString() !== req.userId)
+          .map(memberId => ({
+            userId: memberId,
+            message: `${creator.username} added a new task to ${team.name}: "${title}"`,
+            taskId: newTodo._id,
+            type: "team_task"
+          }));
+        
+        if (memberNotifications.length > 0) {
+          await Notification.insertMany(memberNotifications);
+        }
+      }
+    }
+
     res.json({
       message: "To-do created!",
       todo: newTodo
@@ -755,6 +775,19 @@ app.delete("/team/:id", authMiddleware, async (req, res) => {
         message: "Forbidden: You do not have permission to delete this team.",
         debug: { owner: team.owner, requester: req.userId } 
       });
+    }
+
+    // Notify all members before deleting
+    const memberNotifications = team.members
+      .filter(m => m.toString() !== req.userId)
+      .map(memberId => ({
+        userId: memberId,
+        message: `The team "${team.name}" has been deleted by the owner.`,
+        type: "team_deleted"
+      }));
+    
+    if (memberNotifications.length > 0) {
+      await Notification.insertMany(memberNotifications);
     }
 
     // Delete all todos associated with this team

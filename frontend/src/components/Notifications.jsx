@@ -66,7 +66,12 @@ export default function Notifications() {
                   className={`p-4 hover:bg-(--bg)/50 transition-colors cursor-pointer relative group ${!n.read ? "bg-(--accent)/5" : "opacity-60"}`}
                 >
                   <div className="flex gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${n.type === 'assignment' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      n.type === 'assignment' ? 'bg-indigo-500/10 text-indigo-500' : 
+                      n.type === 'team_task' ? 'bg-emerald-500/10 text-emerald-500' :
+                      n.type === 'team_deleted' ? 'bg-red-500/10 text-red-500' :
+                      'bg-blue-500/10 text-blue-500'
+                    }`}>
                       <Bell size={14} />
                     </div>
                     <div className="flex-1 min-w-0">

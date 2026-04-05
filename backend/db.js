@@ -136,7 +136,7 @@ const teamSchema = new mongoose.Schema({
 const notificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   message: { type: String, required: true },
-  type: { type: String, enum: ["assignment", "system"], default: "assignment" },
+  type: { type: String, enum: ["assignment", "team_task", "team_deleted", "system"], default: "system" },
   read: { type: Boolean, default: false },
   taskId: { type: mongoose.Schema.Types.ObjectId, ref: "todos" }
 }, { timestamps: true });
