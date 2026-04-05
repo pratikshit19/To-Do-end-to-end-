@@ -88,22 +88,22 @@ export default function Profile({ onLogout, setCurrentPage }) {
       },
       {
         icon: <Users size={18} />,
-        title: "Focus Buddies",
-        desc: "Live accountability pairing and multiplexing sessions.",
+        title: "Team Collaboration",
+        desc: "Shared workspaces, invite codes, and real-time syncing.",
         color: "text-cyan-500",
         bg: "bg-cyan-500/10"
       },
       {
         icon: <Activity size={18} />,
         title: "Deep Insights",
-        desc: "90-day heatmap, PDF exports, and custom themes.",
+        desc: "90-day heatmap, PDF exports, and theme engine.",
         color: "text-blue-500",
         bg: "bg-blue-500/10"
       }
     ];
 
     return (
-      <div className="bg-(--card-bg) p-8 rounded-[3rem] border border-(--border)/60 shadow-2xl relative overflow-hidden mb-12 animate-in zoom-in-95 fade-in duration-700">
+      <div className="bg-(--card-bg) p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-(--border)/60 shadow-2xl relative overflow-hidden mb-12 animate-in zoom-in-95 fade-in duration-700">
         <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-orange-500/5 rounded-full blur-[100px] pointer-events-none"></div>
         <div className="absolute bottom-[-100px] right-[-100px] w-[300px] h-[300px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none"></div>
         
@@ -125,16 +125,16 @@ export default function Profile({ onLogout, setCurrentPage }) {
             <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mt-8 sm:mt-12">
           {features.map((f, i) => (
-            <div key={i} className="p-5 rounded-3xl bg-(--bg)/50 border border-(--border)/40 hover:border-orange-500/30 transition-all hover:shadow-lg group/item">
-              <div className="flex items-start gap-4">
-                <div className={`w-10 h-10 rounded-xl ${f.bg} ${f.color} flex items-center justify-center shrink-0 group-hover/item:scale-110 transition-transform shadow-sm`}>
+            <div key={i} className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-(--bg)/50 border border-(--border)/40 hover:border-orange-500/30 transition-all hover:shadow-lg group/item">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 text-center sm:text-left">
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${f.bg} ${f.color} flex items-center justify-center shrink-0 group-hover/item:scale-110 transition-transform shadow-sm`}>
                   {f.icon}
                 </div>
-                <div className="space-y-1">
-                  <h4 className="font-bold text-sm">{f.title}</h4>
-                  <p className="text-[11px] font-medium opacity-60 leading-relaxed">{f.desc}</p>
+                <div className="space-y-0.5 sm:space-y-1">
+                  <h4 className="font-bold text-[10px] sm:text-sm leading-tight">{f.title}</h4>
+                  <p className="text-[9px] sm:text-[11px] font-medium opacity-60 leading-tight sm:leading-relaxed">{f.desc}</p>
                 </div>
               </div>
             </div>

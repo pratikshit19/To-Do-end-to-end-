@@ -22,6 +22,18 @@ const todoSchema = new mongoose.Schema({
     default: null
   },
 
+  completedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+
   priority: {
     type: String,
     enum: ["low", "medium", "high"],
@@ -121,16 +133,26 @@ const teamSchema = new mongoose.Schema({
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 }, { timestamps: true });
 
+const notificationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  message: { type: String, required: true },
+  type: { type: String, enum: ["assignment", "system"], default: "assignment" },
+  read: { type: Boolean, default: false },
+  taskId: { type: mongoose.Schema.Types.ObjectId, ref: "todos" }
+}, { timestamps: true });
+
 const User = mongoose.model("User", userSchema);
 const todo = mongoose.model('todos', todoSchema);
 const FocusSession = mongoose.model('FocusSession', focusSessionSchema);
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 const Team = mongoose.model('Team', teamSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
 
 module.exports = {
     todo,
     User,
     FocusSession,
     Feedback,
-    Team
+    Team,
+    Notification
 }

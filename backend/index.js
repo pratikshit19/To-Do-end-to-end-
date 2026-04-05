@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 
 const { createTodo, updateTodo } = require("./types");
-const { todo, User, FocusSession, Feedback, Team } = require("./db");
+const { todo, User, FocusSession, Feedback, Team, Notification } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -89,7 +89,7 @@ app.post("/signin", async (req, res) => {
 
 app.post("/todo", authMiddleware, async (req, res) => {
   try {
-    const { title, description, priority, dueDate, dueTime, recurrence, teamId } = req.body;
+    const { title, description, priority, dueDate, dueTime, recurrence, teamId, assignedTo } = req.body;
 
     if (!dueDate) {
       return res.status(400).json({ message: "Due date is required" });
@@ -110,8 +110,20 @@ app.post("/todo", authMiddleware, async (req, res) => {
       dueTime: dueTime || null,
       userId: req.userId,
       teamId: teamId || null,
+      assignedTo: assignedTo || null,
       recurrence: recurrence || "none"
     });
+
+    // Send notification if assigned to someone else
+    if (assignedTo && assignedTo !== req.userId) {
+      const creator = await User.findById(req.userId);
+      await Notification.create({
+        userId: assignedTo,
+        message: `${creator.username} assigned you a task: ${title}`,
+        taskId: newTodo._id,
+        type: "assignment"
+      });
+    }
 
     res.json({
       message: "To-do created!",
@@ -148,7 +160,11 @@ app.get("/todos", authMiddleware, async (req, res) => {
       };
     }
 
-    const todos = await todo.find(filter).sort({ dueDate: 1 });
+    const todos = await todo.find(filter)
+      .populate("userId", "username profilePhoto")
+      .populate("completedBy", "username profilePhoto")
+      .populate("assignedTo", "username profilePhoto")
+      .sort({ dueDate: 1 });
 
     res.json({ todos });
 
@@ -200,11 +216,13 @@ app.put("/todos/:id", authMiddleware, async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    // If completed is being set to true, set completedAt
+    // If completed is being set to true, set completedAt and completedBy
     if (body.completed === true) {
       body.completedAt = new Date();
+      body.completedBy = req.userId;
     } else if (body.completed === false) {
       body.completedAt = null;
+      body.completedBy = null;
     }
 
     const updated = await todo.findByIdAndUpdate(req.params.id, body, { new: true });
@@ -657,7 +675,8 @@ app.post("/team", authMiddleware, async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: "Team name is required" });
     const inviteCode = crypto.randomBytes(3).toString("hex").toUpperCase();
-    const newTeam = await Team.create({ name, inviteCode, owner: req.userId, members: [req.userId] });
+    let newTeam = await Team.create({ name, inviteCode, owner: req.userId, members: [req.userId] });
+    newTeam = await Team.findById(newTeam._id).populate("members", "username profilePhoto");
     res.json({ message: "Team created!", team: newTeam });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -674,7 +693,8 @@ app.post("/team/join", authMiddleware, async (req, res) => {
     
     team.members.push(req.userId);
     await team.save();
-    res.json({ message: "Joined team successfully!", team });
+    const populatedTeam = await Team.findById(team._id).populate("members", "username profilePhoto");
+    res.json({ message: "Joined team successfully!", team: populatedTeam });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -682,8 +702,34 @@ app.post("/team/join", authMiddleware, async (req, res) => {
 
 app.get("/teams", authMiddleware, async (req, res) => {
   try {
-    const teams = await Team.find({ members: req.userId }).lean();
+    const teams = await Team.find({ members: req.userId })
+      .populate("members", "username profilePhoto")
+      .lean();
     res.json({ teams });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* =========================
+          NOTIFICATION ROUTES
+========================= */
+
+app.get("/notifications", authMiddleware, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ userId: req.userId })
+      .sort({ createdAt: -1 })
+      .limit(20);
+    res.json({ notifications });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/notifications/:id/read", authMiddleware, async (req, res) => {
+  try {
+    await Notification.findByIdAndUpdate(req.params.id, { read: true });
+    res.json({ message: "Notification marked as read" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

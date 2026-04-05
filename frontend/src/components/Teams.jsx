@@ -165,6 +165,31 @@ export default function Teams({ setCurrentPage }) {
                   <p className="text-xs opacity-60 font-medium bg-(--border)/50 px-2 py-0.5 rounded-md inline-block mt-1">
                     Invite Code: <span className="font-mono text-(--text-primary) tracking-wider">{team.inviteCode}</span>
                   </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-(--accent) mt-2">
+                    {team.members?.length || 0} {team.members?.length === 1 ? 'Member' : 'Members'}
+                  </p>
+                  
+                  {/* Member Details */}
+                  <div className="mt-4 pt-4 border-t border-(--border)/30">
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-3">Workspace Members</p>
+                    <div className="flex flex-wrap gap-2">
+                      {team.members?.map((member, idx) => (
+                        <div 
+                          key={member._id || idx}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-xl bg-(--bg) border border-(--border)/40 shadow-sm"
+                        >
+                          <div className="w-6 h-6 rounded-lg bg-linear-to-tr from-(--gradient-start) to-(--gradient-end) flex items-center justify-center text-white text-[10px] font-bold overflow-hidden shrink-0">
+                            {member.profilePhoto ? (
+                              <img src={member.profilePhoto} alt={member.username || "User"} className="w-full h-full object-cover" />
+                            ) : (
+                              (member.username || "U").charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <span className="text-[11px] font-bold opacity-80">{member.username || "Unknown User"}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
               <ChevronRight size={20} className="text-(--text-secondary) group-hover:translate-x-1 transition-transform" />

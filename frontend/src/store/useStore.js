@@ -6,6 +6,7 @@ const useStore = create((set, get) => ({
   focusSessions: [],
   currentWorkspace: "personal", 
   teams: [],
+  notifications: [],
   userProfile: {
     username: (() => {
       const u = localStorage.getItem("username") || sessionStorage.getItem("username");
@@ -283,6 +284,41 @@ const useStore = create((set, get) => ({
       }));
     } catch (err) {
       console.error("Failed to save focus session:", err);
+    }
+  },
+
+  /* ================= NOTIFICATIONS ================= */
+  fetchNotifications: async () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/notifications`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      set({ notifications: data.notifications || [] });
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  },
+
+  markNotificationAsRead: async (id) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      set((state) => ({
+        notifications: state.notifications.map((n) => 
+          n._id === id ? { ...n, read: true } : n
+        )
+      }));
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
     }
   },
 

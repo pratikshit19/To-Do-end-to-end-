@@ -6,7 +6,7 @@ import useStore from "../store/useStore";
 import confetti from "canvas-confetti";
 
 export default function Todos({ onEdit }) {
-  const { todos, updateTodo, deleteTodo } = useStore();
+  const { todos, updateTodo, deleteTodo, currentWorkspace } = useStore();
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const [activeFilter, setActiveFilter] = useState("focused");
@@ -357,6 +357,50 @@ export default function Todos({ onEdit }) {
                     <div className={`text-xs mt-2 font-medium flex items-center gap-1 ${todo.completed ? "opacity-30" : "text-(--accent)/80"}`}>
                       {new Date(todo.dueDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                       {todo.dueTime && ` • ${todo.dueTime}`}
+                    </div>
+                  )}
+
+                  {/* Task Ownership & Completion & Assignment Attribution */}
+                  {currentWorkspace !== "personal" && (
+                    <div className="flex flex-col gap-1.5 mt-2">
+                       <div className={`text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider ${todo.completed ? "opacity-30" : "opacity-40"}`}>
+                          {todo.completed && todo.completedBy ? (
+                            <>
+                              <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[8px] overflow-hidden">
+                                 {todo.completedBy.profilePhoto ? (
+                                   <img src={todo.completedBy.profilePhoto} alt={todo.completedBy.username || "User"} className="w-full h-full object-cover" />
+                                 ) : (
+                                   (todo.completedBy.username || "U").charAt(0).toUpperCase()
+                                 )}
+                              </div>
+                              <span>Completed by {todo.completedBy.username || "a member"}</span>
+                            </>
+                          ) : todo.userId && (
+                            <>
+                              <div className="w-4 h-4 rounded-full bg-linear-to-tr from-(--gradient-start) to-(--gradient-end) flex items-center justify-center text-white text-[8px] overflow-hidden">
+                                 {todo.userId.profilePhoto ? (
+                                   <img src={todo.userId.profilePhoto} alt={todo.userId.username || "User"} className="w-full h-full object-cover" />
+                                 ) : (
+                                   (todo.userId.username || "U").charAt(0).toUpperCase()
+                                 )}
+                              </div>
+                              <span>Added by {todo.userId.username || "a member"}</span>
+                            </>
+                          )}
+                       </div>
+
+                       {todo.assignedTo && (
+                         <div className={`text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider ${todo.completed ? "opacity-30" : "text-indigo-500"}`}>
+                            <div className="w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[8px] overflow-hidden shadow-sm">
+                               {todo.assignedTo.profilePhoto ? (
+                                 <img src={todo.assignedTo.profilePhoto} alt={todo.assignedTo.username || "User"} className="w-full h-full object-cover" />
+                               ) : (
+                                 (todo.assignedTo.username || "U").charAt(0).toUpperCase()
+                               )}
+                            </div>
+                            <span>Assigned to {todo.assignedTo.username || "a member"}</span>
+                         </div>
+                       )}
                     </div>
                   )}
                 </div>

@@ -20,6 +20,7 @@ import FrogEater from "./components/FrogEater";
 import MindSweep from "./components/MindSweep";
 import PricingModal from "./components/PricingModal";
 import Navbar from "./components/Navbar";
+import Notifications from "./components/Notifications";
 
 function AppContent() {
   /* ================= STATE ================= */
@@ -297,7 +298,7 @@ function AppContent() {
       {/* ================= MAIN AREA ================= */}
       <div className="flex-1 flex flex-col h-full relative">
         {/* Mobile Header */}
-        <header className="md:hidden flex justify-between items-center px-5 py-4 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-[45] transition-colors pt-[max(1rem,env(safe-area-inset-top))]">
+        <header className="md:hidden flex justify-between items-center px-5 py-4 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-[60] transition-colors pt-[max(1rem,env(safe-area-inset-top))]">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-sm shadow-md">
               <span className="font-extrabold pb-[1px]">T</span>
@@ -331,11 +332,12 @@ function AppContent() {
                 </button>
               </>
             )}
+            <Notifications />
           </div>
         </header>
 
         {/* Desktop Header */}
-        <header className="hidden md:flex justify-between items-center px-8 py-5 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-10 transition-colors pt-[calc(1.25rem+env(safe-area-inset-top,0px))]">
+        <header className="hidden md:flex justify-between items-center px-8 py-5 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-[60] transition-colors pt-[calc(1.25rem+env(safe-area-inset-top,0px))]">
           <div className="flex items-center gap-2 text-sm">
             <span className="opacity-50 font-medium">{currentWorkspace === "personal" ? "Private Workspace" : (teams.find(t => t._id === currentWorkspace)?.name || "TaskFlow")}</span>
             <span className="opacity-40">/</span>
@@ -366,6 +368,7 @@ function AppContent() {
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
+            <Notifications />
             <div className="flex items-center gap-2">
               {isPro && (
                 <button

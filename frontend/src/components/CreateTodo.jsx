@@ -12,6 +12,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
   const [description, setDescription] = useState(currentTodo ? currentTodo.description : "");
   const [priority, setPriority] = useState(currentTodo && currentTodo.priority ? currentTodo.priority : "medium");
   const [recurrence, setRecurrence] = useState(currentTodo && currentTodo.recurrence ? currentTodo.recurrence : "none");
+  const [assignedTo, setAssignedTo] = useState(currentTodo && currentTodo.assignedTo ? (currentTodo.assignedTo._id || currentTodo.assignedTo) : "");
   
   const [dueDate, setDueDate] = useState(
     currentTodo && currentTodo.dueDate 
@@ -53,6 +54,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
           dueTime,
           recurrence,
           teamId: currentWorkspace !== "personal" ? currentWorkspace : null,
+          assignedTo: currentWorkspace !== "personal" ? assignedTo : null,
         }),
       });
 
@@ -158,6 +160,28 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
             />
           </div>
         </div>
+
+        {/* Assign To (Only for Team Workspaces) */}
+        {currentWorkspace !== "personal" && (
+          <div className="pt-2 space-y-2.5">
+            <label className="text-xs font-semibold tracking-wide uppercase opacity-60 flex items-center gap-2">
+              <Users size={14} className="text-(--accent)" />
+              Assign To
+            </label>
+            <select
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              className="w-full px-4 py-3 bg-(--bg) rounded-xl text-sm font-medium text-(--text-primary) border border-transparent focus:border-(--accent) focus:ring-4 ring-(--accent)/10 outline-none transition-all appearance-none cursor-pointer"
+            >
+              <option value="">Unassigned</option>
+              {useStore.getState().teams.find(t => t._id === currentWorkspace)?.members?.map(member => (
+                <option key={member._id} value={member._id}>
+                  {member.username} {member._id === (localStorage.getItem("userId") || sessionStorage.getItem("userId")) ? "(Me)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Priority Tabs */}
         <div className="pt-2 space-y-2.5">

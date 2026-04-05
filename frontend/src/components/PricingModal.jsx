@@ -54,8 +54,8 @@ const PRO_FEATURES = [
   { icon: <Sparkles size={14} />, text: "Chronotype Auto-Scheduler", color: "text-indigo-500" },
   { icon: <Target size={14} />, text: "Frog Eater Anti-Procrastination", color: "text-emerald-500" },
   { icon: <Flame size={14} />, text: "Burnout Predictor & Cooldown", color: "text-red-500" },
-  { icon: <Users size={14} />, text: "Focus Buddy Multiplexer", color: "text-cyan-500" },
-  { icon: <Activity size={14} />, text: "90-day Insights & Custom Themes", color: "text-blue-500" },
+  { icon: <Users size={14} />, text: "Real-time Team Collaboration", color: "text-cyan-500" },
+  { icon: <Activity size={14} />, text: "Advanced Insights & PDF Reports", color: "text-blue-500" },
 ];
 
 /* ─────────────────────────────────────────────
