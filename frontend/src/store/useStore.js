@@ -200,7 +200,9 @@ const useStore = create((set, get) => ({
           profilePhoto: photo,
           isPro: data.isPro || false,
           proSettings: data.proSettings || { accentColor: null, customBackground: null },
-          dailyFocusTarget: data.dailyFocusTarget || 60
+          dailyFocusTarget: data.dailyFocusTarget || 60,
+          buddyCode: data.buddyCode,
+          buddyName: data.buddyName
         };
         
         if (data._id) {
@@ -404,6 +406,47 @@ const useStore = create((set, get) => ({
       completedCount: completed,
       totalCount: total
     };
+  },
+
+  /* ================= BUDDY ACTIONS ================= */
+  linkBuddy: async (code) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_BASE_URL}/buddy/link`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ code }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        set((state) => ({
+          userProfile: { ...state.userProfile, buddyName: data.buddyName }
+        }));
+        return { success: true, message: data.message };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: "Network error" };
+    }
+  },
+
+  notifyBuddyFocus: async (action) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    try {
+      await fetch(`${API_BASE_URL}/buddy/notify-focus`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ action }),
+      });
+    } catch (err) {
+      console.error("Failed to notify buddy:", err);
+    }
   }
 }));
 

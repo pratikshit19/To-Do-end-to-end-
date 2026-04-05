@@ -8,8 +8,7 @@ export default function FocusTimer({ closeModal }) {
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [initialMinutes, setInitialMinutes] = useState(25);
-  const { addFocusSession, focusSessions, dailyFocusTarget, isPro } = useStore();
-  const buddyCode = localStorage.getItem("buddyCode");
+  const { addFocusSession, focusSessions, dailyFocusTarget, isPro, notifyBuddyFocus, userProfile } = useStore();
   
   const [selectedSound, setSelectedSound] = useState(null);
   const audioRef = useRef(null);
@@ -88,6 +87,15 @@ export default function FocusTimer({ closeModal }) {
     }
   }, [selectedSound]);
 
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   const handleComplete = async () => {
     setIsActive(false);
     clearInterval(intervalRef.current);
@@ -104,15 +112,21 @@ export default function FocusTimer({ closeModal }) {
   };
 
   const toggleTimer = () => {
-     if (isActive && buddyCode) {
-        toast.error(`Accountability Warning: Your buddy ${buddyCode} is still working. Don't quit!`, { icon: "👀" });
+     if (!isActive) {
+        // Starting Focus
+        notifyBuddyFocus("start");
+        setIsActive(true);
+     } else {
+        // Breaking Focus (The Multiplexer Friction)
+        notifyBuddyFocus("break");
+        setIsActive(false);
+        toast("Focus Session Paused", { icon: "⚠️" });
      }
-     setIsActive(!isActive);
   };
 
   const resetTimer = () => {
-    if (isActive && buddyCode) {
-       toast.error(`Warning: ${buddyCode} will see you gave up early!`, { icon: "🚨" });
+    if (isActive) {
+       notifyBuddyFocus("break");
     }
     setIsActive(false);
     setMinutes(initialMinutes);
@@ -145,11 +159,11 @@ export default function FocusTimer({ closeModal }) {
             <h2 className="text-sm font-black tracking-widest uppercase opacity-50">Deep Focus</h2>
           </div>
           
-          {buddyCode && (
+          {userProfile?.buddyName && (
              <div className="flex items-center gap-2 mb-6 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full animate-in fade-in duration-500">
                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
                <Users size={12} className="text-cyan-500" />
-               <span className="text-[10px] font-bold text-cyan-500 tracking-widest uppercase">Live with {buddyCode}</span>
+               <span className="text-[10px] font-bold text-cyan-500 tracking-widest uppercase">Live with {userProfile.buddyName}</span>
              </div>
           )}
 

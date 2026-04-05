@@ -13,7 +13,7 @@ export default function Settings({
   setColorTheme,
   onLogout,
 }) {
-  const { focusMode, setFocusMode, isPro } = useStore();
+  const { focusMode, setFocusMode, isPro, userProfile, linkBuddy, setShowPricingModal } = useStore();
   const [notifications, setNotifications] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackCategory, setFeedbackCategory] = useState("bug");
@@ -25,14 +25,21 @@ export default function Settings({
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   /* ================= FOCUS BUDDY ================= */
-  const [buddyCode, setBuddyCode] = useState(() => localStorage.getItem("buddyCode") || "");
+  const [buddyDraft, setBuddyDraft] = useState("");
   const [isEditingBuddy, setIsEditingBuddy] = useState(false);
 
-  const handleSaveBuddy = (e) => {
+  const handleSaveBuddy = async (e) => {
     e.preventDefault();
-    localStorage.setItem("buddyCode", buddyCode);
-    setIsEditingBuddy(false);
-    toast.success(buddyCode ? "Accountability Buddy Linked!" : "Buddy Link removed.");
+    if (!buddyDraft.trim()) return;
+    
+    const res = await linkBuddy(buddyDraft);
+    if (res.success) {
+      toast.success(res.message);
+      setIsEditingBuddy(false);
+      setBuddyDraft("");
+    } else {
+      toast.error(res.message);
+    }
   };
 
   /* ================= NOTIFICATIONS ================= */
@@ -313,6 +320,7 @@ export default function Settings({
              onClick={() => {
                 if(!isPro) {
                    toast("Pro Feature: Upgrade to link a focus buddy", { icon: <Lock size={16} /> });
+                   setShowPricingModal(true);
                    return;
                 }
                 setIsEditingBuddy(!isEditingBuddy);
@@ -321,37 +329,62 @@ export default function Settings({
            >
              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-(--bg) flex items-center justify-center border border-(--border)/50 group-hover:border-emerald-500/50 transition-colors">
-                  <Users size={20} className={buddyCode ? "text-emerald-500" : "text-(--text-secondary)"} />
+                  <Users size={20} className={userProfile?.buddyName ? "text-emerald-500" : "text-(--text-secondary)"} />
                 </div>
                 <div>
                   <p className="font-semibold text-base flex items-center gap-2">
-                     Focus Buddy Multiplexer
-                     {!isPro && <span className="text-[9px] bg-orange-500/20 text-orange-500 px-1.5 py-0.5 rounded-sm font-black tracking-wider uppercase">PRO</span>}
+                      Focus Buddy Multiplexer
+                      {!isPro && <span className="text-[9px] bg-orange-500/20 text-orange-500 px-1.5 py-0.5 rounded-sm font-black tracking-wider uppercase">PRO</span>}
                   </p>
-                  <p className="text-xs opacity-60">Pair up for live accountability sessions.</p>
+                  <p className="text-xs opacity-60">
+                    {userProfile?.buddyName 
+                      ? `Linked with ${userProfile.buddyName}` 
+                      : "Pair up for live accountability sessions."}
+                  </p>
                 </div>
              </div>
              <button className="text-sm font-semibold px-4 py-2 rounded-lg bg-(--bg) border border-(--border)/60 hover:bg-(--border) transition-colors">
-               {isEditingBuddy ? "Close" : buddyCode ? "Linked" : "Connect"}
+               {isEditingBuddy ? "Close" : userProfile?.buddyName ? "Linked" : "Connect"}
              </button>
            </div>
            
            {isPro && isEditingBuddy && (
-              <form onSubmit={handleSaveBuddy} className="mt-4 p-5 bg-(--bg) rounded-2xl border border-(--border)/40 flex gap-3 animate-in slide-in-from-top-2 fade-in duration-300">
-                <input 
-                  type="text" 
-                  value={buddyCode} 
-                  onChange={(e) => setBuddyCode(e.target.value)} 
-                  placeholder="Enter Buddy's secret code"
-                  className="flex-1 px-4 py-2 bg-(--card-bg) border border-transparent focus:border-emerald-500 focus:ring-2 ring-emerald-500/20 rounded-xl text-sm outline-none transition-all uppercase"
-                />
-                <button 
-                  type="submit" 
-                  className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:brightness-110 transition-all shadow-md shadow-emerald-500/20 whitespace-nowrap"
-                >
-                  Save Link
-                </button>
-              </form>
+              <div className="mt-4 p-5 bg-(--bg) rounded-2xl border border-(--border)/40 space-y-4 animate-in slide-in-from-top-2 fade-in duration-300">
+                 <div>
+                   <label className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2 block text-emerald-500">Your Invite Code</label>
+                   <div className="flex items-center justify-between bg-(--bg) p-3 rounded-xl border border-emerald-500/20">
+                      <span className="font-mono font-black text-lg tracking-widest text-emerald-500">{userProfile?.buddyCode || "------"}</span>
+                      <button 
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         if (userProfile?.buddyCode) {
+                           navigator.clipboard.writeText(userProfile.buddyCode);
+                           toast.success("Code copied!");
+                         }
+                       }}
+                       className="text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-md"
+                      >
+                        Copy
+                      </button>
+                   </div>
+                 </div>
+
+                 <form onSubmit={handleSaveBuddy} className="flex gap-3">
+                   <input 
+                     type="text" 
+                     value={buddyDraft} 
+                     onChange={(e) => setBuddyDraft(e.target.value)} 
+                     placeholder="Enter Buddy's secret code"
+                     className="flex-1 px-4 py-2 bg-(--card-bg) border border-transparent focus:border-emerald-500 focus:ring-2 ring-emerald-500/20 rounded-xl text-sm outline-none transition-all uppercase font-mono font-bold"
+                   />
+                   <button 
+                     type="submit" 
+                     className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:brightness-110 transition-all shadow-md shadow-emerald-500/20 whitespace-nowrap"
+                   >
+                     Link Buddy
+                   </button>
+                 </form>
+              </div>
            )}
         </div>
 

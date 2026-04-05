@@ -106,7 +106,9 @@ const userSchema = new mongoose.Schema({
     theme: { type: String, default: "blue" },
     darkMode: { type: Boolean, default: true },
     focusMode: { type: Boolean, default: false }
-  }
+  },
+  buddyCode: { type: String, unique: true, sparse: true },
+  buddy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }
 });
 
 const feedbackSchema = new mongoose.Schema({
@@ -136,9 +138,19 @@ const teamSchema = new mongoose.Schema({
 const notificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   message: { type: String, required: true },
-  type: { type: String, enum: ["assignment", "team_task", "team_deleted", "system"], default: "system" },
+  type: { type: String, enum: ["assignment", "team_task", "team_deleted", "buddy_focus", "system"], default: "system" },
   read: { type: Boolean, default: false },
   taskId: { type: mongoose.Schema.Types.ObjectId, ref: "todos" }
+}, { timestamps: true });
+
+const paymentSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  orderId: { type: String, required: true, unique: true },
+  paymentId: { type: String },
+  amount: { type: Number, required: true },
+  currency: { type: String, default: "INR" },
+  status: { type: String, enum: ["created", "paid", "failed"], default: "created" },
+  receipt: { type: String },
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
@@ -147,6 +159,7 @@ const FocusSession = mongoose.model('FocusSession', focusSessionSchema);
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 const Team = mongoose.model('Team', teamSchema);
 const Notification = mongoose.model('Notification', notificationSchema);
+const Payment = mongoose.model('Payment', paymentSchema);
 
 module.exports = {
     todo,
@@ -154,5 +167,6 @@ module.exports = {
     FocusSession,
     Feedback,
     Team,
-    Notification
+    Notification,
+    Payment
 }

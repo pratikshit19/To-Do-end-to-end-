@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 
 const { createTodo, updateTodo } = require("./types");
-const { todo, User, FocusSession, Feedback, Team, Notification } = require("./db");
+const { todo, User, FocusSession, Feedback, Team, Notification, Payment } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -27,7 +27,17 @@ const razorpay = new Razorpay({
 });
 
 app.use(express.json());
-app.use(cors()); // Allow all for production troubleshooting, or specifically: origin: "*"
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ["http://localhost:5173", "http://127.0.0.1:5173"];
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== "production") {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 app.use("/uploads", express.static("uploads"));
 
 app.post("/signup", async (req, res) => {
@@ -301,19 +311,7 @@ app.put("/change-password", authMiddleware, async (req, res) => {
   }
 });
 
-app.get("/user/profile", authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.userId).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.json({
-      profilePhoto: user.profilePhoto || "",
-      username: user.username
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+// NOTE: Redundant /user/profile route was merged below into /profile
 
 app.post(
   "/upload-profile",
@@ -353,11 +351,21 @@ app.post(
 
 app.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).populate("buddy", "username");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Generate buddy code if missing
+    if (!user.buddyCode) {
+      user.buddyCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+      await user.save();
+    }
+
     res.json({ 
       username: user.username,
-      profilePhoto: user.profilePhoto,
+      profilePhoto: user.profilePhoto || "",
       isPro: user.isPro || false,
+      buddyCode: user.buddyCode,
+      buddyName: user.buddy ? user.buddy.username : null,
       proSettings: user.proSettings || { accentColor: null, customBackground: null },
       dailyFocusTarget: user.dailyFocusTarget || 60,
       preferences: user.preferences || { theme: "blue", darkMode: true, focusMode: false }
@@ -408,6 +416,66 @@ app.get("/focus-sessions", authMiddleware, async (req, res) => {
   try {
     const sessions = await FocusSession.find({ userId: req.userId }).sort({ date: -1 });
     res.json({ focusSessions: sessions });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* =========================
+        BUDDY ROUTES
+========================= */
+
+app.put("/buddy/link", authMiddleware, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ message: "Buddy code required" });
+
+    const user = await User.findById(req.userId);
+    if (!user.isPro) return res.status(403).json({ message: "Pro membership required to link a buddy." });
+
+    const targetUser = await User.findOne({ buddyCode: code.toUpperCase().trim() });
+    if (!targetUser) return res.status(404).json({ message: "Invalid buddy code" });
+
+    if (targetUser._id.toString() === req.userId) {
+      return res.status(400).json({ message: "You cannot link with yourself" });
+    }
+
+    // Mutual Link
+    user.buddy = targetUser._id;
+    targetUser.buddy = user._id;
+
+    await user.save();
+    await targetUser.save();
+
+    res.json({ message: `Success! You are now linked with ${targetUser.username}.`, buddyName: targetUser.username });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post("/buddy/notify-focus", authMiddleware, async (req, res) => {
+  try {
+    const { action } = req.body; // 'start' or 'break'
+    const user = await User.findById(req.userId).populate("buddy");
+    
+    if (!user || !user.buddy) return res.json({ message: "No buddy linked" });
+
+    let message = "";
+    if (action === "start") {
+      message = `${user.username} just started a focus session! 🧘`;
+    } else if (action === "break") {
+      message = `${user.username} broke their focus session early. ⚠️`;
+    } else {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+
+    await Notification.create({
+      userId: user.buddy._id,
+      message,
+      type: "buddy_focus"
+    });
+
+    res.json({ message: "Buddy notified" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -641,16 +709,30 @@ app.post("/upgrade-to-pro", authMiddleware, async (req, res) => {
 // Create Razorpay Order
 app.post("/create-order", authMiddleware, async (req, res) => {
   try {
+    const amount = 49900; // ₹499 in paise
+    const receipt = `rcpt_${crypto.randomBytes(8).toString("hex")}`;
+    
     const options = {
-      amount: 49900, // ₹499 in paise
+      amount,
       currency: "INR",
-      receipt: `rcpt_${Date.now()}`, // max 40 chars
+      receipt,
     };
+    
     const order = await razorpay.orders.create(options);
+    
+    // Log initialized payment
+    await Payment.create({
+      userId: req.userId,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      receipt: order.receipt,
+      status: "created"
+    });
+
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency, key: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
     console.error("ORDER ERROR:", JSON.stringify(err, null, 2));
-    // Surface Razorpay-specific error to help debug
     const razorpayMsg = err?.error?.description || err?.message || "Failed to create payment order";
     res.status(500).json({ message: razorpayMsg, debug: err?.statusCode });
   }
@@ -670,7 +752,7 @@ app.post("/verify-payment", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Invalid payment signature. Payment verification failed." });
     }
 
-    // Signature valid → upgrade user
+    // Signature valid → upgrade user & update payment record
     const user = await User.findByIdAndUpdate(
       req.userId,
       { isPro: true },
@@ -679,11 +761,60 @@ app.post("/verify-payment", authMiddleware, async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Update payment record to paid
+    await Payment.findOneAndUpdate(
+      { orderId: razorpay_order_id },
+      { paymentId: razorpay_payment_id, status: "paid" }
+    );
+
     res.json({ message: "Payment verified! Welcome to Pro! 👑", isPro: true });
   } catch (err) {
     console.error("VERIFY ERROR:", err);
     res.status(500).json({ message: "Payment verification failed" });
   }
+});
+
+// Razorpay Webhook for Production Reliability
+app.post("/razorpay-webhook", async (req, res) => {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const signature = req.headers["x-razorpay-signature"];
+
+  if (!secret || !signature) {
+    return res.status(400).json({ status: "invalid_webhook" });
+  }
+
+  const crypto = require("crypto");
+  const shasum = crypto.createHmac("sha256", secret);
+  shasum.update(JSON.stringify(req.body));
+  const digest = shasum.digest("hex");
+
+  if (digest !== signature) {
+    return res.status(400).json({ status: "invalid_signature" });
+  }
+
+  const event = req.body.event;
+  const payload = req.body.payload;
+
+  if (event === "order.paid" || event === "payment.captured") {
+    const orderId = payload.order?.entity?.id || payload.payment?.entity?.order_id;
+    const paymentId = payload.payment?.entity?.id;
+
+    if (orderId) {
+      // Find the payment and user to upgrade
+      const payment = await Payment.findOneAndUpdate(
+        { orderId: orderId },
+        { status: "paid", paymentId: paymentId },
+        { new: true }
+      );
+
+      if (payment) {
+        await User.findByIdAndUpdate(payment.userId, { isPro: true });
+        console.log(`WEBHOOK: User ${payment.userId} upgraded via ${event}`);
+      }
+    }
+  }
+
+  res.json({ status: "ok" });
 });
 
 /* =========================

@@ -1,4 +1,4 @@
-import { Bell, Check, X, Clock } from "lucide-react";
+import { Bell, Check, X, Clock, Users as UsersIcon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import useStore from "../store/useStore";
 
@@ -70,9 +70,10 @@ export default function Notifications() {
                       n.type === 'assignment' ? 'bg-indigo-500/10 text-indigo-500' : 
                       n.type === 'team_task' ? 'bg-emerald-500/10 text-emerald-500' :
                       n.type === 'team_deleted' ? 'bg-red-500/10 text-red-500' :
+                      n.type === 'buddy_focus' ? 'bg-purple-500/10 text-purple-500' :
                       'bg-blue-500/10 text-blue-500'
                     }`}>
-                      <Bell size={14} />
+                      {n.type === 'buddy_focus' ? <UsersIcon size={14} /> : <Bell size={14} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-(--text-primary) leading-relaxed">
