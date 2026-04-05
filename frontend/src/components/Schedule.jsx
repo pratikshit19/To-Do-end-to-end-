@@ -231,8 +231,8 @@ export default function Schedule({ todos = [] }) {
 
       {/* TASKS AREA */}
       <div>
-        <div className="flex items-center justify-between mb-5 px-1">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5 px-1">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 flex-1">
             <h3 className="text-xl font-bold flex items-center gap-2">
               Schedule
               <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-(--border) text-(--text-secondary)">

@@ -291,6 +291,44 @@ function AppContent() {
 
       {/* ================= MAIN AREA ================= */}
       <div className="flex-1 flex flex-col h-full relative">
+        {/* Mobile Header */}
+        <header className="md:hidden flex justify-between items-center px-5 py-4 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-[45] transition-colors pt-[max(1rem,env(safe-area-inset-top))]">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-sm shadow-md">
+              <span className="font-extrabold pb-[1px]">T</span>
+            </div>
+            <span className="font-bold text-lg bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">
+              TaskFlow
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {focusMode && (
+              <button
+                onClick={() => setShowFocusTimer(true)}
+                className="w-9 h-9 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center transition-all hover:bg-amber-500/20 active:scale-95"
+              >
+                <Zap size={16} />
+              </button>
+            )}
+            {isPro && (
+              <>
+                <button
+                  onClick={() => setShowMindSweep(true)}
+                  className="w-9 h-9 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center transition-all hover:bg-purple-500/20 active:scale-95"
+                >
+                  <Brain size={16} />
+                </button>
+                <button
+                  onClick={() => setShowFrogEater(true)}
+                  className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center transition-all hover:bg-emerald-500/20 active:scale-95"
+                >
+                  <Target size={16} />
+                </button>
+              </>
+            )}
+          </div>
+        </header>
+
         {/* Desktop Header */}
         <header className="hidden md:flex justify-between items-center px-8 py-5 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-10 transition-colors pt-[calc(1.25rem+env(safe-area-inset-top,0px))]">
           <div className="flex items-center gap-2 text-sm">
@@ -377,22 +415,14 @@ function AppContent() {
 
       {/* ================= MOBILE EXTRAS ================= */}
 
-      {/* Floating buttons for mobile */}
+      {/* Floating buttons for mobile (Main Action Only) */}
       {!showOnboarding && isAuthenticated && (
-        <div className="md:hidden fixed bottom-32 right-5 flex flex-col gap-4 z-40">
-          {focusMode && (
-            <button
-              onClick={() => setShowFocusTimer(true)}
-              className="w-14 h-14 rounded-2xl bg-(--card-bg) text-amber-500 flex items-center justify-center shadow-lg border border-amber-500/20 active:scale-95 transition-all"
-            >
-              <Zap size={24} fill="currentColor" className="opacity-20" />
-            </button>
-          )}
+        <div className="md:hidden fixed bottom-32 right-5 flex flex-col gap-4 z-[40]">
           <button
             onClick={() => openModal()}
-            className="w-16 h-16 bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white rounded-2xl flex items-center justify-center shadow-xl shadow-(--gradient-start)/30 active:scale-95 transition-all"
+            className="w-14 h-14 bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white rounded-full flex items-center justify-center shadow-xl shadow-(--gradient-start)/30 active:scale-95 transition-all"
           >
-            <Plus size={32} strokeWidth={3} />
+            <Plus size={28} strokeWidth={3} />
           </button>
         </div>
       )}
@@ -402,6 +432,7 @@ function AppContent() {
         <Navbar
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
+          onLogout={handleLogout}
         />
       </div>
 

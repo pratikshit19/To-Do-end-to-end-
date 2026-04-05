@@ -1,11 +1,12 @@
-import { Home, Calendar, LineChart, User } from "lucide-react";
+import { Home, Calendar, LineChart, User, LogOut } from "lucide-react";
 
-export default function Navbar({ currentPage, setCurrentPage }) {
+export default function Navbar({ currentPage, setCurrentPage, onLogout }) {
   const navItems = [
     { id: "home", label: "Today", icon: Home },
     { id: "schedule", label: "Schedule", icon: Calendar },
     { id: "insights", label: "Insights", icon: LineChart },
     { id: "profile", label: "Profile", icon: User },
+    { id: "logout", label: "Sign out", icon: LogOut },
   ];
 
   return (
@@ -18,8 +19,8 @@ export default function Navbar({ currentPage, setCurrentPage }) {
         return (
           <div
             key={item.id}
-            onClick={() => setCurrentPage(item.id)}
-            className="flex flex-col items-center justify-center cursor-pointer p-1.5 w-16 relative"
+            onClick={() => item.id === "logout" ? onLogout() : setCurrentPage(item.id)}
+            className="flex flex-col items-center justify-center cursor-pointer p-1 w-14 relative"
           >
             {/* Active Indicator Glow */}
             {isActive && (
