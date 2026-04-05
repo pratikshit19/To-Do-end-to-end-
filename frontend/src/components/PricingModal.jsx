@@ -143,7 +143,7 @@ function PricingStep({ onSelectPro, onClose }) {
 ───────────────────────────────────────────── */
 function PaymentStep({ onBack, onSuccess }) {
   const [loading, setLoading] = useState(false);
-  const { upgradeToPro, userProfile } = useStore();
+  const { upgradeToPro } = useStore();
 
   const loadRazorpayScript = useCallback(() => {
     return new Promise((resolve) => {
@@ -191,7 +191,8 @@ function PaymentStep({ onBack, onSuccess }) {
 
       const { orderId, amount, currency, key } = await orderRes.json();
 
-      const username = userProfile?.username || localStorage.getItem("username") || "User";
+      const userProfile = JSON.parse(localStorage.getItem("userProfile") || "{}");
+      const username = localStorage.getItem("username") || "User";
 
       const options = {
         key,
@@ -231,11 +232,11 @@ function PaymentStep({ onBack, onSuccess }) {
         },
         prefill: {
           name: username,
-          email: "", // User schema doesn't have email yet
+          email: "",
           contact: "",
         },
         theme: {
-          color: "#8b5cf6", // Indigo Pro Theme
+          color: "#f97316",
         },
         modal: {
           ondismiss: () => {

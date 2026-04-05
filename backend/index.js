@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 
 const { createTodo, updateTodo } = require("./types");
-const { todo, User, FocusSession, Feedback, Team, Notification, Payment } = require("./db");
+const { todo, User, FocusSession, Feedback, Team, Notification } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -27,17 +27,7 @@ const razorpay = new Razorpay({
 });
 
 app.use(express.json());
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ["http://localhost:5173", "http://127.0.0.1:5173"];
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== "production") {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+app.use(cors()); // Allow all for production troubleshooting, or specifically: origin: "*"
 app.use("/uploads", express.static("uploads"));
 
 app.post("/signup", async (req, res) => {
@@ -709,30 +699,16 @@ app.post("/upgrade-to-pro", authMiddleware, async (req, res) => {
 // Create Razorpay Order
 app.post("/create-order", authMiddleware, async (req, res) => {
   try {
-    const amount = 49900; // ₹499 in paise
-    const receipt = `rcpt_${crypto.randomBytes(8).toString("hex")}`;
-    
     const options = {
-      amount,
+      amount: 49900, // ₹499 in paise
       currency: "INR",
-      receipt,
+      receipt: `rcpt_${Date.now()}`, // max 40 chars
     };
-    
     const order = await razorpay.orders.create(options);
-    
-    // Log initialized payment
-    await Payment.create({
-      userId: req.userId,
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      receipt: order.receipt,
-      status: "created"
-    });
-
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency, key: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
     console.error("ORDER ERROR:", JSON.stringify(err, null, 2));
+    // Surface Razorpay-specific error to help debug
     const razorpayMsg = err?.error?.description || err?.message || "Failed to create payment order";
     res.status(500).json({ message: razorpayMsg, debug: err?.statusCode });
   }
@@ -752,7 +728,7 @@ app.post("/verify-payment", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Invalid payment signature. Payment verification failed." });
     }
 
-    // Signature valid → upgrade user & update payment record
+    // Signature valid → upgrade user
     const user = await User.findByIdAndUpdate(
       req.userId,
       { isPro: true },
@@ -761,60 +737,11 @@ app.post("/verify-payment", authMiddleware, async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Update payment record to paid
-    await Payment.findOneAndUpdate(
-      { orderId: razorpay_order_id },
-      { paymentId: razorpay_payment_id, status: "paid" }
-    );
-
     res.json({ message: "Payment verified! Welcome to Pro! 👑", isPro: true });
   } catch (err) {
     console.error("VERIFY ERROR:", err);
     res.status(500).json({ message: "Payment verification failed" });
   }
-});
-
-// Razorpay Webhook for Production Reliability
-app.post("/razorpay-webhook", async (req, res) => {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  const signature = req.headers["x-razorpay-signature"];
-
-  if (!secret || !signature) {
-    return res.status(400).json({ status: "invalid_webhook" });
-  }
-
-  const crypto = require("crypto");
-  const shasum = crypto.createHmac("sha256", secret);
-  shasum.update(JSON.stringify(req.body));
-  const digest = shasum.digest("hex");
-
-  if (digest !== signature) {
-    return res.status(400).json({ status: "invalid_signature" });
-  }
-
-  const event = req.body.event;
-  const payload = req.body.payload;
-
-  if (event === "order.paid" || event === "payment.captured") {
-    const orderId = payload.order?.entity?.id || payload.payment?.entity?.order_id;
-    const paymentId = payload.payment?.entity?.id;
-
-    if (orderId) {
-      // Find the payment and user to upgrade
-      const payment = await Payment.findOneAndUpdate(
-        { orderId: orderId },
-        { status: "paid", paymentId: paymentId },
-        { new: true }
-      );
-
-      if (payment) {
-        await User.findByIdAndUpdate(payment.userId, { isPro: true });
-        console.log(`WEBHOOK: User ${payment.userId} upgraded via ${event}`);
-      }
-    }
-  }
-
-  res.json({ status: "ok" });
 });
 
 /* =========================
