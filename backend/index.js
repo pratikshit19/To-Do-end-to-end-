@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 
 const { createTodo, updateTodo } = require("./types");
-const { todo, User, FocusSession, Feedback } = require("./db");
+const { todo, User, FocusSession, Feedback, Team } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -89,7 +89,7 @@ app.post("/signin", async (req, res) => {
 
 app.post("/todo", authMiddleware, async (req, res) => {
   try {
-    const { title, description, priority, dueDate, dueTime, recurrence } = req.body;
+    const { title, description, priority, dueDate, dueTime, recurrence, teamId } = req.body;
 
     if (!dueDate) {
       return res.status(400).json({ message: "Due date is required" });
@@ -109,6 +109,7 @@ app.post("/todo", authMiddleware, async (req, res) => {
       dueDate: parsedDate,
       dueTime: dueTime || null,
       userId: req.userId,
+      teamId: teamId || null,
       recurrence: recurrence || "none"
     });
 
@@ -125,9 +126,19 @@ app.post("/todo", authMiddleware, async (req, res) => {
 
 app.get("/todos", authMiddleware, async (req, res) => {
   try {
-    const { start, end } = req.query;
+    const { start, end, teamId } = req.query;
 
-    let filter = { userId: req.userId };
+    let filter = {};
+    if (teamId && teamId !== "personal") {
+      const team = await Team.findById(teamId);
+      if (!team) return res.status(404).json({ message: "Team not found" });
+      if (team.owner.toString() !== req.userId && !team.members.includes(req.userId)) {
+        return res.status(403).json({ message: "Not a team member" });
+      }
+      filter = { teamId };
+    } else {
+      filter = { userId: req.userId, teamId: null };
+    }
 
     // If schedule is requesting a range (week/month)
     if (start && end) {
@@ -149,15 +160,21 @@ app.get("/todos", authMiddleware, async (req, res) => {
 
 app.delete("/todos/:id", authMiddleware, async (req, res) => {
   try {
-    const deleted = await todo.findOneAndDelete({
-      _id: req.params.id,
-      userId: req.userId     // 🔥 User-specific delete
-    });
-
-    if (!deleted) {
+    const taskToDelete = await todo.findById(req.params.id);
+    if (!taskToDelete) {
       return res.status(404).json({ error: "Todo not found" });
     }
 
+    if (taskToDelete.teamId) {
+      const team = await Team.findById(taskToDelete.teamId);
+      if (!team || (team.owner.toString() !== req.userId && !team.members.includes(req.userId))) {
+        return res.status(403).json({ error: "Not a member" });
+      }
+    } else if (taskToDelete.userId.toString() !== req.userId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    await todo.findByIdAndDelete(req.params.id);
     res.json({ message: "Todo deleted" });
 
   } catch (err) {
@@ -169,6 +186,20 @@ app.put("/todos/:id", authMiddleware, async (req, res) => {
   try {
     const body = req.body;
     
+    const taskToUpdate = await todo.findById(req.params.id);
+    if (!taskToUpdate) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    if (taskToUpdate.teamId) {
+      const team = await Team.findById(taskToUpdate.teamId);
+      if (!team || (team.owner.toString() !== req.userId && !team.members.includes(req.userId))) {
+        return res.status(403).json({ message: "Not a member" });
+      }
+    } else if (taskToUpdate.userId.toString() !== req.userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     // If completed is being set to true, set completedAt
     if (body.completed === true) {
       body.completedAt = new Date();
@@ -176,15 +207,7 @@ app.put("/todos/:id", authMiddleware, async (req, res) => {
       body.completedAt = null;
     }
 
-    const updated = await todo.findOneAndUpdate(
-      { _id: req.params.id, userId: req.userId },
-      body,
-      { new: true }
-    );
-
-    if (!updated) {
-      return res.status(404).json({ message: "Todo not found" });
-    }
+    const updated = await todo.findByIdAndUpdate(req.params.id, body, { new: true });
 
     res.json(updated);
 
@@ -622,6 +645,47 @@ app.post("/verify-payment", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("VERIFY ERROR:", err);
     res.status(500).json({ message: "Payment verification failed" });
+  }
+});
+
+/* =========================
+          TEAM ROUTES
+========================= */
+
+app.post("/team", authMiddleware, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: "Team name is required" });
+    const inviteCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+    const newTeam = await Team.create({ name, inviteCode, owner: req.userId, members: [req.userId] });
+    res.json({ message: "Team created!", team: newTeam });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post("/team/join", authMiddleware, async (req, res) => {
+  try {
+    const { inviteCode } = req.body;
+    if (!inviteCode) return res.status(400).json({ message: "Invite code is required" });
+    const team = await Team.findOne({ inviteCode: inviteCode.trim().toUpperCase() });
+    if (!team) return res.status(404).json({ message: "Invalid invite code" });
+    if (team.members.includes(req.userId)) return res.status(400).json({ message: "Already a member" });
+    
+    team.members.push(req.userId);
+    await team.save();
+    res.json({ message: "Joined team successfully!", team });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/teams", authMiddleware, async (req, res) => {
+  try {
+    const teams = await Team.find({ members: req.userId }).lean();
+    res.json({ teams });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 

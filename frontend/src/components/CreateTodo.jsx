@@ -1,9 +1,11 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { X } from "lucide-react";
+import { X, Users } from "lucide-react";
 import API_BASE_URL from "../config";
+import useStore from "../store/useStore";
 
 export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
+  const { currentWorkspace } = useStore();
   const today = new Date().toISOString().split("T")[0];
 
   const [title, setTitle] = useState(currentTodo ? currentTodo.title : "");
@@ -50,6 +52,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
           dueDate,
           dueTime,
           recurrence,
+          teamId: currentWorkspace !== "personal" ? currentWorkspace : null,
         }),
       });
 
@@ -85,9 +88,16 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
       <div className="absolute top-0 right-0 w-32 h-32 bg-(--gradient-end)/10 rounded-full blur-[40px] pointer-events-none"></div>
 
       <div className="flex items-center justify-between mb-6 relative z-10">
-        <h2 className="text-xl sm:text-2xl font-bold bg-linear-to-r from-(--text-primary) to-(--text-secondary) bg-clip-text text-transparent">
-          {currentTodo ? "Edit Task" : "Create New Task"}
-        </h2>
+        <div className="flex flex-col">
+          <h2 className="text-xl sm:text-2xl font-bold bg-linear-to-r from-(--text-primary) to-(--text-secondary) bg-clip-text text-transparent">
+            {currentTodo ? "Edit Task" : "Create New Task"}
+          </h2>
+          {currentWorkspace !== "personal" && !currentTodo && (
+             <span className="text-xs font-bold text-(--accent) flex items-center gap-1 mt-1 opacity-80 uppercase tracking-widest">
+                <Users size={12} /> Team Workspace
+             </span>
+          )}
+        </div>
         <button
           onClick={closeModal}
           className="w-8 h-8 rounded-full flex items-center justify-center bg-(--border)/50 hover:bg-(--border) text-(--text-secondary) transition-colors"

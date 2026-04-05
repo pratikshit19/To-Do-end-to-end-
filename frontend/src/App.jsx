@@ -9,16 +9,17 @@ import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 import Schedule from "./components/Schedule";
 import Onboarding from "./components/Onboarding";
-import Navbar from "./components/Navbar";
 import Insights from "./components/Insights";
+import Teams from "./components/Teams";
 import { Toaster } from "react-hot-toast";
-import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search, LogOut, Target, Brain } from "lucide-react";
+import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search, LogOut, Target, Brain, Users as UsersIcon } from "lucide-react";
 import API_BASE_URL from "./config";
 import useStore from "./store/useStore";
 import FocusTimer from "./components/FocusTimer";
 import FrogEater from "./components/FrogEater";
 import MindSweep from "./components/MindSweep";
 import PricingModal from "./components/PricingModal";
+import Navbar from "./components/Navbar";
 
 function AppContent() {
   /* ================= STATE ================= */
@@ -42,7 +43,9 @@ function AppContent() {
     colorTheme,
     setColorTheme,
     showPricingModal,
-    setShowPricingModal
+    setShowPricingModal,
+    currentWorkspace,
+    teams
   } = useStore();
 
   const [showOnboarding, setShowOnboarding] = useState(
@@ -101,7 +104,7 @@ function AppContent() {
     localStorage.clear();
     sessionStorage.clear();
     setIsAuthenticated(false);
-    useStore.setState({ todos: [], focusSessions: [], userProfile: { username: "User", profilePhoto: "" } });
+    useStore.setState({ todos: [], focusSessions: [], userProfile: { username: "User", profilePhoto: "" }, currentWorkspace: "personal", teams: [] });
     setCurrentPage("home");
   };
 
@@ -110,6 +113,7 @@ function AppContent() {
       fetchTodos();
       fetchUserProfile();
       fetchFocusSessions();
+      if (useStore.getState().fetchTeams) useStore.getState().fetchTeams();
     } else {
       useStore.setState({ isLoading: false });
     }
@@ -186,6 +190,7 @@ function AppContent() {
     { id: "home", label: "Dashboard", icon: Home },
     { id: "schedule", label: "Schedule", icon: Calendar },
     { id: "insights", label: "Insights", icon: TrendingUp },
+    { id: "teams", label: "Teams", icon: UsersIcon },
     { id: "profile", label: "Profile", icon: User },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
@@ -244,7 +249,7 @@ function AppContent() {
                 Focus Mode
               </div>
             )}
-            
+
             {isPro && (
               <div
                 onClick={() => setShowFrogEater(true)}
@@ -276,8 +281,8 @@ function AppContent() {
                 <span className="text-xs opacity-60">{isPro ? "Pro Plan" : "Free Plan"}</span>
               </div>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleLogout}
               className="p-2.5 text-(--text-secondary) hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-colors ml-1"
               title="Logout"
@@ -298,7 +303,7 @@ function AppContent() {
               <span className="font-extrabold pb-[1px]">T</span>
             </div>
             <span className="font-bold text-lg bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">
-              TaskFlow
+              {currentWorkspace === "personal" ? "Private Workspace" : (teams.find(t => t._id === currentWorkspace)?.name || "TaskFlow")}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -332,7 +337,7 @@ function AppContent() {
         {/* Desktop Header */}
         <header className="hidden md:flex justify-between items-center px-8 py-5 border-b border-(--border) bg-(--bg)/80 backdrop-blur-md sticky top-0 z-10 transition-colors pt-[calc(1.25rem+env(safe-area-inset-top,0px))]">
           <div className="flex items-center gap-2 text-sm">
-            <span className="opacity-50 font-medium">TaskFlow</span>
+            <span className="opacity-50 font-medium">{currentWorkspace === "personal" ? "Private Workspace" : (teams.find(t => t._id === currentWorkspace)?.name || "TaskFlow")}</span>
             <span className="opacity-40">/</span>
             <span className="font-semibold text-(--accent) capitalize">
               {currentPage === 'home' ? 'Dashboard' : currentPage}
@@ -371,7 +376,7 @@ function AppContent() {
                   <Brain size={18} />
                 </button>
               )}
-              
+
               <button
                 onClick={() => openModal()}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-(--accent) text-white font-medium hover:brightness-110 active:scale-95 shadow-md shadow-(--gradient-start)/20 transition-all duration-200"
@@ -398,6 +403,7 @@ function AppContent() {
               } />
               <Route path="/schedule" element={<Schedule todos={todos} />} />
               <Route path="/insights" element={<Insights setCurrentPage={setCurrentPage} todos={todos} />} />
+              <Route path="/teams" element={<Teams setCurrentPage={setCurrentPage} />} />
               <Route path="/profile" element={
                 <Profile
                   onLogout={handleLogout}
@@ -458,15 +464,15 @@ function AppContent() {
       {showFocusTimer && (
         <FocusTimer closeModal={() => setShowFocusTimer(false)} />
       )}
-      
+
       {showFrogEater && (
         <FrogEater closeModal={() => setShowFrogEater(false)} />
       )}
-      
+
       {showMindSweep && (
         <MindSweep closeModal={() => setShowMindSweep(false)} />
       )}
-      
+
       {showPricingModal && (
         <PricingModal onClose={() => setShowPricingModal(false)} />
       )}

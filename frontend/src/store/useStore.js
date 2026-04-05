@@ -4,6 +4,8 @@ import API_BASE_URL from "../config";
 const useStore = create((set, get) => ({
   todos: [],
   focusSessions: [],
+  currentWorkspace: "personal", 
+  teams: [],
   userProfile: {
     username: (() => {
       const u = localStorage.getItem("username") || sessionStorage.getItem("username");
@@ -58,6 +60,22 @@ const useStore = create((set, get) => ({
   },
   setSearchQuery: (query) => set({ searchQuery: query }),
   setShowPricingModal: (show) => set({ showPricingModal: show }),
+  
+  setCurrentWorkspace: (workspaceId) => set({ currentWorkspace: workspaceId }),
+  
+  fetchTeams: async () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/teams`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      set({ teams: data.teams || [] });
+    } catch (err) {
+      console.error("Failed to fetch teams:", err);
+    }
+  },
   
   updateProSettings: async (settings) => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -183,7 +201,8 @@ const useStore = create((set, get) => ({
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/todos`, {
+      const { currentWorkspace } = get();
+      const response = await fetch(`${API_BASE_URL}/todos?teamId=${currentWorkspace}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();

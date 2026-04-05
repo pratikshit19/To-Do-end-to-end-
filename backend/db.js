@@ -42,6 +42,12 @@ const todoSchema = new mongoose.Schema({
     ref: "User"
   },
   
+  teamId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Team",
+    default: null
+  },
+  
   recurrence: {
     type: String,
     enum: ["none", "daily", "weekly", "monthly"],
@@ -108,14 +114,23 @@ const feedbackSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+const teamSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  inviteCode: { type: String, unique: true, required: true },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+}, { timestamps: true });
+
 const User = mongoose.model("User", userSchema);
 const todo = mongoose.model('todos', todoSchema);
 const FocusSession = mongoose.model('FocusSession', focusSessionSchema);
 const Feedback = mongoose.model('Feedback', feedbackSchema);
+const Team = mongoose.model('Team', teamSchema);
 
 module.exports = {
     todo,
     User,
     FocusSession,
-    Feedback
+    Feedback,
+    Team
 }

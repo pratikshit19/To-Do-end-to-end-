@@ -1,9 +1,10 @@
-import { Home, Calendar, LineChart, User, LogOut } from "lucide-react";
+import { Home, Calendar, LineChart, User, LogOut, Users } from "lucide-react";
 
 export default function Navbar({ currentPage, setCurrentPage, onLogout }) {
   const navItems = [
     { id: "home", label: "Today", icon: Home },
     { id: "schedule", label: "Schedule", icon: Calendar },
+    { id: "teams", label: "Teams", icon: Users },
     { id: "insights", label: "Insights", icon: LineChart },
     { id: "profile", label: "Profile", icon: User },
     { id: "logout", label: "Sign out", icon: LogOut },
