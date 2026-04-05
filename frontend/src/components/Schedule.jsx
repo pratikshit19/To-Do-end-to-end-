@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, CalendarOff, Circle, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarOff, Circle, CheckCircle2, Sparkles, Lock } from "lucide-react";
+import useStore from "../store/useStore";
+import toast from "react-hot-toast";
 
 export default function Schedule({ todos = [] }) {
   const today = new Date();
@@ -7,6 +9,8 @@ export default function Schedule({ todos = [] }) {
   const [currentDate, setCurrentDate] = useState(today);
   const [selectedDate, setSelectedDate] = useState(today);
   const [viewMode, setViewMode] = useState("week");
+  const { updateTodo, isPro } = useStore();
+  const [isScheduling, setIsScheduling] = useState(false);
 
   useEffect(() => {
     if (viewMode === "month") {
@@ -85,6 +89,54 @@ export default function Schedule({ todos = [] }) {
 
   const pendingCount = filteredTasks.filter((t) => !t.completed).length;
   const completedCount = filteredTasks.filter((t) => t.completed).length;
+
+  const handleAutoSchedule = async () => {
+    if (!isPro) {
+      toast("Pro Feature: Upgrade to unlock auto-scheduling", { icon: <Lock size={16} className="text-orange-500" /> });
+      return;
+    }
+    
+    setIsScheduling(true);
+    // 1. Calculate Prime Work Hour
+    const hourMap = {};
+    todos.forEach(t => {
+      if (t.completed && t.completedAt) {
+        const d = new Date(t.completedAt);
+        const hour = d.getHours();
+        hourMap[hour] = (hourMap[hour] || 0) + 1;
+      }
+    });
+    const bestHourStr = Object.entries(hourMap).sort((a,b) => b[1] - a[1])[0]?.[0];
+    const bestHour = bestHourStr ? parseInt(bestHourStr) : 9; // Default 9 AM
+
+    // 2. Grab today's tasks that don't have a specific time
+    const tasksToSchedule = filteredTasks.filter(t => !t.completed && !t.dueTime);
+    
+    if (tasksToSchedule.length === 0) {
+      toast("No tasks waiting for a time slot today.", { icon: "ℹ️" });
+      setIsScheduling(false);
+      return;
+    }
+
+    // 3. Stagger priorities (High gets bestHour, others get staggered)
+    const sorted = [...tasksToSchedule].sort((a, b) => {
+       const wA = a.priority === 'high' ? 3 : a.priority === 'medium' ? 2 : 1;
+       const wB = b.priority === 'high' ? 3 : b.priority === 'medium' ? 2 : 1;
+       return wB - wA;
+    });
+
+    for (let i = 0; i < sorted.length; i++) {
+       const task = sorted[i];
+       const targetHour = (bestHour + i) % 24; 
+       const formattedTime = `${targetHour.toString().padStart(2, '0')}:00`;
+       await updateTodo(task._id, { dueTime: formattedTime });
+    }
+    
+    setIsScheduling(false);
+    
+    const formattedBestHour = bestHour > 12 ? `${bestHour-12} PM` : `${bestHour} AM`;
+    toast.success(`Successfully blocked ${sorted.length} tasks around your Prime Hour (${formattedBestHour})!`, { icon: "✨" });
+  };
 
   return (
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
@@ -180,12 +232,33 @@ export default function Schedule({ todos = [] }) {
       {/* TASKS AREA */}
       <div>
         <div className="flex items-center justify-between mb-5 px-1">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            Schedule
-            <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-(--border) text-(--text-secondary)">
-              {selectedDate.toLocaleDateString("default", { month: "short", day: "numeric" })}
-            </span>
-          </h3>
+          <div className="flex items-center gap-4">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              Schedule
+              <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-(--border) text-(--text-secondary)">
+                {selectedDate.toLocaleDateString("default", { month: "short", day: "numeric" })}
+              </span>
+            </h3>
+            
+            <button 
+              onClick={handleAutoSchedule}
+              disabled={isScheduling}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${
+                isPro 
+                  ? "bg-linear-to-r from-indigo-500 to-purple-500 text-white hover:scale-105 active:scale-95 shadow-indigo-500/30"
+                  : "bg-(--card-bg) border border-(--border) text-(--text-secondary) hover:text-(--text-primary)"
+              } ${isScheduling ? "opacity-50 pointer-events-none" : ""}`}
+            >
+              {isScheduling ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : isPro ? (
+                 <Sparkles size={14} />
+              ) : (
+                 <Lock size={14} />
+              )}
+              Auto-Block Time
+            </button>
+          </div>
 
           <div className="flex gap-3 text-sm font-medium">
             <span className="text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-lg">{completedCount} Done</span>

@@ -83,6 +83,11 @@ const userSchema = new mongoose.Schema({
   dailyFocusTarget: {
     type: Number,
     default: 60 // Default to 60 minutes
+  },
+  preferences: {
+    theme: { type: String, default: "blue" },
+    darkMode: { type: Boolean, default: true },
+    focusMode: { type: Boolean, default: false }
   }
 });
 

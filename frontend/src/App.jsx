@@ -12,10 +12,12 @@ import Onboarding from "./components/Onboarding";
 import Navbar from "./components/Navbar";
 import Insights from "./components/Insights";
 import { Toaster } from "react-hot-toast";
-import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search } from "lucide-react";
+import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search, LogOut, Target, Brain } from "lucide-react";
 import API_BASE_URL from "./config";
 import useStore from "./store/useStore";
 import FocusTimer from "./components/FocusTimer";
+import FrogEater from "./components/FrogEater";
+import MindSweep from "./components/MindSweep";
 
 function AppContent() {
   /* ================= STATE ================= */
@@ -33,7 +35,11 @@ function AppContent() {
     searchQuery,
     setSearchQuery,
     proSettings,
-    isPro
+    isPro,
+    darkMode,
+    setDarkMode,
+    colorTheme,
+    setColorTheme
   } = useStore();
 
   const [showOnboarding, setShowOnboarding] = useState(
@@ -46,20 +52,14 @@ function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showFocusTimer, setShowFocusTimer] = useState(false);
+  const [showFrogEater, setShowFrogEater] = useState(false);
+  const [showMindSweep, setShowMindSweep] = useState(false);
   const [editingTodo, setEditingTodo] = useState(null);
 
   const openModal = (todo = null) => {
     setEditingTodo(todo);
     setShowModal(true);
   };
-
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("darkMode") === "false" ? false : true
-  );
-
-  const [colorTheme, setColorTheme] = useState(
-    localStorage.getItem("colorTheme") || "blue"
-  );
 
   const currentPage = location.pathname === '/' ? 'home' : location.pathname.substring(1);
 
@@ -241,26 +241,47 @@ function AppContent() {
                 Focus Mode
               </div>
             )}
+            
+            {isPro && (
+              <div
+                onClick={() => setShowFrogEater(true)}
+                className="flex items-center gap-3.5 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 font-bold bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 mt-2 group"
+              >
+                <Target size={20} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                Eat The Frog
+              </div>
+            )}
           </nav>
         </div>
 
         {/* User Mini Profile */}
         <div className="mt-auto p-4 border-t border-(--border)">
-          <div
-            onClick={() => setCurrentPage('profile')}
-            className="flex items-center gap-3 cursor-pointer hover:bg-(--border)/60 p-2.5 rounded-2xl transition"
-          >
-            <div className="w-10 h-10 rounded-full bg-linear-to-tr from-(--gradient-start) to-(--gradient-end) shadow-md flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
-              {userProfile.profilePhoto ? (
-                <img src={userProfile.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                userProfile.username?.charAt(0).toUpperCase() || "U"
-              )}
+          <div className="flex items-center justify-between group">
+            <div
+              onClick={() => setCurrentPage('profile')}
+              className="flex items-center gap-3 cursor-pointer hover:bg-(--border)/60 p-2.5 rounded-2xl transition flex-1"
+            >
+              <div className="w-10 h-10 rounded-full bg-linear-to-tr from-(--gradient-start) to-(--gradient-end) shadow-md flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
+                {userProfile.profilePhoto ? (
+                  <img src={userProfile.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  userProfile.username?.charAt(0).toUpperCase() || "U"
+                )}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold truncate">{userProfile.username || "My Workspace"}</span>
+                <span className="text-xs opacity-60">{isPro ? "Pro Plan" : "Free Plan"}</span>
+              </div>
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-semibold truncate">{userProfile.username || "My Workspace"}</span>
-              <span className="text-xs opacity-60">Pro Plan</span>
-            </div>
+            
+            <button 
+              onClick={handleLogout}
+              className="p-2.5 text-(--text-secondary) hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-colors ml-1"
+              title="Logout"
+              aria-label="Logout"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </aside>
@@ -299,13 +320,25 @@ function AppContent() {
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <button
-              onClick={() => openModal()}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-(--accent) text-white font-medium hover:brightness-110 active:scale-95 shadow-md shadow-(--gradient-start)/20 transition-all duration-200"
-            >
-              <Plus size={18} />
-              Create Task
-            </button>
+            <div className="flex items-center gap-2">
+              {isPro && (
+                <button
+                  onClick={() => setShowMindSweep(true)}
+                  title="Mind Sweep AI"
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 hover:bg-purple-500 hover:text-white transition-all shadow-sm shrink-0"
+                >
+                  <Brain size={18} />
+                </button>
+              )}
+              
+              <button
+                onClick={() => openModal()}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-(--accent) text-white font-medium hover:brightness-110 active:scale-95 shadow-md shadow-(--gradient-start)/20 transition-all duration-200"
+              >
+                <Plus size={18} />
+                <span className="hidden sm:inline">Create Task</span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -390,6 +423,14 @@ function AppContent() {
 
       {showFocusTimer && (
         <FocusTimer closeModal={() => setShowFocusTimer(false)} />
+      )}
+      
+      {showFrogEater && (
+        <FrogEater closeModal={() => setShowFrogEater(false)} />
+      )}
+      
+      {showMindSweep && (
+        <MindSweep closeModal={() => setShowMindSweep(false)} />
       )}
     </div>
   );

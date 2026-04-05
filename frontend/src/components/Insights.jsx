@@ -1,11 +1,12 @@
 import { useMemo } from "react";
-import { Activity, Zap, TrendingUp, BarChart3, PieChart as PieChartIcon, Calendar as CalendarIcon, Lock, Download, FileSpreadsheet } from "lucide-react";
+import { Activity, Zap, TrendingUp, BarChart3, PieChart as PieChartIcon, Calendar as CalendarIcon, Lock, Download, FileSpreadsheet, Flame } from "lucide-react";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   BarChart, Bar, Cell, PieChart, Pie, AreaChart, Area
 } from "recharts";
 import useStore from "../store/useStore";
 import API_BASE_URL from "../config";
+import toast from "react-hot-toast";
 
 export default function Insights() {
   const { todos, focusSessions, getStats, isPro } = useStore();
@@ -65,6 +66,32 @@ export default function Insights() {
     return days;
   }, [todos]);
 
+  /* ================= BURNOUT PREDICTOR ================= */
+  const burnoutStatus = useMemo(() => {
+    if (heatmapData.length < 90) return { isWarning: false };
+    
+    // last 14 days
+    const recent = heatmapData.slice(-14);
+    const recentTotal = recent.reduce((sum, d) => sum + d.count, 0);
+    const recentAvg = recentTotal / 14;
+
+    // previous 30 days
+    const historical = heatmapData.slice(-44, -14);
+    const historicalTotal = historical.reduce((sum, d) => sum + d.count, 0);
+    const historicalAvg = historicalTotal / 30;
+
+    // To prevent false positives on early accounts, require at least 3 tasks avg
+    if (historicalAvg > 0 && recentAvg > (historicalAvg * 1.5) && recentAvg > 3) {
+      return { isWarning: true, recentAvg: recentAvg.toFixed(1), historicalAvg: historicalAvg.toFixed(1) };
+    }
+    // Also trigger if someone is doing > 10 tasks a day on average without baseline
+    if (recentAvg > 10) {
+      return { isWarning: true, recentAvg: recentAvg.toFixed(1), historicalAvg: historicalAvg.toFixed(1) || "0" };
+    }
+    
+    return { isWarning: false };
+  }, [heatmapData]);
+
   /* ================= SMART CORRELATIONS ================= */
   const correlations = useMemo(() => {
     const hourMap = {};
@@ -106,7 +133,7 @@ export default function Insights() {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `TaskFlow_${type}_Report.csv`;
+        a.download = `TaskFlow_${type}_Report.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -124,6 +151,29 @@ export default function Insights() {
   return (
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
       
+      {/* BURNOUT PREDICTOR (PRO) */}
+      {isPro && burnoutStatus?.isWarning && (
+        <div className="relative bg-red-500/10 rounded-[2.5rem] p-8 mb-8 border border-red-500/30 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in zoom-in duration-500">
+           <div className="flex items-center gap-6">
+             <div className="w-16 h-16 rounded-3xl bg-red-500 text-white flex items-center justify-center shadow-xl shadow-red-500/30 animate-pulse shrink-0">
+               <Flame size={32} />
+             </div>
+             <div>
+               <h2 className="text-2xl font-black text-red-500 mb-1">Burnout Warning Detected</h2>
+               <p className="text-sm font-medium opacity-80 max-w-lg">
+                 Your recent velocity ({burnoutStatus.recentAvg} tasks/day) is over 150% higher than your historical baseline ({burnoutStatus.historicalAvg} tasks/day). Overworking decreases long-term productivity.
+               </p>
+             </div>
+           </div>
+           <button 
+             onClick={() => toast("Cooldown Protocol Activated. Take a break!", { icon: "🧊" })}
+             className="px-8 py-4 bg-red-500 text-white font-black rounded-2xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 whitespace-nowrap self-start md:self-auto"
+           >
+             Initiate Cooldown
+           </button>
+        </div>
+      )}
+
       {/* HERO METRIC */}
       <div className="relative bg-(--card-bg) rounded-[2.5rem] p-8 mb-8 shadow-sm border border-(--border)/60 overflow-hidden group">
         <div className="absolute top-[-50px] right-[-50px] w-[250px] h-[250px] bg-linear-to-bl from-(--gradient-start)/20 to-(--gradient-end)/10 rounded-full blur-[60px] pointer-events-none"></div>
@@ -301,7 +351,7 @@ export default function Insights() {
                 </div>
                 <h3 className="text-2xl font-black mb-2 tracking-tight">Export Your Progress</h3>
                 <p className="text-sm font-medium opacity-70 max-w-xs mb-6 leading-relaxed">
-                  Download professional **Productivity Reports** to analyze your performance in Excel or Sheets.
+                  Download beautiful, extensive **Productivity PDF Reports** to analyze and archive your performance.
                 </p>
                 <button 
                   className="px-8 py-3 bg-linear-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-105 transition-transform uppercase tracking-widest text-xs"

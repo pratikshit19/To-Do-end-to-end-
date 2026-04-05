@@ -15,6 +15,8 @@ const useStore = create((set, get) => ({
       : ""
   },
   focusMode: localStorage.getItem("focusMode") === "true",
+  darkMode: localStorage.getItem("darkMode") === "false" ? false : true,
+  colorTheme: localStorage.getItem("colorTheme") || "blue",
   isLoading: true,
   searchQuery: "",
   
@@ -30,6 +32,28 @@ const useStore = create((set, get) => ({
   setFocusMode: (enabled) => {
     localStorage.setItem("focusMode", enabled);
     set({ focusMode: enabled });
+    get().savePreferences({ focusMode: enabled });
+  },
+  setDarkMode: (enabled) => {
+    localStorage.setItem("darkMode", enabled);
+    set({ darkMode: enabled });
+    get().savePreferences({ darkMode: enabled });
+  },
+  setColorTheme: (theme) => {
+    localStorage.setItem("colorTheme", theme);
+    set({ colorTheme: theme });
+    get().savePreferences({ theme });
+  },
+  savePreferences: async (prefs) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return;
+    try {
+      await fetch(`${API_BASE_URL}/user/preferences`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(prefs)
+      });
+    } catch(err) { console.error("Failed to save prefs:", err); }
   },
   setSearchQuery: (query) => set({ searchQuery: query }),
   
@@ -53,10 +77,7 @@ const useStore = create((set, get) => ({
           dailyFocusTarget: data.dailyFocusTarget ?? state.dailyFocusTarget
         }));
         
-        // Apply secondary branding if accent color changed
-        if (data.proSettings?.accentColor) {
-          document.documentElement.style.setProperty("--accent", data.proSettings.accentColor);
-        }
+        // Legacy: We no longer set --accent manually from proSettings since we have proper colorThemes
       }
     } catch (err) {
       console.error("Failed to update pro settings", err);
@@ -116,6 +137,18 @@ const useStore = create((set, get) => ({
           localStorage.setItem("username", data.username);
         }
 
+        if (data.preferences) {
+          localStorage.setItem("darkMode", data.preferences.darkMode);
+          localStorage.setItem("colorTheme", data.preferences.theme);
+          localStorage.setItem("focusMode", data.preferences.focusMode);
+          
+          set({
+            darkMode: data.preferences.darkMode,
+            colorTheme: data.preferences.theme,
+            focusMode: data.preferences.focusMode
+          });
+        }
+
         set({ 
           userProfile: profile,
           isPro: profile.isPro,
@@ -123,10 +156,7 @@ const useStore = create((set, get) => ({
           dailyFocusTarget: profile.dailyFocusTarget
         });
 
-        // Apply Pro Branding
-        if (profile.proSettings?.accentColor) {
-           document.documentElement.style.setProperty("--accent", profile.proSettings.accentColor);
-        }
+        // Legacy: We no longer set --accent manually from proSettings since we have proper colorThemes
         if (profile.profilePhoto) {
           localStorage.setItem("profilePhoto", profile.profilePhoto);
         } else {

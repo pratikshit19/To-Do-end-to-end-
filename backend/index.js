@@ -298,10 +298,30 @@ app.get("/profile", authMiddleware, async (req, res) => {
       profilePhoto: user.profilePhoto,
       isPro: user.isPro || false,
       proSettings: user.proSettings || { accentColor: null, customBackground: null },
-      dailyFocusTarget: user.dailyFocusTarget || 60
+      dailyFocusTarget: user.dailyFocusTarget || 60,
+      preferences: user.preferences || { theme: "blue", darkMode: true, focusMode: false }
     });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch profile" });
+  }
+});
+
+app.put("/user/preferences", authMiddleware, async (req, res) => {
+  try {
+    const { theme, darkMode, focusMode } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if(!user.preferences) user.preferences = {};
+    
+    if(theme !== undefined) user.preferences.theme = theme;
+    if(darkMode !== undefined) user.preferences.darkMode = darkMode;
+    if(focusMode !== undefined) user.preferences.focusMode = focusMode;
+    
+    await user.save();
+    res.json(user.preferences);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update preferences" });
   }
 });
 
@@ -407,30 +427,126 @@ app.get("/generate-report", authMiddleware, async (req, res) => {
       date: { $gte: startDate }
     }).sort({ date: -1 });
 
-    // Generate CSV String
-    let csv = "Date,Type,Title/Duration,Detail/Priority\n";
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ margin: 0, size: 'A4' }); // margin 0 for full-bleed header
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=TaskFlow_${type}_Report.pdf`);
+
+    doc.pipe(res);
+
+    // Global Stats Calculation
+    const allTodos = await todo.find({ userId: req.userId });
+    const allCompleted = allTodos.filter(t => t.completed).length;
+    const completionRate = allTodos.length > 0 ? Math.round((allCompleted / allTodos.length) * 100) : 0;
     
-    // Add Tasks
+    const totalFocusMinutes = sessions.reduce((acc, s) => acc + (s.duration || 0), 0);
+    const focusHours = Math.floor(totalFocusMinutes / 60);
+    const focusMins = totalFocusMinutes % 60;
+
+    // ----- COVER HEADER -----
+    doc.rect(0, 0, 612, 140).fill('#0f172a'); // Dark navy header
+    doc.fillColor('#3b82f6').font('Helvetica-Bold').fontSize(32).text('TaskFlow', 50, 45, { continued: true })
+       .fillColor('#ffffff').font('Helvetica-Bold').text(' Insights');
+    
+    doc.fillColor('#94a3b8').font('Helvetica').fontSize(12)
+       .text(`Generated for ${user.username} | ${type.toUpperCase()} REPORT`, 50, 90);
+    doc.text(`Period: ${startDate.toLocaleDateString()} - ${new Date().toLocaleDateString()}`, 50, 105);
+
+    // ----- INSIGHT CARDS -----
+    const cardY = 170;
+    
+    // Productivity Index Card
+    doc.roundedRect(50, cardY, 240, 100, 15).fill('#f8fafc');
+    doc.fillColor('#3b82f6').font('Helvetica-Bold').fontSize(42).text(`${completionRate}%`, 70, cardY + 20);
+    doc.fillColor('#64748b').font('Helvetica-Bold').fontSize(12).text(`PRODUCTIVITY INDEX`, 70, cardY + 70);
+
+    // Focus Time Card
+    doc.roundedRect(320, cardY, 240, 100, 15).fill('#f8fafc');
+    doc.fillColor('#8b5cf6').font('Helvetica-Bold').fontSize(35).text(`${focusHours}h ${focusMins}m`, 340, cardY + 25);
+    doc.fillColor('#64748b').font('Helvetica-Bold').fontSize(12).text(`TOTAL FOCUS TIME`, 340, cardY + 70);
+
+    // Tasks Completed Card
+    doc.roundedRect(50, 290, 510, 65, 15).fill('#f8fafc');
+    doc.fillColor('#10b981').font('Helvetica-Bold').fontSize(28).text(`${completedTodos.length}`, 75, 308, { continued: true })
+       .fillColor('#0f172a').font('Helvetica-Bold').fontSize(16).text(`   Tasks Completed`, 75, 316);
+
+    doc.y = 400;
+
+    // ----- COMPLETED TASKS LIST -----
+    doc.fillColor('#0f172a').font('Helvetica-Bold').fontSize(18).text('Recent Achievements', 50, doc.y);
+    doc.moveDown(1);
+
+    // Table Header
+    doc.fillColor('#64748b').font('Helvetica-Bold').fontSize(10);
+    doc.text('DATE', 50, doc.y, { continued: false });
+    doc.text('PRIORITY', 160, doc.y - 12, { continued: false });
+    doc.text('TASK SUMMARY', 250, doc.y - 12, { continued: false });
+    
+    doc.moveTo(50, doc.y + 8).lineTo(562, doc.y + 8).strokeColor('#e2e8f0').lineWidth(2).stroke();
+    doc.moveDown(1.5);
+
+    // Table Body
+    doc.font('Helvetica');
     completedTodos.forEach(t => {
-      const dateStr = new Date(t.completedAt).toLocaleDateString();
-      const title = t.title.replace(/,/g, ""); // Clean commas
-      csv += `${dateStr},Task,${title},${t.priority}\n`;
+      if(doc.y > 720) {
+        doc.addPage({ margin: 0 });
+        doc.y = 50;
+      }
+      const y = doc.y;
+      doc.fillColor('#0f172a').fontSize(11).text(new Date(t.completedAt).toLocaleDateString(), 50, y, { continued: false });
+      
+      let pColor = '#94a3b8';
+      if (t.priority === 'high') pColor = '#ef4444';
+      if (t.priority === 'medium') pColor = '#f59e0b';
+      if (t.priority === 'low') pColor = '#10b981';
+      
+      doc.fillColor(pColor).font('Helvetica-Bold').text((t.priority || "-").toUpperCase(), 160, y, { continued: false });
+      doc.fillColor('#0f172a').font('Helvetica').text(t.title, 250, y, { width: 300, continued: false });
+      
+      doc.moveTo(50, doc.y + 5).lineTo(562, doc.y + 5).strokeColor('#f1f5f9').lineWidth(1).stroke();
+      doc.moveDown(1);
     });
 
-    // Add Sessions
+    if (completedTodos.length === 0) {
+      doc.fillColor('#94a3b8').text('No tasks completed during this period.', 50, doc.y);
+    }
+
+    doc.moveDown(2);
+
+    // Focus Sessions Section
+    if(doc.y > 600) doc.addPage();
+    doc.fontSize(16).fillColor('#0f172a').text('Focus Sessions');
+    doc.moveDown(0.5);
+
+    doc.fontSize(10).fillColor('#64748b');
+    doc.text('Date', 50, doc.y, { continued: false });
+    doc.text('Duration (mins)', 150, doc.y - 10, { continued: false });
+    doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).strokeColor('#e2e8f0').stroke();
+    doc.moveDown(1);
+
+    doc.fillColor('#0f172a');
     sessions.forEach(s => {
-      const dateStr = new Date(s.date).toLocaleDateString();
-      csv += `${dateStr},Focus Session,${s.duration} mins,Completed\n`;
+      if(doc.y > 680) {
+        doc.addPage();
+      }
+      const y = doc.y;
+      doc.text(new Date(s.date).toLocaleDateString(), 50, y, { continued: false });
+      doc.text(`${s.duration} mins`, 150, y, { continued: false });
+      doc.moveDown(0.5);
     });
 
-    // Send as Downloadable File
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=TaskFlow_${type}_Report.csv`);
-    res.send(csv);
+    if (sessions.length === 0) {
+      doc.fillColor('#94a3b8').text('No focus sessions recorded.', 50, doc.y);
+    }
+
+    doc.end();
 
   } catch (err) {
     console.error("REPORT ERROR:", err);
-    res.status(500).json({ message: "Failed to generate report" });
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Failed to generate report" });
+    }
   }
 });
 

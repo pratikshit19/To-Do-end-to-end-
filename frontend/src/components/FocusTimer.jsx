@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw, Zap, Timer as TimerIcon, X } from "lucide-react";
+import { Play, Pause, RotateCcw, Zap, Timer as TimerIcon, X, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import useStore from "../store/useStore";
 
@@ -9,6 +9,7 @@ export default function FocusTimer({ closeModal }) {
   const [isActive, setIsActive] = useState(false);
   const [initialMinutes, setInitialMinutes] = useState(25);
   const { addFocusSession, focusSessions, dailyFocusTarget, isPro } = useStore();
+  const buddyCode = localStorage.getItem("buddyCode");
   
   const [selectedSound, setSelectedSound] = useState(null);
   const audioRef = useRef(null);
@@ -102,9 +103,17 @@ export default function FocusTimer({ closeModal }) {
     resetTimer();
   };
 
-  const toggleTimer = () => setIsActive(!isActive);
+  const toggleTimer = () => {
+     if (isActive && buddyCode) {
+        toast.error(`Accountability Warning: Your buddy ${buddyCode} is still working. Don't quit!`, { icon: "👀" });
+     }
+     setIsActive(!isActive);
+  };
 
   const resetTimer = () => {
+    if (isActive && buddyCode) {
+       toast.error(`Warning: ${buddyCode} will see you gave up early!`, { icon: "🚨" });
+    }
     setIsActive(false);
     setMinutes(initialMinutes);
     setSeconds(0);
@@ -131,10 +140,18 @@ export default function FocusTimer({ closeModal }) {
         </button>
 
         <div className="flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <Zap size={20} className="text-amber-500 fill-amber-500/20" />
             <h2 className="text-sm font-black tracking-widest uppercase opacity-50">Deep Focus</h2>
           </div>
+          
+          {buddyCode && (
+             <div className="flex items-center gap-2 mb-6 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full animate-in fade-in duration-500">
+               <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+               <Users size={12} className="text-cyan-500" />
+               <span className="text-[10px] font-bold text-cyan-500 tracking-widest uppercase">Live with {buddyCode}</span>
+             </div>
+          )}
 
           {/* Progress Ring (Pro Feature) */}
           <div className="relative mb-8 group">

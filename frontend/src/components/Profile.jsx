@@ -1,4 +1,4 @@
-import { Edit, Flame, LogOut, Settings, Crown, Zap, Activity, Palette, ArrowRight, Check, FileSpreadsheet } from "lucide-react";
+import { Edit, Flame, LogOut, Settings, Crown, Zap, Activity, Palette, ArrowRight, Check, FileSpreadsheet, Brain, Target, Sparkles, Users } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
@@ -60,25 +60,46 @@ export default function Profile({ onLogout, setCurrentPage }) {
 
     const features = [
       {
-        icon: <Activity size={18} />,
-        title: "Deep Insights",
-        desc: "90-day heatmap & productivity correlations.",
-        color: "text-blue-500",
-        bg: "bg-blue-500/10"
-      },
-      {
-        icon: <Palette size={18} />,
-        title: "Custom Branding",
-        desc: "Premium themes & immersive backgrounds.",
+        icon: <Brain size={18} />,
+        title: "Mind Sweep AI",
+        desc: "Dump your thoughts. AI builds your schedule.",
         color: "text-purple-500",
         bg: "bg-purple-500/10"
       },
       {
-        icon: <FileSpreadsheet size={18} />,
-        title: "Productivity Reports",
-        desc: "Export your progress as professional CSV reports.",
+        icon: <Target size={18} />,
+        title: "Frog Eater Mode",
+        desc: "Un-pausable forced timer to crush your dreaded tasks.",
+        color: "text-emerald-500",
+        bg: "bg-emerald-500/10"
+      },
+      {
+        icon: <Sparkles size={18} />,
+        title: "Auto-Scheduler",
+        desc: "Smart algorithm auto-blocks time based on your peak hours.",
         color: "text-indigo-500",
         bg: "bg-indigo-500/10"
+      },
+      {
+        icon: <Flame size={18} />,
+        title: "Burnout Predictor",
+        desc: "Prevents overworking by analyzing your task velocity.",
+        color: "text-red-500",
+        bg: "bg-red-500/10"
+      },
+      {
+        icon: <Users size={18} />,
+        title: "Focus Buddies",
+        desc: "Live accountability pairing and multiplexing sessions.",
+        color: "text-cyan-500",
+        bg: "bg-cyan-500/10"
+      },
+      {
+        icon: <Activity size={18} />,
+        title: "Deep Insights",
+        desc: "90-day heatmap, PDF exports, and custom themes.",
+        color: "text-blue-500",
+        bg: "bg-blue-500/10"
       }
     ];
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, Bell, Moon, Sun, Lock, Shield, HelpCircle, FileText, MessageSquare, X } from "lucide-react";
+import { ChevronRight, Bell, Moon, Sun, Lock, Shield, HelpCircle, FileText, MessageSquare, X, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
 import useStore from "../store/useStore";
@@ -23,6 +23,17 @@ export default function Settings({
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  /* ================= FOCUS BUDDY ================= */
+  const [buddyCode, setBuddyCode] = useState(() => localStorage.getItem("buddyCode") || "");
+  const [isEditingBuddy, setIsEditingBuddy] = useState(false);
+
+  const handleSaveBuddy = (e) => {
+    e.preventDefault();
+    localStorage.setItem("buddyCode", buddyCode);
+    setIsEditingBuddy(false);
+    toast.success(buddyCode ? "Accountability Buddy Linked!" : "Buddy Link removed.");
+  };
 
   /* ================= NOTIFICATIONS ================= */
   useEffect(() => {
@@ -295,6 +306,53 @@ export default function Settings({
              </div>
           </div>
           <Toggle enabled={focusMode} onClick={() => setFocusMode(!focusMode)} />
+        </div>
+
+        <div className="pt-2 border-t border-(--border)/40">
+           <div 
+             onClick={() => {
+                if(!isPro) {
+                   toast("Pro Feature: Upgrade to link a focus buddy", { icon: <Lock size={16} /> });
+                   return;
+                }
+                setIsEditingBuddy(!isEditingBuddy);
+             }}
+             className="flex items-center justify-between cursor-pointer group mb-2"
+           >
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-(--bg) flex items-center justify-center border border-(--border)/50 group-hover:border-emerald-500/50 transition-colors">
+                  <Users size={20} className={buddyCode ? "text-emerald-500" : "text-(--text-secondary)"} />
+                </div>
+                <div>
+                  <p className="font-semibold text-base flex items-center gap-2">
+                     Focus Buddy Multiplexer
+                     {!isPro && <span className="text-[9px] bg-orange-500/20 text-orange-500 px-1.5 py-0.5 rounded-sm font-black tracking-wider uppercase">PRO</span>}
+                  </p>
+                  <p className="text-xs opacity-60">Pair up for live accountability sessions.</p>
+                </div>
+             </div>
+             <button className="text-sm font-semibold px-4 py-2 rounded-lg bg-(--bg) border border-(--border)/60 hover:bg-(--border) transition-colors">
+               {isEditingBuddy ? "Close" : buddyCode ? "Linked" : "Connect"}
+             </button>
+           </div>
+           
+           {isPro && isEditingBuddy && (
+              <form onSubmit={handleSaveBuddy} className="mt-4 p-5 bg-(--bg) rounded-2xl border border-(--border)/40 flex gap-3 animate-in slide-in-from-top-2 fade-in duration-300">
+                <input 
+                  type="text" 
+                  value={buddyCode} 
+                  onChange={(e) => setBuddyCode(e.target.value)} 
+                  placeholder="Enter Buddy's secret code"
+                  className="flex-1 px-4 py-2 bg-(--card-bg) border border-transparent focus:border-emerald-500 focus:ring-2 ring-emerald-500/20 rounded-xl text-sm outline-none transition-all uppercase"
+                />
+                <button 
+                  type="submit" 
+                  className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:brightness-110 transition-all shadow-md shadow-emerald-500/20 whitespace-nowrap"
+                >
+                  Save Link
+                </button>
+              </form>
+           )}
         </div>
 
       </div>

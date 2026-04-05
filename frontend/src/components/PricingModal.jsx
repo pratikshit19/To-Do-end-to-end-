@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   X, Crown, Check, Zap, Activity, Palette, FileSpreadsheet,
-  Shield, Star, Sparkles, ArrowRight, Lock, CreditCard, ChevronLeft
+  Shield, Star, Sparkles, ArrowRight, Lock, CreditCard, ChevronLeft,
+  Brain, Target, Flame, Users
 } from "lucide-react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
@@ -49,12 +50,12 @@ const FREE_FEATURES = [
 ];
 
 const PRO_FEATURES = [
-  { icon: <Activity size={14} />, text: "90-day Heatmap & Deep Insights", color: "text-blue-500" },
-  { icon: <Palette size={14} />, text: "Custom Themes & Backgrounds", color: "text-purple-500" },
-  { icon: <FileSpreadsheet size={14} />, text: "CSV Productivity Reports", color: "text-indigo-500" },
-  { icon: <Star size={14} />, text: "Priority Support", color: "text-amber-500" },
-  { icon: <Zap size={14} />, text: "Unlimited Focus Sessions", color: "text-orange-500" },
-  { icon: <Shield size={14} />, text: "Early Access to New Features", color: "text-green-500" },
+  { icon: <Brain size={14} />, text: "Mind Sweep AI Task Parser", color: "text-purple-500" },
+  { icon: <Sparkles size={14} />, text: "Chronotype Auto-Scheduler", color: "text-indigo-500" },
+  { icon: <Target size={14} />, text: "Frog Eater Anti-Procrastination", color: "text-emerald-500" },
+  { icon: <Flame size={14} />, text: "Burnout Predictor & Cooldown", color: "text-red-500" },
+  { icon: <Users size={14} />, text: "Focus Buddy Multiplexer", color: "text-cyan-500" },
+  { icon: <Activity size={14} />, text: "90-day Insights & Custom Themes", color: "text-blue-500" },
 ];
 
 /* ─────────────────────────────────────────────
