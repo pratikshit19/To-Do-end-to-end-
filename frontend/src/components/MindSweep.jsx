@@ -122,8 +122,8 @@ export default function MindSweep({ closeModal }) {
             onClick={handleProcess}
             disabled={isProcessing || !text.trim()}
             className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-black text-white transition-all shadow-xl ${isProcessing || !text.trim()
-                ? "bg-(--border) opacity-50 cursor-not-allowed"
-                : "bg-linear-to-r from-purple-500 to-indigo-500 hover:scale-105 active:scale-95 shadow-purple-500/30"
+              ? "bg-(--border) opacity-50 cursor-not-allowed"
+              : "bg-linear-to-r from-purple-500 to-indigo-500 hover:scale-105 active:scale-95 shadow-purple-500/30"
               }`}
           >
             {isProcessing ? (

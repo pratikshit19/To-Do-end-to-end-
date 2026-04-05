@@ -424,8 +424,9 @@ export default function PricingModal({ onClose }) {
           border-radius: 2rem;
           width: 100%;
           max-width: 860px;
-          max-height: 92vh;
+          max-height: 98vh;
           overflow-y: auto;
+          overflow-x: hidden;
           box-shadow: 0 32px 80px -10px rgba(0,0,0,0.5);
           animation: modal-in 0.3s cubic-bezier(0.34,1.56,0.64,1);
         }
@@ -465,8 +466,8 @@ export default function PricingModal({ onClose }) {
         /* ═══════════════════════════
              STEP 1 — PRICING
         ═══════════════════════════ */
-        .pricing-step { padding: 2.5rem; }
-        .pricing-header { text-align: center; margin-bottom: 2rem; }
+        .pricing-step { padding: 1.5rem 2.5rem; }
+        .pricing-header { text-align: center; margin-bottom: 1.25rem; }
         .pricing-badge {
           display: inline-flex; align-items: center; gap: 6px;
           padding: 5px 14px; border-radius: 999px;
@@ -493,19 +494,17 @@ export default function PricingModal({ onClose }) {
           color: var(--text-secondary); opacity: 0.7;
         }
 
-        /* Plans grid */
         .plans-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 1.25rem;
-          margin-bottom: 1.75rem;
+          margin-bottom: 1rem;
         }
         @media (max-width: 620px) { .plans-grid { grid-template-columns: 1fr; } }
 
-        /* Plan card base */
         .plan-card {
           border-radius: 1.5rem;
-          padding: 1.75rem;
+          padding: 1.25rem 1.5rem;
           border: 1px solid var(--border);
           display: flex;
           flex-direction: column;

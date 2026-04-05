@@ -18,6 +18,7 @@ import useStore from "./store/useStore";
 import FocusTimer from "./components/FocusTimer";
 import FrogEater from "./components/FrogEater";
 import MindSweep from "./components/MindSweep";
+import PricingModal from "./components/PricingModal";
 
 function AppContent() {
   /* ================= STATE ================= */
@@ -39,7 +40,9 @@ function AppContent() {
     darkMode,
     setDarkMode,
     colorTheme,
-    setColorTheme
+    setColorTheme,
+    showPricingModal,
+    setShowPricingModal
   } = useStore();
 
   const [showOnboarding, setShowOnboarding] = useState(
@@ -431,6 +434,10 @@ function AppContent() {
       
       {showMindSweep && (
         <MindSweep closeModal={() => setShowMindSweep(false)} />
+      )}
+      
+      {showPricingModal && (
+        <PricingModal onClose={() => setShowPricingModal(false)} />
       )}
     </div>
   );

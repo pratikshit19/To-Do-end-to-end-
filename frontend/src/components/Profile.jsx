@@ -6,9 +6,8 @@ import useStore from "../store/useStore";
 import PricingModal from "./PricingModal";
 
 export default function Profile({ onLogout, setCurrentPage }) {
-  const { userProfile, setUserProfile, getStats, isPro } = useStore();
+  const { userProfile, setUserProfile, getStats, isPro, setShowPricingModal } = useStore();
   const stats = getStats();
-  const [showPricingModal, setShowPricingModal] = useState(false);
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const fileInputRef = useRef(null);
 
@@ -269,13 +268,6 @@ export default function Profile({ onLogout, setCurrentPage }) {
           Sign Out Workspace
         </button>
       </div>
-
-      {/* Pricing / Payment Modal */}
-      {showPricingModal && (
-        <PricingModal
-          onClose={() => setShowPricingModal(false)}
-        />
-      )}
 
     </div>
   );

@@ -19,6 +19,7 @@ const useStore = create((set, get) => ({
   colorTheme: localStorage.getItem("colorTheme") || "blue",
   isLoading: true,
   searchQuery: "",
+  showPricingModal: false,
   
   // Pro Features
   isPro: false,
@@ -56,6 +57,7 @@ const useStore = create((set, get) => ({
     } catch(err) { console.error("Failed to save prefs:", err); }
   },
   setSearchQuery: (query) => set({ searchQuery: query }),
+  setShowPricingModal: (show) => set({ showPricingModal: show }),
   
   updateProSettings: async (settings) => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");

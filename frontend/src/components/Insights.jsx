@@ -292,6 +292,7 @@ export default function Insights() {
                 Connect your daily effort with long-term trends using the **90-Day Activity Heatmap**.
               </p>
               <button 
+                onClick={() => useStore.getState().setShowPricingModal(true)}
                 className="px-8 py-3 bg-linear-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-105 transition-transform uppercase tracking-widest text-xs"
               >
                 Upgrade to Pro
@@ -354,6 +355,7 @@ export default function Insights() {
                   Download beautiful, extensive **Productivity PDF Reports** to analyze and archive your performance.
                 </p>
                 <button 
+                  onClick={() => useStore.getState().setShowPricingModal(true)}
                   className="px-8 py-3 bg-linear-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-105 transition-transform uppercase tracking-widest text-xs"
                 >
                   Upgrade to Pro
