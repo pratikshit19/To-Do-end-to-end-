@@ -1,19 +1,46 @@
 import { useState, useEffect } from "react";
-import { Users, Plus, Key, ArrowRight, User, CheckCircle2, ChevronRight } from "lucide-react";
+import { Users, Plus, Key, ArrowRight, User, CheckCircle2, ChevronRight, Edit2, Trash2 } from "lucide-react";
 import useStore from "../store/useStore";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
 
 export default function Teams({ setCurrentPage }) {
-  const { currentWorkspace, setCurrentWorkspace, teams, fetchTeams, fetchTodos } = useStore();
+  const { currentWorkspace, setCurrentWorkspace, teams, fetchTeams, fetchTodos, isPro, setShowPricingModal, renameTeam, deleteTeam } = useStore();
   const [activeTab, setActiveTab] = useState("my-teams");
   const [teamName, setTeamName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  const currentUserId = localStorage.getItem("userId") || sessionStorage.getItem("userId");
 
   useEffect(() => {
     fetchTeams();
   }, [fetchTeams]);
+
+  const handleRename = async (team, e) => {
+    e.stopPropagation();
+    const newName = prompt("Enter new team name:", team.name);
+    if (newName && newName.trim() && newName !== team.name) {
+      const success = await renameTeam(team._id, newName.trim());
+      if (success) {
+        toast.success("Team renamed!");
+      } else {
+        toast.error("Failed to rename team. Only owners can do this.");
+      }
+    }
+  };
+
+  const handleDelete = async (team, e) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to delete "${team.name}"? This will permanently remove all tasks and member access.`)) {
+      const success = await deleteTeam(team._id);
+      if (success) {
+        toast.success("Team deleted.");
+      } else {
+        toast.error("Failed to delete team. This action is restricted to the owner.");
+      }
+    }
+  };
 
   const handleCreateTeam = async (e) => {
     e.preventDefault();
@@ -113,6 +140,17 @@ export default function Teams({ setCurrentPage }) {
         ))}
       </div>
 
+      {!isPro && activeTab !== "my-teams" && (
+        <div className="mb-6 mx-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
+            <Zap size={16} />
+          </div>
+          <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
+            Free Plan: Create up to 2 teams with 5 members each. <button onClick={() => setShowPricingModal(true)} className="underline decoration-2 underline-offset-2">Go Pro for unlimited.</button>
+          </p>
+        </div>
+      )}
+
       {activeTab === "my-teams" && (
         <div className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
           
@@ -192,7 +230,27 @@ export default function Teams({ setCurrentPage }) {
                   </div>
                 </div>
               </div>
-              <ChevronRight size={20} className="text-(--text-secondary) group-hover:translate-x-1 transition-transform" />
+              <div className="flex items-center gap-2">
+                {team.owner === currentUserId && (
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={(e) => handleRename(team, e)}
+                      className="p-2 rounded-xl text-(--text-secondary) hover:bg-linear-to-r hover:from-blue-500/10 hover:to-indigo-500/10 hover:text-blue-500 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                      title="Rename Team"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => handleDelete(team, e)}
+                      className="p-2 rounded-xl text-(--text-secondary) hover:bg-red-500/10 hover:text-red-500 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                      title="Delete Team"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
+                <ChevronRight size={20} className="text-(--text-secondary) group-hover:translate-x-1 transition-transform" />
+              </div>
             </div>
           ))}
 
@@ -215,25 +273,40 @@ export default function Teams({ setCurrentPage }) {
           <h2 className="text-2xl font-black mb-2">Build a Team</h2>
           <p className="text-sm opacity-60 mb-6 font-medium">Create a shared workspace to collaborate on tasks in real-time with colleagues.</p>
           
-          <label className="text-xs font-bold uppercase tracking-wider opacity-60 block mb-2">Team Name</label>
-          <input 
-            type="text"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            placeholder="e.g. Marketing Team, Project Apollo..."
-            className="w-full px-5 py-4 bg-(--bg) rounded-2xl border border-transparent focus:border-(--accent) focus:ring-2 ring-(--accent)/20 outline-none text-sm mb-6 transition-all font-semibold"
-            required
-            autoFocus
-          />
-          
-          <button 
-            type="submit"
-            disabled={isProcessing}
-            className="w-full py-4 rounded-xl bg-(--accent) text-white font-bold tracking-widest uppercase text-xs flex justify-center items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-(--gradient-start)/20 disabled:opacity-50"
-          >
-            {isProcessing ? "Creating..." : "Create Team"}
-            <ArrowRight size={16} />
-          </button>
+          {!isPro && teams.filter(t => t.owner === (localStorage.getItem("userId") || sessionStorage.getItem("userId"))).length >= 2 ? (
+             <div className="p-6 bg-(--bg) rounded-2xl border-2 border-dashed border-(--border) text-center">
+                <p className="text-sm font-bold opacity-60 mb-4">You've reached your 2-team limit.</p>
+                <button 
+                  type="button"
+                  onClick={() => setShowPricingModal(true)}
+                  className="px-6 py-2.5 rounded-xl bg-(--accent) text-white text-xs font-black uppercase tracking-widest"
+                >
+                  Upgrade to Pro
+                </button>
+             </div>
+          ) : (
+            <>
+              <label className="text-xs font-bold uppercase tracking-wider opacity-60 block mb-2">Team Name</label>
+              <input 
+                type="text"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="e.g. Marketing Team, Project Apollo..."
+                className="w-full px-5 py-4 bg-(--bg) rounded-2xl border border-transparent focus:border-(--accent) focus:ring-2 ring-(--accent)/20 outline-none text-sm mb-6 transition-all font-semibold"
+                required
+                autoFocus
+              />
+              
+              <button 
+                type="submit"
+                disabled={isProcessing}
+                className="w-full py-4 rounded-xl bg-(--accent) text-white font-bold tracking-widest uppercase text-xs flex justify-center items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-(--gradient-start)/20 disabled:opacity-50"
+              >
+                {isProcessing ? "Creating..." : "Create Team"}
+                <ArrowRight size={16} />
+              </button>
+            </>
+          )}
         </form>
       )}
 

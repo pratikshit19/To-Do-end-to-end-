@@ -75,7 +75,7 @@ app.post("/signin", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({ token, username: user.username });
+    res.json({ token, username: user.username, userId: user._id });
 
   } catch (err) {
     res.status(500).json({ message: "Something went wrong" });
@@ -674,6 +674,18 @@ app.post("/team", authMiddleware, async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: "Team name is required" });
+
+    const user = await User.findById(req.userId);
+    if (!user.isPro) {
+      const ownedTeamsCount = await Team.countDocuments({ owner: req.userId });
+      if (ownedTeamsCount >= 2) {
+        return res.status(403).json({ 
+          message: "Free users can only create up to 2 teams. Upgrade to Pro for unlimited workspaces!",
+          limitReached: true
+        });
+      }
+    }
+
     const inviteCode = crypto.randomBytes(3).toString("hex").toUpperCase();
     let newTeam = await Team.create({ name, inviteCode, owner: req.userId, members: [req.userId] });
     newTeam = await Team.findById(newTeam._id).populate("members", "username profilePhoto");
@@ -689,12 +701,69 @@ app.post("/team/join", authMiddleware, async (req, res) => {
     if (!inviteCode) return res.status(400).json({ message: "Invite code is required" });
     const team = await Team.findOne({ inviteCode: inviteCode.trim().toUpperCase() });
     if (!team) return res.status(404).json({ message: "Invalid invite code" });
+    
     if (team.members.includes(req.userId)) return res.status(400).json({ message: "Already a member" });
+
+    // Check member limit for Free user teams
+    const owner = await User.findById(team.owner);
+    if (!owner.isPro && team.members.length >= 5) {
+      return res.status(403).json({ 
+        message: "This team has reached the 5-member limit for Free workspaces. The owner needs to upgrade to Pro to add more members!",
+        limitReached: true
+      });
+    }
     
     team.members.push(req.userId);
     await team.save();
     const populatedTeam = await Team.findById(team._id).populate("members", "username profilePhoto");
     res.json({ message: "Joined team successfully!", team: populatedTeam });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/team/:id", authMiddleware, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: "Team name is required" });
+
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).json({ message: "Team not found" });
+
+    if (team.owner.toString() !== req.userId) {
+      return res.status(403).json({ message: "Only the owner can rename the team" });
+    }
+
+    team.name = name;
+    await team.save();
+    res.json({ message: "Team renamed!", team });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.delete("/team/:id", authMiddleware, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).json({ message: "Team not found" });
+
+    // Debug logging to verify identity match
+    console.log(`Delete Request - Team: ${team.name}, Owner: ${team.owner}, Requester: ${req.userId}`);
+
+    if (team.owner.toString().trim() !== req.userId.toString().trim()) {
+      return res.status(403).json({ 
+        message: "Forbidden: You do not have permission to delete this team.",
+        debug: { owner: team.owner, requester: req.userId } 
+      });
+    }
+
+    // Delete all todos associated with this team
+    await todo.deleteMany({ teamId: req.params.id });
+
+    // Delete the team itself
+    await Team.findByIdAndDelete(req.params.id);
+
+    res.json({ message: "Team and its tasks deleted successfully!" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

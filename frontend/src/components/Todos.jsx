@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
-import { useState, useRef } from "react";
-import { Trash2, Circle, CheckCircle2, ClipboardList, Pencil, Search } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Trash2, Circle, CheckCircle2, ClipboardList, Pencil, Search, ChevronDown, Filter, Check } from "lucide-react";
 import API_BASE_URL from "../config";
 import useStore from "../store/useStore";
 import confetti from "canvas-confetti";
@@ -17,7 +17,20 @@ export default function Todos({ onEdit }) {
   const [draggingId, setDraggingId] = useState(null);
   const startXRef = useRef(0);
   const [openId, setOpenId] = useState(null);
+  const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
+  const priorityDropdownRef = useRef(null);
   const ACTION_WIDTH = 120; // Expanded to fit both Edit and Delete
+
+  // Close priority dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (priorityDropdownRef.current && !priorityDropdownRef.current.contains(e.target)) {
+        setShowPriorityDropdown(false);
+      }
+    };
+    if (showPriorityDropdown) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showPriorityDropdown]);
 
   /* ================= DATE LOGIC ================= */
   const today = new Date();
@@ -50,6 +63,19 @@ export default function Todos({ onEdit }) {
     if (activeFilter === "upcoming") return due > today && !todo.completed;
 
     return true;
+  }).sort((a, b) => {
+    // For 'All' and 'Completed' tabs, show newest tasks first (latest added on top)
+    if (activeFilter === "all" || activeFilter === "completed") {
+      return new Date(b.createdAt || b._id.getTimestamp?.() || 0) - new Date(a.createdAt || a._id.getTimestamp?.() || 0);
+    }
+    
+    // For Focused and Upcoming, sort by Due Date ascending, then by Priority
+    const dateA = new Date(a.dueDate + (a.dueTime ? `T${a.dueTime}` : ""));
+    const dateB = new Date(b.dueDate + (b.dueTime ? `T${b.dueTime}` : ""));
+    if (dateA - dateB !== 0) return dateA - dateB;
+
+    const priorities = { high: 1, medium: 2, low: 3 };
+    return (priorities[a.priority] || 4) - (priorities[b.priority] || 4);
   });
 
   /* ================= DELETE ================= */
@@ -207,49 +233,70 @@ export default function Todos({ onEdit }) {
       </div>
 
       {/* ================= FILTERS ================= */}
-      <div className="space-y-4 mb-6 pt-1">
-        <div className="flex gap-2 pb-2 overflow-x-auto scrollbar-none snap-x -mx-1 px-1">
+      <div className="flex items-center gap-2 mb-8">
+        {/* Status Segmented Control */}
+        <div className="flex-1 flex bg-(--card-bg) p-1 rounded-2xl border border-(--border)/60 shadow-sm overflow-x-auto hide-scrollbar sm:overflow-visible">
           {["focused", "upcoming", "completed", "all"].map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-5 py-2.5 rounded-3xl text-sm font-bold transition-all duration-300 snap-start whitespace-nowrap outline-none border ${activeFilter === filter
-                ? "bg-(--accent) text-white border-(--accent) shadow-md shadow-(--gradient-start)/20 scale-105"
-                : "bg-(--card-bg) text-(--text-primary) opacity-70 hover:opacity-100 hover:bg-(--border)/50 border-(--border)/60"
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap outline-none flex-1 sm:flex-initial ${activeFilter === filter
+                ? "bg-(--accent) text-white shadow-lg shadow-(--gradient-start)/20 translate-y-[-1px]"
+                : "text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--border)/40"
                 }`}
             >
               {filter.charAt(0).toUpperCase() + filter.slice(1)}
             </button>
           ))}
+        </div>
 
-          <div className="w-[1px] bg-(--border)/60 mx-2 shrink-0"></div>
+        {/* Priority Selector (Responsive) */}
+        <div className="relative shrink-0" ref={priorityDropdownRef}>
+          {/* Mobile: Just Icon */}
+          <button
+            onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
+            className={`sm:hidden flex items-center justify-center w-11 h-11 rounded-2xl bg-(--card-bg) border border-(--border)/60 shadow-sm transition-all active:scale-95 outline-none relative ${priorityFilter !== 'all' ? 'text-(--accent) ring-2 ring-(--accent)/10' : 'text-(--text-secondary)'}`}
+          >
+            <Filter size={18} />
+            {priorityFilter !== 'all' && (
+              <div className={`absolute top-2 right-2 w-2 h-2 rounded-full border-2 border-(--card-bg) ${priorityFilter === 'high' ? 'bg-red-500' : priorityFilter === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`} />
+            )}
+          </button>
 
-          {/* Desktop Only Inline Search (Fallback for smaller desktops) */}
-          <div className="hidden md:flex lg:hidden relative group w-48">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-(--card-bg) border border-(--border)/60 text-xs focus:ring-2 focus:ring-(--accent)/30 outline-none transition-all"
-            />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30">
-              <ClipboardList size={14} />
+          {/* Desktop: Full Button */}
+          <button
+            onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}
+            className={`hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl bg-(--card-bg) border border-(--border)/60 shadow-sm text-xs font-bold transition-all active:scale-95 outline-none ${priorityFilter !== 'all' ? 'text-(--accent) ring-2 ring-(--accent)/10' : 'text-(--text-secondary)'}`}
+          >
+            <Filter size={14} />
+            <span className="capitalize">{priorityFilter === 'all' ? 'Priority' : `${priorityFilter}`}</span>
+            <ChevronDown size={14} className={`transition-transform duration-300 ${showPriorityDropdown ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showPriorityDropdown && (
+            <div className="absolute top-14 right-0 w-48 bg-(--card-bg) border border-(--border)/60 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-200">
+              <div className="p-2 space-y-1">
+                {[
+                  { id: 'all', label: 'All Priorities', color: 'bg-slate-400' },
+                  { id: 'high', label: 'High Priority', color: 'bg-red-500' },
+                  { id: 'medium', label: 'Medium Priority', color: 'bg-yellow-500' },
+                  { id: 'low', label: 'Low Priority', color: 'bg-green-500' },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => { setPriorityFilter(p.id); setShowPriorityDropdown(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${priorityFilter === p.id ? 'bg-(--accent)/10 text-(--accent)' : 'text-(--text-primary) hover:bg-(--border)/40'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${p.color}`} />
+                      {p.label}
+                    </div>
+                    {priorityFilter === p.id && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-
-          {["all", "high", "medium", "low"].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPriorityFilter(p)}
-              className={`px-5 py-2.5 rounded-4xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 snap-start whitespace-nowrap outline-none border ${priorityFilter === p
-                ? "bg-slate-800 text-white border-slate-800 scale-105"
-                : "bg-(--card-bg) text-(--text-primary) opacity-50 hover:opacity-100 border-(--border)/60"
-                }`}
-            >
-              {p}
-            </button>
-          ))}
+          )}
         </div>
       </div>
 

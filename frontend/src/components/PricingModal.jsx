@@ -43,7 +43,7 @@ function Confetti() {
 ───────────────────────────────────────────── */
 const FREE_FEATURES = [
   "Unlimited Tasks",
-  "Schedule & Calendar",
+  "Up to 2 Teams (5 Members each)",
   "Basic Focus Timer",
   "7-day Insights",
   "1 Color Theme",
@@ -54,7 +54,7 @@ const PRO_FEATURES = [
   { icon: <Sparkles size={14} />, text: "Chronotype Auto-Scheduler", color: "text-indigo-500" },
   { icon: <Target size={14} />, text: "Frog Eater Anti-Procrastination", color: "text-emerald-500" },
   { icon: <Flame size={14} />, text: "Burnout Predictor & Cooldown", color: "text-red-500" },
-  { icon: <Users size={14} />, text: "Real-time Team Collaboration", color: "text-cyan-500" },
+  { icon: <Users size={14} />, text: "Unlimited Teams & Collaboration", color: "text-cyan-500" },
   { icon: <Activity size={14} />, text: "Advanced Insights & PDF Reports", color: "text-blue-500" },
 ];
 

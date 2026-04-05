@@ -88,8 +88,8 @@ export default function Profile({ onLogout, setCurrentPage }) {
       },
       {
         icon: <Users size={18} />,
-        title: "Team Collaboration",
-        desc: "Shared workspaces, invite codes, and real-time syncing.",
+        title: "Unlimited Collaboration",
+        desc: "Free users get 2 teams (5 members each). Pro gets unlimited workspaces and members.",
         color: "text-cyan-500",
         bg: "bg-cyan-500/10"
       },

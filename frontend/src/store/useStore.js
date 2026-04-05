@@ -77,6 +77,55 @@ const useStore = create((set, get) => ({
       console.error("Failed to fetch teams:", err);
     }
   },
+
+  renameTeam: async (teamId, newName) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return false;
+    try {
+      const response = await fetch(`${API_BASE_URL}/team/${teamId}`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ name: newName }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        set((state) => ({
+          teams: state.teams.map((t) => t._id === teamId ? { ...t, name: data.team.name } : t)
+        }));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Failed to rename team:", err);
+      return false;
+    }
+  },
+
+  deleteTeam: async (teamId) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return false;
+    try {
+      const response = await fetch(`${API_BASE_URL}/team/${teamId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        set((state) => {
+          const newTeams = state.teams.filter((t) => t._id !== teamId);
+          const nextWorkspace = state.currentWorkspace === teamId ? "personal" : state.currentWorkspace;
+          return { teams: newTeams, currentWorkspace: nextWorkspace };
+        });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Failed to delete team:", err);
+      return false;
+    }
+  },
   
   updateProSettings: async (settings) => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -154,6 +203,10 @@ const useStore = create((set, get) => ({
           dailyFocusTarget: data.dailyFocusTarget || 60
         };
         
+        if (data._id) {
+          localStorage.setItem("userId", data._id);
+        }
+
         if (data.username && data.username !== "User") {
           localStorage.setItem("username", data.username);
         }

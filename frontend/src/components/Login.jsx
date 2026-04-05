@@ -79,9 +79,11 @@ export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, 
       if (rememberMe) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("username", data.username);
+        localStorage.setItem("userId", data.userId);
       } else {
         sessionStorage.setItem("token", data.token);
         sessionStorage.setItem("username", data.username);
+        sessionStorage.setItem("userId", data.userId);
       }
 
       toast.success("Welcome back 🎉", { id: toastId });
