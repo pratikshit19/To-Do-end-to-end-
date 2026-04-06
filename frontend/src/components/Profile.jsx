@@ -6,10 +6,14 @@ import useStore from "../store/useStore";
 import PricingModal from "./PricingModal";
 
 export default function Profile({ onLogout, setCurrentPage }) {
-  const { userProfile, setUserProfile, getStats, isPro, setShowPricingModal } = useStore();
+  const { userProfile, setUserProfile, updateProfile, getStats, isPro, setShowPricingModal } = useStore();
   const stats = getStats();
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const fileInputRef = useRef(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ username: userProfile.username });
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleUpgrade = () => {
     setShowPricingModal(true);
@@ -45,6 +49,28 @@ export default function Profile({ onLogout, setCurrentPage }) {
       console.error("Upload error:", err);
       toast.error("Cloud upload failed.", { id: toastId });
     }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editForm.username.trim()) {
+      return toast.error("Username cannot be empty");
+    }
+
+    setIsSaving(true);
+    const result = await updateProfile({ username: editForm.username });
+    setIsSaving(false);
+
+    if (result.success) {
+      toast.success("Profile updated!");
+      setIsEditing(false);
+    } else {
+      toast.error(result.message || "Update failed");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditForm({ username: userProfile.username });
+    setIsEditing(false);
   };
 
   const goals = useMemo(() => {
@@ -158,28 +184,69 @@ export default function Profile({ onLogout, setCurrentPage }) {
       <div className="flex items-center justify-between bg-(--card-bg) p-6 rounded-3xl mb-8 shadow-sm border border-(--border)/60 hover:shadow-md transition-shadow relative overflow-hidden group z-10">
         <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] bg-(--gradient-start)/5 rounded-full blur-[40px] pointer-events-none transition-all group-hover:bg-(--gradient-start)/10"></div>
 
-        <div className="flex items-center gap-5 relative z-10">
-          <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white text-2xl font-semibold shadow-lg shadow-(--gradient-start)/20 ring-4 ring-(--gradient-start)/10 overflow-hidden">
+        <div className="flex items-center gap-5 relative z-10 w-full mr-4">
+          <div 
+            className="w-16 h-16 flex items-center justify-center rounded-2xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white text-2xl font-semibold shadow-lg shadow-(--gradient-start)/20 ring-4 ring-(--gradient-start)/10 overflow-hidden relative group/avatar cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+          >
             {userProfile.profilePhoto ? (
               <img src={userProfile.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               userProfile.username?.charAt(0).toUpperCase() || "U"
             )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+              <Activity size={18} className="text-white" />
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-black tracking-tight">{userProfile.username}</h2>
-            <p className="text-xs font-bold text-(--accent) tracking-widest uppercase opacity-80">
-              {isPro ? "Pro Member" : "Free Member"}
-            </p>
+          
+          <div className="flex-1">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editForm.username}
+                onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                className="text-xl font-black bg-transparent border-b-2 border-(--accent) focus:outline-none w-full py-1 text-(--text-primary)"
+                autoFocus
+              />
+            ) : (
+              <div className="flex flex-col">
+                <h2 className="text-2xl font-black tracking-tight">{userProfile.username}</h2>
+                <p className="text-xs font-bold text-(--accent) tracking-widest uppercase opacity-80">
+                  {isPro ? "Pro Member" : "Free Member"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-(--card-bg) border border-(--border) hover:bg-(--border)/50 transition-colors text-(--text-secondary) hover:text-(--accent) focus:outline-none"
-        >
-          <Edit size={18} />
-        </button>
+        <div className="flex gap-2 relative z-10">
+          {isEditing ? (
+            <>
+              <button
+                onClick={handleSaveProfile}
+                disabled={isSaving}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors focus:outline-none"
+                title="Save Changes"
+              >
+                <Check size={18} />
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors focus:outline-none"
+                title="Cancel"
+              >
+                <ArrowRight className="rotate-180" size={18} />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-(--card-bg) border border-(--border) hover:bg-(--border)/50 transition-colors text-(--text-secondary) hover:text-(--accent) focus:outline-none"
+            >
+              <Edit size={18} />
+            </button>
+          )}
+        </div>
         <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
       </div>
 

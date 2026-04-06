@@ -102,7 +102,7 @@ function PricingStep({ onSelectPro, onClose }) {
           <div className="plan-popular">Most Popular</div>
           <div className="plan-label plan-label-pro">Pro</div>
           <div className="plan-price">
-            <span className="plan-amount plan-amount-pro">₹499</span>
+            <span className="plan-amount plan-amount-pro">₹99</span>
             <span className="plan-period plan-period-pro">/month</span>
           </div>
           <p className="plan-desc plan-desc-pro">Everything in Free, plus premium superpowers.</p>
@@ -274,7 +274,7 @@ function PaymentStep({ onBack, onSuccess }) {
             <h3 className="order-title">TaskFlow Pro — Monthly</h3>
             <p className="order-sub">All premium features unlocked immediately</p>
           </div>
-          <div className="order-price">₹499</div>
+          <div className="order-price">₹99</div>
         </div>
 
         {/* Feature checklist */}
@@ -302,7 +302,7 @@ function PaymentStep({ onBack, onSuccess }) {
           ) : (
             <span className="pay-btn-content">
               <CreditCard size={18} />
-              Pay ₹499 Securely
+              Pay ₹99 Securely
             </span>
           )}
         </button>
@@ -424,11 +424,19 @@ export default function PricingModal({ onClose }) {
           border-radius: 2rem;
           width: 100%;
           max-width: 860px;
-          max-height: 98vh;
-          overflow-y: auto;
-          overflow-x: hidden;
+          max-height: 95vh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
           box-shadow: 0 32px 80px -10px rgba(0,0,0,0.5);
           animation: modal-in 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .modal-scroll-area {
+          flex: 1;
+          overflow-y: auto;
+          overflow-x: hidden;
+          position: relative;
+          z-index: 5;
         }
         @keyframes modal-in {
           from { opacity: 0; transform: scale(0.92) translateY(24px); }
@@ -589,18 +597,18 @@ export default function PricingModal({ onClose }) {
         /* ═══════════════════════════
              STEP 2 — PAYMENT
         ═══════════════════════════ */
-        .payment-step { padding: 2.5rem; max-width: 500px; margin: 0 auto; }
+        .payment-step { padding: 1.5rem 2.5rem; max-width: 500px; margin: 0 auto; }
         .payment-back-btn {
           display: flex; align-items: center; gap: 6px;
           font-size: 0.8rem; font-weight: 700;
           color: var(--text-secondary); opacity: 0.6;
           background: none; border: none; cursor: pointer;
-          margin-bottom: 2rem;
+          margin-bottom: 1.25rem;
           transition: opacity 0.15s;
         }
         .payment-back-btn:hover { opacity: 1; }
 
-        .payment-content { display: flex; flex-direction: column; gap: 1.5rem; }
+        .payment-content { display: flex; flex-direction: column; gap: 1.25rem; }
 
         .order-summary {
           display: flex; align-items: center; gap: 1rem;
@@ -750,16 +758,18 @@ export default function PricingModal({ onClose }) {
             </button>
           )}
 
-          {/* Step renderer */}
-          {step === "pricing" && (
-            <PricingStep onSelectPro={() => setStep("payment")} onClose={onClose} />
-          )}
-          {step === "payment" && (
-            <PaymentStep onBack={() => setStep("pricing")} onSuccess={handleSuccess} />
-          )}
-          {step === "success" && (
-            <SuccessStep onClose={onClose} />
-          )}
+          {/* Step renderer inside scroll area */}
+          <div className="modal-scroll-area">
+            {step === "pricing" && (
+              <PricingStep onSelectPro={() => setStep("payment")} onClose={onClose} />
+            )}
+            {step === "payment" && (
+              <PaymentStep onBack={() => setStep("pricing")} onSuccess={handleSuccess} />
+            )}
+            {step === "success" && (
+              <SuccessStep onClose={onClose} />
+            )}
+          </div>
         </div>
       </div>
     </>

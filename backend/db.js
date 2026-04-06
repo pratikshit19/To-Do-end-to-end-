@@ -82,6 +82,7 @@ const focusSessionSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true },
+  email: { type: String, unique: true, required: true },
   password: String,
   profilePhoto: {
     type: String,   // will store image URL
@@ -108,7 +109,9 @@ const userSchema = new mongoose.Schema({
     focusMode: { type: Boolean, default: false }
   },
   buddyCode: { type: String, unique: true, sparse: true },
-  buddy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }
+  buddy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 });
 
 const feedbackSchema = new mongoose.Schema({

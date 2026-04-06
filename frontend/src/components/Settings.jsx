@@ -13,12 +13,15 @@ export default function Settings({
   setColorTheme,
   onLogout,
 }) {
-  const { focusMode, setFocusMode, isPro, userProfile, linkBuddy, setShowPricingModal } = useStore();
+  const { focusMode, setFocusMode, isPro, userProfile, linkBuddy, unlinkBuddy, setShowPricingModal } = useStore();
   const [notifications, setNotifications] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackCategory, setFeedbackCategory] = useState("bug");
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [showToSModal, setShowToSModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showFAQModal, setShowFAQModal] = useState(false);
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -102,6 +105,12 @@ export default function Settings({
   const triggerSupport = (item) => {
     if (item === "Send Feedback") {
       setShowFeedbackModal(true);
+    } else if (item === "Terms of Service") {
+      setShowToSModal(true);
+    } else if (item === "Privacy Policy") {
+      setShowPrivacyModal(true);
+    } else if (item === "FAQ") {
+      setShowFAQModal(true);
     } else {
       toast(`Opening ${item}...`, { icon: "🚀" });
     }
@@ -369,21 +378,43 @@ export default function Settings({
                    </div>
                  </div>
 
-                 <form onSubmit={handleSaveBuddy} className="flex gap-3">
-                   <input 
-                     type="text" 
-                     value={buddyDraft} 
-                     onChange={(e) => setBuddyDraft(e.target.value)} 
-                     placeholder="Enter Buddy's secret code"
-                     className="flex-1 px-4 py-2 bg-(--card-bg) border border-transparent focus:border-emerald-500 focus:ring-2 ring-emerald-500/20 rounded-xl text-sm outline-none transition-all uppercase font-mono font-bold"
-                   />
-                   <button 
-                     type="submit" 
-                     className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:brightness-110 transition-all shadow-md shadow-emerald-500/20 whitespace-nowrap"
-                   >
-                     Link Buddy
-                   </button>
-                 </form>
+                  {userProfile?.buddyName ? (
+                     <div className="pt-2 border-t border-(--border)/40 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-3 block text-red-500">Connected with {userProfile.buddyName}</p>
+                        <button 
+                          onClick={async () => {
+                            if (window.confirm(`Are you sure you want to disconnect from ${userProfile.buddyName}?`)) {
+                              const res = await unlinkBuddy();
+                              if (res.success) {
+                                toast.success("Buddy disconnected");
+                                setIsEditingBuddy(false);
+                              } else {
+                                toast.error(res.message);
+                              }
+                            }
+                          }}
+                          className="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-xs font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
+                        >
+                          Disconnect Buddy
+                        </button>
+                     </div>
+                  ) : (
+                    <form onSubmit={handleSaveBuddy} className="flex gap-3">
+                      <input 
+                        type="text" 
+                        value={buddyDraft} 
+                        onChange={(e) => setBuddyDraft(e.target.value)} 
+                        placeholder="Enter Buddy's secret code"
+                        className="flex-1 px-4 py-2 bg-(--card-bg) border border-transparent focus:border-emerald-500 focus:ring-2 ring-emerald-500/20 rounded-xl text-sm outline-none transition-all uppercase font-mono font-bold"
+                      />
+                      <button 
+                        type="submit" 
+                        className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:brightness-110 transition-all shadow-md shadow-emerald-500/20 whitespace-nowrap"
+                      >
+                        Link Buddy
+                      </button>
+                    </form>
+                  )}
               </div>
            )}
         </div>
@@ -395,7 +426,7 @@ export default function Settings({
       <div className="bg-(--card-bg) rounded-3xl shadow-sm border border-(--border)/60 mb-8 overflow-hidden">
         {[
           { label: "Send Feedback", icon: MessageSquare },
-          { label: "Help Center & FAQ", icon: HelpCircle },
+          { label: "FAQ", icon: HelpCircle },
           { label: "Terms of Service", icon: FileText },
           { label: "Privacy Policy", icon: Shield }
         ].map((item, index) => {
@@ -503,6 +534,153 @@ export default function Settings({
         </div>
       )}
 
+      {/* LEGAL MODALS */}
+      <LegalModal 
+        isOpen={showToSModal} 
+        onClose={() => setShowToSModal(false)} 
+        title="Terms of Service"
+        icon={<FileText size={24} />}
+        content={termsOfService}
+      />
+
+      <LegalModal 
+        isOpen={showPrivacyModal} 
+        onClose={() => setShowPrivacyModal(false)} 
+        title="Privacy Policy"
+        icon={<Shield size={24} />}
+        content={privacyPolicy}
+      />
+
+      <LegalModal 
+        isOpen={showFAQModal} 
+        onClose={() => setShowFAQModal(false)} 
+        title="FAQ"
+        icon={<HelpCircle size={24} />}
+        content={faqData}
+      />
+
     </div>
   );
 }
+
+/* ================= COMPONENT: LEGAL MODAL ================= */
+const LegalModal = ({ isOpen, onClose, title, icon, content }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-300">
+      <div 
+        className="w-full max-w-2xl bg-(--card-bg) rounded-[2.5rem] p-8 shadow-2xl border border-(--border)/60 relative overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-(--accent)/10 rounded-full blur-[60px] pointer-events-none"></div>
+        
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-(--accent)/10 flex items-center justify-center text-(--accent)">
+              {icon}
+            </div>
+            <div>
+              <h2 className="text-2xl font-black tracking-tight">{title}</h2>
+              <p className="text-xs font-bold opacity-50 uppercase tracking-widest">Effective Date: April 2026</p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-(--border)/30 transition-colors opacity-60 hover:opacity-100"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar relative z-10 text-sm leading-relaxed space-y-6 opacity-80">
+          {content.map((section, idx) => (
+            <div key={idx}>
+              <h3 className="text-base font-black mb-3 text-(--text-primary)">{section.title}</h3>
+              <p className="whitespace-pre-line">{section.text}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-6 mt-2 relative z-10">
+          <button
+            onClick={onClose}
+            className="w-full py-4 rounded-2xl font-black uppercase text-xs tracking-widest bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white shadow-xl shadow-(--gradient-start)/20 hover:scale-[1.01] active:scale-95 transition-all"
+          >
+            I Understand
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ================= LEGAL CONTENT ================= */
+const termsOfService = [
+  {
+    title: "1. Acceptance of Terms",
+    text: "By accessing TaskFlow, you agree to comply with our Terms of Service. If you do not agree, please do not use our services."
+  },
+  {
+    title: "2. Your Account",
+    text: "You are responsible for maintaining the security of your workspace. TaskFlow is not liable for any actions taken under your account."
+  },
+  {
+    title: "3. Pro Membership",
+    text: "Pro features are provided on an 'as-is' basis. Subscriptions are billed periodically and are non-refundable unless specified otherwise. We reserve the right to modify subscription prices with prior notice."
+  },
+  {
+    title: "4. User Content",
+    text: "Your todos, focus sessions, and team data are yours. We do not claim ownership of your content. However, by using TaskFlow, you grant us permission to host and process this data to provide the service."
+  },
+  {
+    title: "5. Limitation of Liability",
+    text: "TaskFlow is not responsible for any productivity loss, data corruption, or missed deadlines. We strive for 99.9% uptime but do not guarantee it."
+  }
+];
+
+const privacyPolicy = [
+  {
+    title: "1. Data Collection",
+    text: "We collect only what's necessary: your email (for auth), profile info, and your task/focus data. We do not sell your personal data to third parties."
+  },
+  {
+    title: "2. AI Processing",
+    text: "Premium features like Mind Sweep AI process your textual inputs using secure, state-of-the-art models. Your data is not used to train global AI models without your explicit consent."
+  },
+  {
+    title: "3. Focus Tracking",
+    text: "We record focus session durations to provide you with insights and streaks. This data is private to you and your linked Focus Buddy."
+  },
+  {
+    title: "4. Security",
+    text: "We use standard industry practices, including JWT authentication and encrypted database storage, to protect your digital workspace."
+  },
+  {
+    title: "5. Cookies",
+    text: "We use essential cookies to maintain your login session. No tracking or advertising cookies are used in the main application."
+  }
+];
+
+const faqData = [
+  {
+    title: "1. How do I link a Focus Buddy?",
+    text: "Go to Settings > Preferences > Focus Buddy Multiplexer. Your unique Invite Code is listed there. Give this code to your partner (who must also be a Pro user) and have them enter it into their 'Connect' field."
+  },
+  {
+    title: "2. What is Mind Sweep AI?",
+    text: "Mind Sweep is a Pro-exclusive feature that uses AI to analyze your raw thoughts or brain-dumps and automatically organizes them into a structured task list and schedule. You can access it via the Brain icon in your Navbar."
+  },
+  {
+    title: "3. What is Frog Eater Mode?",
+    text: "It's based on Mark Twain's 'Eat the Frog' philosophy. It forces you to complete your most dreaded task first by setting a non-pausable timer and locking your focus until the task is marked done."
+  },
+  {
+    title: "4. Is my data secure?",
+    text: "Yes! Your data is protected using industry-standard JWT authentication and encrypted in our database. We do not sell your personal data to any third parties."
+  },
+  {
+    title: "5. Can I use TaskFlow on multiple devices?",
+    text: "Absolutely! Just log in with your account on any supported device, and all your tasks, focus sessions, and team data will be synchronized instantly."
+  }
+];

@@ -13,45 +13,28 @@ export default function MindSweep({ closeModal }) {
     if (!text.trim()) return;
     setIsProcessing(true);
 
-    // 1. Split into sentences or lines
-    const rawItems = text.split(/[\n.]+/).map(s => s.trim()).filter(s => s.length > 2);
+    const toastId = toast.loading("AI is sweeping your thoughts...");
+    
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const aiResponse = await fetch(`${API_BASE_URL}/ai/mind-sweep`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      });
 
-    if (rawItems.length === 0) {
-      toast.error("Couldn't read any actionable tasks.");
-      setIsProcessing(false);
-      return;
-    }
-
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    let processedCount = 0;
-
-    for (let current of rawItems) {
-      // Very basic keyword NLP Extraction
-      const lower = current.toLowerCase();
-
-      let priority = "medium";
-      if (lower.includes("urgent") || lower.includes("important") || lower.includes("asap") || lower.includes("critical")) {
-        priority = "high";
-      } else if (lower.includes("maybe") || lower.includes("eventually") || lower.includes("someday")) {
-        priority = "low";
+      if (!aiResponse.ok) {
+        const errorData = await aiResponse.json();
+        throw new Error(errorData.message || "AI failed to process");
       }
 
-      let dueDate = new Date();
-      if (lower.includes("tomorrow")) {
-        dueDate.setDate(dueDate.getDate() + 1);
-      } else if (lower.includes("next week")) {
-        dueDate.setDate(dueDate.getDate() + 7);
-      }
-      // "today" or "tonight" uses the default today's date
+      const { tasks } = await aiResponse.json();
+      let processedCount = 0;
 
-      const isoDueDate = dueDate.toISOString();
-
-      // Cleanup filler words locally
-      let title = current.replace(/urgent|important|asap|critical|maybe|eventually|tomorrow|today|tonight|next week/gi, "").replace(/\s+/g, " ").trim();
-      if (!title) title = current; // Fallback
-      if (title.length > 60) title = title.substring(0, 57) + "..."; // Enforce length
-
-      try {
+      for (let task of tasks) {
         const response = await fetch(`${API_BASE_URL}/todo`, {
           method: "POST",
           headers: {
@@ -59,24 +42,26 @@ export default function MindSweep({ closeModal }) {
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-            title,
-            priority,
-            dueDate: isoDueDate,
+            title: task.title,
+            priority: task.priority || "medium",
+            dueDate: task.dueDate || new Date().toISOString(),
             dueTime: null,
             completed: false
           })
         });
 
         if (response.ok) processedCount++;
-      } catch (err) {
-        console.error("Failed to parse task:", err);
       }
-    }
 
-    await fetchTodos(); // refresh to pull new items
-    setIsProcessing(false);
-    toast.success(`Mind Sweep Complete! Magically extracted ${processedCount} tasks.`, { icon: <Sparkles className="text-purple-500" /> });
-    closeModal();
+      await fetchTodos(); 
+      toast.success(`Sweep Complete! AI extracted ${processedCount} tasks.`, { id: toastId, icon: <Sparkles className="text-purple-500" /> });
+      closeModal();
+    } catch (err) {
+      console.error("Mind Sweep AI Error:", err);
+      toast.error(err.message || "AI failed. Try again.", { id: toastId });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

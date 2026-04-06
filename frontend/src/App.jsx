@@ -57,6 +57,7 @@ function AppContent() {
     !!(localStorage.getItem("token") || sessionStorage.getItem("token"))
   );
   const [isLogin, setIsLogin] = useState(true);
+  const [resetToken, setResetToken] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showFocusTimer, setShowFocusTimer] = useState(false);
   const [showFrogEater, setShowFrogEater] = useState(false);
@@ -120,7 +121,15 @@ function AppContent() {
     }
   }, [isAuthenticated, fetchTodos, fetchUserProfile, fetchFocusSessions]);
 
-  /* ================= FLOW ================= */
+  /* ================= RESET DETECT ================= */
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    if (token) {
+      setResetToken(token);
+      setIsLogin("reset");
+    }
+  }, [location]);
 
   if (showOnboarding) {
     return (
@@ -155,7 +164,9 @@ function AppContent() {
                   ? "Sign in to your workspace"
                   : isLogin === false
                     ? "Start your journey today"
-                    : "Securely reset your password"}
+                    : isLogin === "forgot" 
+                      ? "Recover your account"
+                      : "Reset your password"}
               </p>
             </div>
           </div>
@@ -169,7 +180,7 @@ function AppContent() {
             ) : isLogin === false ? (
               <Signup setIsLogin={setIsLogin} />
             ) : (
-              <ForgotPassword setIsLogin={setIsLogin} />
+              <ForgotPassword setIsLogin={setIsLogin} resetToken={resetToken} />
             )}
           </div>
         </div>

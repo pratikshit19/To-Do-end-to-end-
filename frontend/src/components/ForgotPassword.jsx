@@ -1,170 +1,182 @@
 import { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
 
-export default function ForgotPassword({ setIsLogin }) {
-  const [form, setForm] = useState({ username: "", newPassword: "" });
-  const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
+export default function ForgotPassword({ setIsLogin, resetToken }) {
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSent, setIsSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const validate = (name, value) => {
-    if (!value.trim()) return `${name} is required`;
-    if (name === "newPassword" && value.length < 6)
-      return "Password must be at least 6 characters";
-    return "";
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-    setErrors({ ...errors, [name]: validate(name, value) });
-  };
-
-  const handleReset = async (e) => {
+  const handleFetchResetLink = async (e) => {
     e.preventDefault();
-
-    const usernameError = validate("username", form.username);
-    const passwordError = validate("newPassword", form.newPassword);
-
-    if (usernameError || passwordError) {
-      setErrors({ username: usernameError, newPassword: passwordError });
-      return toast.error("Please fix the errors above");
-    }
+    if (!email.trim()) return toast.error("Email is required");
 
     setLoading(true);
-    const toastId = toast.loading("Resetting password...");
+    const toastId = toast.loading("Processing...");
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/reset-password`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
       const data = await response.json();
-      if (!response.ok)
-        throw new Error(data.message || "Reset failed");
+      if (!response.ok) throw new Error(data.message || "Failed to send link");
 
-      toast.success(
-        "Password reset successfully! Please login.",
-        { id: toastId }
-      );
-
-      setIsLogin(true);
+      toast.success(data.message || "Reset link sent!", { id: toastId });
+      setIsSent(true);
     } catch (err) {
-      toast.error(err.message || "Reset failed", {
-        id: toastId,
-      });
+      toast.error(err.message, { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="w-full">
-        <form onSubmit={handleReset} className="space-y-5">
-          {/* Username */}
-          <div>
-            <div className="relative">
-              <Lock
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={form.username}
-                onChange={handleChange}
-                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) text-(--text-primary) border border(--border)
-                  focus:outline-none focus:ring-1 transition
-                  ${
-                    errors.username
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-(--accent)"
-                  }`}
-              />
-            </div>
-            {errors.username && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.username}
-              </p>
-            )}
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (newPassword.length < 6) return toast.error("Password must be at least 6 characters");
+    if (newPassword !== confirmPassword) return toast.error("Passwords do not match");
+
+    setLoading(true);
+    const toastId = toast.loading("Updating password...");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: resetToken, newPassword }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Reset failed");
+
+      toast.success("Password updated successfully!", { id: toastId });
+      setIsLogin(true); // Redirect to login
+      // Clean up URL if needed (handled by App.jsx usually)
+      window.history.replaceState({}, document.title, "/");
+    } catch (err) {
+      toast.error(err.message, { id: toastId });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= RESET MODE ================= */
+  if (resetToken) {
+    return (
+      <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <h2 className="text-xl font-bold mb-2 text-center">Create New Password</h2>
+        <p className="text-sm opacity-60 mb-6 text-center">Enter a strong password for your account.</p>
+        
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          <div className="relative">
+            <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full pl-10 pr-12 py-3 rounded-xl bg-(--card-bg) border border-(--border) focus:border-(--accent) outline-none transition"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
-          {/* Password */}
-          <div>
-            <div className="relative">
-              <Lock
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-
-              <input
-                type={showPassword ? "text" : "password"}
-                name="newPassword"
-                placeholder="New Password"
-                value={form.newPassword}
-                onChange={handleChange}
-                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-(--card-bg) text-(--text-primary) border border(--border)
-                  focus:outline-none focus:ring-1 transition
-                  ${
-                    errors.newPassword
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 dark:border-gray-600 focus:ring-(--accent)"
-                  }`}
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPassword((prev) => !prev)
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
-              </button>
-            </div>
-
-            {errors.newPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.newPassword}
-              </p>
-            )}
+          <div className="relative">
+            <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
+            <input
+              type="password"
+              placeholder="Confirm New Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) border border-(--border) focus:border-(--accent) outline-none transition"
+              required
+            />
           </div>
 
-          {/* Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl font-semibold
-              bg-(--accent) hover:bg-(--accent)/60
-              text-white transition
-              disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl bg-(--accent) text-white font-bold hover:opacity-90 transition disabled:opacity-50"
           >
-            {loading ? "Resetting..." : "Reset Password"}
+            {loading ? "Updating..." : "Reset Password"}
           </button>
         </form>
+      </div>
+    );
+  }
 
-        {/* Switch */}
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6 mb-2">
-          Remembered your password?
-          <span
-            onClick={() => setIsLogin(true)}
-            className="ml-1 text-(--accent) hover:underline cursor-pointer"
-          >
-            Login
-          </span>
+  /* ================= SUCCESS MODE ================= */
+  if (isSent) {
+    return (
+      <div className="w-full text-center py-6 animate-in zoom-in-95 duration-500">
+        <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle size={32} />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Check your inbox</h2>
+        <p className="text-sm opacity-60 mb-8 px-4">
+          We've sent a recovery link to <b>{email}</b>. Please check your email to continue.
         </p>
+        <button
+          onClick={() => setIsLogin(true)}
+          className="flex items-center justify-center gap-2 mx-auto text-sm font-bold text-(--accent) hover:underline"
+        >
+          <ArrowLeft size={16} />
+          Back to Login
+        </button>
+      </div>
+    );
+  }
+
+  /* ================= FORGOT MODE ================= */
+  return (
+    <div className="w-full animate-in fade-in duration-500">
+      <h2 className="text-xl font-bold mb-2 text-center">Forgot Password?</h2>
+      <p className="text-sm opacity-60 mb-6 text-center px-4">
+        Enter the email associated with your account and we'll send you a reset link.
+      </p>
+
+      <form onSubmit={handleFetchResetLink} className="space-y-4">
+        <div className="relative">
+          <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) border border-(--border) focus:border-(--accent) outline-none transition"
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 rounded-xl bg-(--accent) text-white font-bold hover:opacity-90 transition disabled:opacity-50"
+        >
+          {loading ? "Sending..." : "Send Reset Link"}
+        </button>
+      </form>
+
+      <div className="mt-8 text-center">
+        <button
+          onClick={() => setIsLogin(true)}
+          className="text-sm font-bold text-(--accent) hover:underline"
+        >
+          Remembered? Back to Login
+        </button>
+      </div>
     </div>
   );
 }

@@ -248,6 +248,37 @@ const useStore = create((set, get) => ({
     userProfile: { ...state.userProfile, ...profile } 
   })),
 
+  updateProfile: async (updates) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "No token found" };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/profile`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        if (data.username) {
+          localStorage.setItem("username", data.username);
+          set((state) => ({
+            userProfile: { ...state.userProfile, username: data.username }
+          }));
+        }
+        return { success: true, message: data.message };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      return { success: false, message: "Network error" };
+    }
+  },
+
   /* ================= TODOS ================= */
   fetchTodos: async () => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -446,6 +477,26 @@ const useStore = create((set, get) => ({
       });
     } catch (err) {
       console.error("Failed to notify buddy:", err);
+    }
+  },
+
+  unlinkBuddy: async () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_BASE_URL}/buddy/unlink`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        set((state) => ({
+          userProfile: { ...state.userProfile, buddyName: null }
+        }));
+        return { success: true, message: data.message };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: "Network error" };
     }
   }
 }));

@@ -20,6 +20,8 @@ const cloudinary = require("./cloudinary");
 const upload = require("./upload");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -31,33 +33,46 @@ app.use(cors()); // Allow all for production troubleshooting, or specifically: o
 app.use("/uploads", express.static("uploads"));
 
 app.post("/signup", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ username });
+    if (!email || !username || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const existingUser = await User.findOne({ 
+      $or: [{ username }, { email }] 
+    });
+
     if (existingUser) {
-      return res.status(411).json({ message: "User already exists" });
+      return res.status(400).json({ 
+        message: existingUser.email === email ? "Email already exists" : "Username already exists" 
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await User.create({
       username,
+      email,
       password: hashedPassword
     });
 
     res.json({ message: "User created successfully" });
 
   } catch (err) {
+    console.error("SIGNUP ERROR:", err);
     res.status(500).json({ message: "Something went wrong" });
   }
 });
 
 app.post("/signin", async (req, res) => {
-  const { username, password } = req.body;
+  const { identifier, password } = req.body; // identifier can be username or email
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }]
+    });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -79,6 +94,96 @@ app.post("/signin", async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+/* =========================
+        AUTH FLOW
+========================= */
+
+app.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User with this email does not exist" });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    // Reset Link
+    const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+    
+    // Setup Mailer (Optional)
+    const transporter = nodemailer.createTransport({
+      service: process.env.EMAIL_SERVICE || "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: '"TaskFlow Support" <support@taskflow.com>',
+      to: user.email,
+      subject: "Password Reset Request",
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2>Password Reset Request</h2>
+          <p>You requested a password reset. Click the button below to set a new password:</p>
+          <a href="${resetUrl}" style="background: #6366f1; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin: 20px 0;">Reset Password</a>
+          <p>If you didn't request this, please ignore this email.</p>
+          <p>This link expires in 1 hour.</p>
+        </div>
+      `
+    };
+
+    // If SMTP is not configured, log to console for testing
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.log("=========================================");
+      console.log("RESET LINK (SMTP NOT CONFIGURED):", resetUrl);
+      console.log("=========================================");
+      return res.json({ message: "Reset link generated (check server console for testing)" });
+    }
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Reset link sent to your email" });
+
+  } catch (err) {
+    console.error("FORGOT PASSWORD ERROR:", err);
+    res.status(500).json({ message: "Failed to send reset link" });
+  }
+});
+
+app.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired reset token" });
+    }
+
+    // Update password
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+
+  } catch (err) {
+    console.error("RESET PASSWORD ERROR:", err);
+    res.status(500).json({ message: "Failed to reset password" });
   }
 });
 
@@ -303,6 +408,40 @@ app.put("/change-password", authMiddleware, async (req, res) => {
 
 // NOTE: Redundant /user/profile route was merged below into /profile
 
+app.put("/profile", authMiddleware, async (req, res) => {
+  const { username } = req.body;
+
+  try {
+    if (!username || username.trim() === "") {
+      return res.status(400).json({ message: "Username cannot be empty" });
+    }
+
+    // Check if username is taken
+    const existingUser = await User.findOne({ username, _id: { $ne: req.userId } });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username is already taken" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      { username },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: "Profile updated successfully",
+      username: updatedUser.username,
+    });
+  } catch (err) {
+    console.error("PROFILE UPDATE ERROR:", err);
+    res.status(500).json({ message: "Server error during profile update" });
+  }
+});
+
 app.post(
   "/upload-profile",
   authMiddleware,
@@ -438,6 +577,26 @@ app.put("/buddy/link", authMiddleware, async (req, res) => {
     await targetUser.save();
 
     res.json({ message: `Success! You are now linked with ${targetUser.username}.`, buddyName: targetUser.username });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/buddy/unlink", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (user.buddy) {
+      const buddyUser = await User.findById(user.buddy);
+      if (buddyUser) {
+        buddyUser.buddy = null;
+        await buddyUser.save();
+      }
+    }
+
+    user.buddy = null;
+    await user.save();
+
+    res.json({ message: "Buddy disconnected successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -700,7 +859,7 @@ app.post("/upgrade-to-pro", authMiddleware, async (req, res) => {
 app.post("/create-order", authMiddleware, async (req, res) => {
   try {
     const options = {
-      amount: 49900, // ₹499 in paise
+      amount: 9900, // ₹99 in paise
       currency: "INR",
       receipt: `rcpt_${Date.now()}`, // max 40 chars
     };
@@ -741,6 +900,80 @@ app.post("/verify-payment", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("VERIFY ERROR:", err);
     res.status(500).json({ message: "Payment verification failed" });
+  }
+});
+
+// Razorpay Webhook (Critical for reliable live payments)
+app.post("/webhook/razorpay", async (req, res) => {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "razorsecretpay";
+  const signature = req.headers["x-razorpay-signature"];
+
+  try {
+    const shasum = crypto.createHmac("sha256", secret);
+    shasum.update(JSON.stringify(req.body));
+    const digest = shasum.digest("hex");
+
+    if (digest !== signature) {
+      return res.status(400).json({ message: "Invalid signature" });
+    }
+
+    // signature valid → process event
+    const event = req.body.event;
+    
+    if (event === "payment.captured") {
+      const { email, contact } = req.body.payload.payment.entity;
+      // In a real app, find user by email or by order_id (which usually contains metadata)
+      // For this implementation, we try by email
+      const user = await User.findOneAndUpdate(
+        { email }, 
+        { isPro: true },
+        { new: true }
+      );
+      console.log(`WEBHOOK: Upgraded user ${email} to Pro via captured payment.`);
+    }
+
+    res.json({ status: "ok" });
+  } catch (err) {
+    console.error("WEBHOOK ERROR:", err);
+    res.status(500).json({ status: "error" });
+  }
+});
+
+/* =========================
+          AI ROUTES
+========================= */
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_GEMINI_KEY");
+
+app.post("/ai/mind-sweep", authMiddleware, async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ message: "Text is required" });
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `Extract all tasks from the following text and return them as a JSON array of objects. 
+    Each task object MUST have:
+    - title (string, max 60 chars)
+    - priority (string choice: "low", "medium", "high")
+    - dueDate (ISO string of the date mentioned, default to today if not found)
+    
+    Format:
+    [{"title":"Task name","priority":"medium","dueDate":"2024-04-10T..."}]
+    
+    Text: "${text}"`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const aiText = response.text();
+
+    // Clean JSON response from AI (sometimes it adds ```json markers)
+    const jsonStr = aiText.replace(/```json|```/gi, "").trim();
+    const tasks = JSON.parse(jsonStr);
+
+    res.json({ tasks });
+  } catch (err) {
+    console.error("AI ERROR:", err);
+    res.status(500).json({ message: "AI extraction failed. Try simpler phrasing." });
   }
 });
 

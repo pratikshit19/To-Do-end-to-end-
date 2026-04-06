@@ -6,7 +6,7 @@ import useStore from "../store/useStore";
 
 export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, fetchUserProfile }) {
   const [form, setForm] = useState({
-    username: "",
+    identifier: "",
     password: "",
   });
 
@@ -51,11 +51,11 @@ export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const usernameError = validate("username", form.username);
+    const identifierError = validate("identifier", form.identifier);
     const passwordError = validate("password", form.password);
 
-    if (usernameError || passwordError) {
-      setErrors({ username: usernameError, password: passwordError });
+    if (identifierError || passwordError) {
+      setErrors({ identifier: identifierError, password: passwordError });
       return toast.error("Please fix the errors above");
     }
 
@@ -106,7 +106,7 @@ export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, 
 
         <form onSubmit={handleLogin} className="space-y-5">
 
-          {/* Username */}
+          {/* Username or Email */}
           <div>
             <div className="relative">
               <Mail
@@ -115,20 +115,20 @@ export default function Login({ setIsAuthenticated, setIsLogin, setUserProfile, 
               />
               <input
                 type="text"
-                name="username"
-                placeholder="Username"
-                value={form.username}
+                name="identifier"
+                placeholder="Username or Email"
+                value={form.identifier}
                 onChange={handleChange}
                 className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) border ${
-                  errors.username
+                  errors.identifier
                     ? "border-red-500"
                     : "border-(--border)"
                 } focus:outline-none transition`}
               />
             </div>
-            {errors.username && (
+            {errors.identifier && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.username}
+                {errors.identifier}
               </p>
             )}
           </div>

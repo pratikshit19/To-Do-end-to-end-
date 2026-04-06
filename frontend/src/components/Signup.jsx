@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User as UserIcon } from "lucide-react";
 import API_BASE_URL from "../config";
 
 export default function Signup({ setIsLogin, setIsAuthenticated }) {
   const [form, setForm] = useState({
     username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -29,6 +30,11 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
   /* ---------------- VALIDATION ---------------- */
   const validate = (name, value) => {
     if (!value.trim()) return `${name} is required`;
+
+    if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return "Invalid email format";
+    }
 
     if (name === "password" && value.length < 6) {
       return "Password must be at least 6 characters";
@@ -57,15 +63,17 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
     e.preventDefault();
 
     const usernameError = validate("username", form.username);
+    const emailError = validate("email", form.email);
     const passwordError = validate("password", form.password);
     const confirmError = validate(
       "confirmPassword",
       form.confirmPassword
     );
 
-    if (usernameError || passwordError || confirmError) {
+    if (usernameError || emailError || passwordError || confirmError) {
       setErrors({
         username: usernameError,
+        email: emailError,
         password: passwordError,
         confirmPassword: confirmError,
       });
@@ -84,6 +92,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: form.username,
+            email: form.email,
             password: form.password,
           }),
         }
@@ -137,7 +146,7 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
         {/* Username */}
         <div>
           <div className="relative">
-            <Mail
+            <UserIcon
               size={18}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
             />
@@ -156,6 +165,32 @@ export default function Signup({ setIsLogin, setIsAuthenticated }) {
           {errors.username && (
             <p className="text-red-500 text-sm mt-1">
               {errors.username}
+            </p>
+          )}
+        </div>
+
+        {/* Email */}
+        <div>
+          <div className="relative">
+            <Mail
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={form.email}
+              onChange={handleChange}
+              className={`w-full pl-10 pr-4 py-3 rounded-xl bg-(--card-bg) border border-(--border) text-(--text-primary) border transition ${errors.email
+                ? "border-red-500"
+                : "border-border focus:border-(--accent)"
+                } focus:outline-none`}
+            />
+          </div>
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.email}
             </p>
           )}
         </div>

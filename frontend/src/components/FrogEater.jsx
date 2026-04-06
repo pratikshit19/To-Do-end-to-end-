@@ -34,6 +34,19 @@ export default function FrogEater({ closeModal }) {
     return () => clearInterval(timer);
   }, [frogTask, isFailed, isSuccess]);
 
+  // Prevent accidental close/refresh
+  useEffect(() => {
+    if (!frogTask || isFailed || isSuccess) return;
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "You're in Frog Eater mode. Don't let the frog win!";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [frogTask, isFailed, isSuccess]);
+
   const handleComplete = async () => {
     if (!frogTask) return;
     setIsSuccess(true);
@@ -77,12 +90,15 @@ export default function FrogEater({ closeModal }) {
       {/* Background pulsing effect */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
 
-      <button
-        onClick={closeModal}
-        className="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 hover:rotate-90 transition-all z-10"
-      >
-        <X size={24} />
-      </button>
+      {/* Close button only visible if not active or finished */}
+      {(!frogTask || isFailed || isSuccess) && (
+        <button
+          onClick={closeModal}
+          className="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 hover:rotate-90 transition-all z-10"
+        >
+          <X size={24} />
+        </button>
+      )}
 
       <div className="relative z-10 flex flex-col items-center max-w-2xl w-full">
         {isSuccess ? (
