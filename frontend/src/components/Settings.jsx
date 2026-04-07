@@ -231,44 +231,43 @@ export default function Settings({
             })}
 
             {/* Custom Theme (PRO) */}
-            <div 
+            <label 
               className={`relative p-3 rounded-2xl font-bold flex flex-col items-center justify-center gap-2 transition-all duration-300 outline-none border-2
                 ${colorTheme?.startsWith("#")
                   ? `border-(--accent) bg-(--accent)/10 text-(--accent) shadow-md scale-[1.02]` 
                   : 'border-(--border)/50 text-(--text-secondary) hover:border-(--border)'}
-                ${!isPro ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'cursor-pointer'}
+                ${!isPro ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'cursor-pointer overflow-hidden'}
               `}
-              onClick={() => {
+              onClick={(e) => {
                  if (!isPro) {
+                    e.preventDefault();
                     toast("Unlock custom themes with Pro! ✨", { icon: '🔒' });
-                 } else {
-                    document.getElementById('customColorPicker').click();
                  }
               }}
             >
               <input 
-                id="customColorPicker"
                 type="color"
                 value={colorTheme?.startsWith("#") ? colorTheme : "#3b82f6"}
                 onChange={(e) => {
                   if (isPro) setColorTheme(e.target.value);
                 }}
-                className="sr-only"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={!isPro}
               />
               <div 
-                className="w-8 h-8 rounded-full shadow-sm" 
+                className="w-8 h-8 rounded-full shadow-sm pointer-events-none" 
                 style={{ 
                   background: colorTheme?.startsWith("#") ? colorTheme : "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)"
                 }} 
               />
-              <span className="text-[10px] uppercase tracking-wider">Custom</span>
+              <span className="text-[10px] uppercase tracking-wider pointer-events-none">Custom</span>
 
               {!isPro && (
                 <div className="absolute top-1.5 right-1.5 bg-linear-to-br from-amber-400 to-orange-500 text-white rounded-full p-1 shadow-sm pointer-events-none">
                   <Lock size={10} strokeWidth={3} />
                 </div>
               )}
-            </div>
+            </label>
             
           </div>
         </div>

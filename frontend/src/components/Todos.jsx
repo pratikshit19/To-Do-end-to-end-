@@ -186,7 +186,7 @@ export default function Todos({ onEdit }) {
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
 
       {/* ================= MOBILE SEARCH (Top) ================= */}
-      <div className="md:hidden pt-[env(safe-area-inset-top,0px)] mb-6 mt-2">
+      <div className="md:hidden mb-6">
         <div className="relative group">
           <input
             type="text"

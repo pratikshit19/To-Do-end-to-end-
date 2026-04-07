@@ -436,7 +436,7 @@ function AppContent() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-5 md:p-8 w-full pt-[calc(1.25rem+env(safe-area-inset-top,0px))] md:pt-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-5 md:p-8 w-full pt-4 md:pt-8">
           <div className="max-w-6xl mx-auto h-full">
             <Routes>
               <Route path="/" element={
