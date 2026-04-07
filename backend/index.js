@@ -194,7 +194,7 @@ app.post("/reset-password", async (req, res) => {
 
 app.post("/todo", authMiddleware, async (req, res) => {
   try {
-    const { title, description, priority, dueDate, dueTime, recurrence, teamId, assignedTo } = req.body;
+    const { title, description, priority, dueDate, dueTime, recurrence, teamId, assignedTo, reminderAt } = req.body;
 
     if (!dueDate) {
       return res.status(400).json({ message: "Due date is required" });
@@ -216,7 +216,9 @@ app.post("/todo", authMiddleware, async (req, res) => {
       userId: req.userId,
       teamId: teamId || null,
       assignedTo: assignedTo || null,
-      recurrence: recurrence || "none"
+      recurrence: recurrence || "none",
+      reminderAt: reminderAt ? new Date(reminderAt) : null,
+      reminderSent: false
     });
 
     // Send notification if assigned to someone else
@@ -349,8 +351,42 @@ app.put("/todos/:id", authMiddleware, async (req, res) => {
       body.completedAt = null;
       body.completedBy = null;
     }
+    
+    if ('reminderAt' in body) {
+      body.reminderSent = false;
+    }
 
     const updated = await todo.findByIdAndUpdate(req.params.id, body, { new: true });
+
+    // Notify team members when a task is completed in a team workspace
+    if (body.completed === true && taskToUpdate.teamId) {
+      const team = await Team.findById(taskToUpdate.teamId);
+      if (team) {
+        const completer = await User.findById(req.userId);
+        const memberNotifications = team.members
+          .filter(m => m.toString() !== req.userId)
+          .map(memberId => ({
+            userId: memberId,
+            message: `${completer.username} completed "${taskToUpdate.title}" ✅`,
+            taskId: updated._id,
+            type: "team_complete"
+          }));
+        if (memberNotifications.length > 0) {
+          await Notification.insertMany(memberNotifications);
+        }
+      }
+    }
+
+    // Notify assignee when a task they are assigned to is edited (but not just toggled complete)
+    if (!('completed' in body) && taskToUpdate.assignedTo && taskToUpdate.assignedTo.toString() !== req.userId) {
+      const editor = await User.findById(req.userId);
+      await Notification.create({
+        userId: taskToUpdate.assignedTo,
+        message: `${editor.username} updated a task assigned to you: "${body.title || taskToUpdate.title}"`,
+        taskId: updated._id,
+        type: "task_updated"
+      });
+    }
 
     res.json(updated);
 
@@ -576,6 +612,13 @@ app.put("/buddy/link", authMiddleware, async (req, res) => {
     await user.save();
     await targetUser.save();
 
+    // Notify the linked buddy
+    await Notification.create({
+      userId: targetUser._id,
+      message: `${user.username} linked up with you as a Focus Buddy! 👥 You'll keep each other accountable.`,
+      type: "buddy_linked"
+    });
+
     res.json({ message: `Success! You are now linked with ${targetUser.username}.`, buddyName: targetUser.username });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -588,6 +631,12 @@ app.put("/buddy/unlink", authMiddleware, async (req, res) => {
     if (user.buddy) {
       const buddyUser = await User.findById(user.buddy);
       if (buddyUser) {
+        // Notify the disconnected buddy
+        await Notification.create({
+          userId: buddyUser._id,
+          message: `${user.username} has disconnected as your Focus Buddy.`,
+          type: "buddy_unlinked"
+        });
         buddyUser.buddy = null;
         await buddyUser.save();
       }
@@ -604,7 +653,7 @@ app.put("/buddy/unlink", authMiddleware, async (req, res) => {
 
 app.post("/buddy/notify-focus", authMiddleware, async (req, res) => {
   try {
-    const { action } = req.body; // 'start' or 'break'
+    const { action } = req.body; // 'start', 'break', or 'complete'
     const user = await User.findById(req.userId).populate("buddy");
     
     if (!user || !user.buddy) return res.json({ message: "No buddy linked" });
@@ -614,6 +663,8 @@ app.post("/buddy/notify-focus", authMiddleware, async (req, res) => {
       message = `${user.username} just started a focus session! 🧘`;
     } else if (action === "break") {
       message = `${user.username} broke their focus session early. ⚠️`;
+    } else if (action === "complete") {
+      message = `${user.username} crushed their focus session! 🔥 Go celebrate with them.`;
     } else {
       return res.status(400).json({ message: "Invalid action" });
     }
@@ -840,6 +891,13 @@ app.post("/upgrade-to-pro", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Send welcome Pro notification
+    await Notification.create({
+      userId: req.userId,
+      message: "🎉 Welcome to TaskFlow Pro! All premium features are now unlocked — enjoy unlimited workspaces, AI tools, and more.",
+      type: "pro_upgrade"
+    });
+
     res.json({ 
       message: "Welcome to Pro! Your features are now unlocked.", 
       isPro: true 
@@ -896,6 +954,13 @@ app.post("/verify-payment", authMiddleware, async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Send welcome Pro notification via payment verification path
+    await Notification.create({
+      userId: req.userId,
+      message: "🎉 Payment confirmed! Welcome to TaskFlow Pro! All premium features are now unlocked.",
+      type: "pro_upgrade"
+    });
+
     res.json({ message: "Payment verified! Welcome to Pro! 👑", isPro: true });
   } catch (err) {
     console.error("VERIFY ERROR:", err);
@@ -950,30 +1015,73 @@ app.post("/ai/mind-sweep", authMiddleware, async (req, res) => {
     const { text } = req.body;
     if (!text) return res.status(400).json({ message: "Text is required" });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Extract all tasks from the following text and return them as a JSON array of objects. 
-    Each task object MUST have:
-    - title (string, max 60 chars)
-    - priority (string choice: "low", "medium", "high")
-    - dueDate (ISO string of the date mentioned, default to today if not found)
-    
-    Format:
-    [{"title":"Task name","priority":"medium","dueDate":"2024-04-10T..."}]
-    
-    Text: "${text}"`;
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const prompt = `Extract all tasks from the following text and return them as a JSON array of objects. 
+      Do not include any surrounding text, markdown formatting, or explanations. Return ONLY the valid JSON array.
+      Each task object MUST have:
+      - title (string, max 60 chars)
+      - priority (string choice: "low", "medium", "high")
+      - dueDate (ISO string of the date mentioned, default to today if not found)
+      
+      Format example:
+      [{"title":"Task name","priority":"medium","dueDate":"2024-04-10T..."}]
+      
+      Text: "${text}"`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const aiText = response.text();
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const aiText = response.text();
 
-    // Clean JSON response from AI (sometimes it adds ```json markers)
-    const jsonStr = aiText.replace(/```json|```/gi, "").trim();
-    const tasks = JSON.parse(jsonStr);
+      let jsonStr = aiText.replace(/```json|```/gi, "").trim();
+      const jsonMatch = jsonStr.match(/\[[\s\S]*\]/);
+      if (jsonMatch) jsonStr = jsonMatch[0];
+      
+      const tasks = JSON.parse(jsonStr);
+      return res.json({ tasks });
+    } catch (aiError) {
+      console.log("AI limits reached or failed. Falling back to local heuristic extraction...");
+      
+      // Local Heuristic Fallback
+      // Split the blob of text into distinct task phrases
+      const phrases = text.split(/\.\s+|\n|, and | and /i).map(p => p.trim()).filter(p => p.length > 4);
+      
+      const tasks = phrases.map(phrase => {
+        let priority = "medium";
+        const lower = phrase.toLowerCase();
+        
+        if (lower.includes("urgent") || lower.includes("asap") || lower.includes("vital") || lower.includes("high priority")) {
+            priority = "high";
+        } else if (lower.includes("maybe") || lower.includes("someday") || lower.includes("low priority")) {
+            priority = "low";
+        }
+        
+        let dueDate = new Date();
+        if (lower.includes("tomorrow")) {
+            dueDate.setDate(dueDate.getDate() + 1);
+        } else if (lower.includes("next week")) {
+            dueDate.setDate(dueDate.getDate() + 7);
+        }
+        
+        let title = phrase;
+        if (title.length > 60) title = title.substring(0, 57) + "...";
 
-    res.json({ tasks });
+        return {
+          title,
+          priority,
+          dueDate: dueDate.toISOString()
+        };
+      });
+
+      if (tasks.length === 0) {
+        return res.status(500).json({ message: "Could not extract any tasks. Try rephrasing." });
+      }
+      
+      return res.json({ tasks });
+    }
   } catch (err) {
-    console.error("AI ERROR:", err);
-    res.status(500).json({ message: "AI extraction failed. Try simpler phrasing." });
+    console.error("MIND SWEEP ERROR:", err);
+    res.status(500).json({ message: "Extraction failed. Try simpler phrasing." });
   }
 });
 
@@ -1027,6 +1135,17 @@ app.post("/team/join", authMiddleware, async (req, res) => {
     team.members.push(req.userId);
     await team.save();
     const populatedTeam = await Team.findById(team._id).populate("members", "username profilePhoto");
+
+    // Notify the team owner that someone joined
+    if (team.owner.toString() !== req.userId) {
+      const joiner = await User.findById(req.userId);
+      await Notification.create({
+        userId: team.owner,
+        message: `${joiner.username} just joined your team "${team.name}"! 🎉`,
+        type: "team_join"
+      });
+    }
+
     res.json({ message: "Joined team successfully!", team: populatedTeam });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -1045,8 +1164,23 @@ app.put("/team/:id", authMiddleware, async (req, res) => {
       return res.status(403).json({ message: "Only the owner can rename the team" });
     }
 
+    const oldName = team.name;
     team.name = name;
     await team.save();
+
+    // Notify all team members about the rename
+    const renamer = await User.findById(req.userId);
+    const memberNotifications = team.members
+      .filter(m => m.toString() !== req.userId)
+      .map(memberId => ({
+        userId: memberId,
+        message: `${renamer.username} renamed the workspace "${oldName}" to "${name}"`,
+        type: "team_rename"
+      }));
+    if (memberNotifications.length > 0) {
+      await Notification.insertMany(memberNotifications);
+    }
+
     res.json({ message: "Team renamed!", team });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -1127,6 +1261,45 @@ app.put("/notifications/:id/read", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+/* =========================
+          REMINDER POLL
+========================= */
+setInterval(async () => {
+  try {
+    const now = new Date();
+    // Find impending uncompleted tasks that have an unsent reminder
+    const impendingTasks = await todo.find({
+      completed: false,
+      reminderSent: false,
+      reminderAt: { $lte: now, $ne: null }
+    }).populate("assignedTo").populate("userId");
+
+    if (impendingTasks.length > 0) {
+      const dbUpdates = [];
+      const notifications = [];
+
+      for (const t of impendingTasks) {
+        // Decide who to notify. Assignee or creator.
+        const targetUserId = t.assignedTo ? t.assignedTo._id : t.userId._id;
+        
+        notifications.push({
+          userId: targetUserId,
+          message: `⏰ Reminder: "${t.title}" is due soon!`,
+          taskId: t._id,
+          type: "system"
+        });
+        
+        dbUpdates.push(todo.findByIdAndUpdate(t._id, { reminderSent: true }));
+      }
+
+      await Notification.insertMany(notifications);
+      await Promise.all(dbUpdates);
+    }
+  } catch (err) {
+    console.error("Reminder Poll Error:", err);
+  }
+}, 60000); // Check every 60 seconds
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

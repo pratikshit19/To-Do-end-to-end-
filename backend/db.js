@@ -66,6 +66,16 @@ const todoSchema = new mongoose.Schema({
     default: "none"
   },
   
+  reminderAt: {
+    type: Date,
+    default: null
+  },
+  
+  reminderSent: {
+    type: Boolean,
+    default: false
+  }
+  
 }, { timestamps: true });
 
 const focusSessionSchema = new mongoose.Schema({
