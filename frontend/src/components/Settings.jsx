@@ -229,6 +229,47 @@ export default function Settings({
                 </button>
               );
             })}
+
+            {/* Custom Theme (PRO) */}
+            <div 
+              className={`relative p-3 rounded-2xl font-bold flex flex-col items-center justify-center gap-2 transition-all duration-300 outline-none border-2
+                ${colorTheme?.startsWith("#")
+                  ? `border-(--accent) bg-(--accent)/10 text-(--accent) shadow-md scale-[1.02]` 
+                  : 'border-(--border)/50 text-(--text-secondary) hover:border-(--border)'}
+                ${!isPro ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'cursor-pointer'}
+              `}
+              onClick={() => {
+                 if (!isPro) {
+                    toast("Unlock custom themes with Pro! ✨", { icon: '🔒' });
+                 } else {
+                    document.getElementById('customColorPicker').click();
+                 }
+              }}
+            >
+              <input 
+                id="customColorPicker"
+                type="color"
+                value={colorTheme?.startsWith("#") ? colorTheme : "#3b82f6"}
+                onChange={(e) => {
+                  if (isPro) setColorTheme(e.target.value);
+                }}
+                className="sr-only"
+              />
+              <div 
+                className="w-8 h-8 rounded-full shadow-sm" 
+                style={{ 
+                  background: colorTheme?.startsWith("#") ? colorTheme : "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)"
+                }} 
+              />
+              <span className="text-[10px] uppercase tracking-wider">Custom</span>
+
+              {!isPro && (
+                <div className="absolute top-1.5 right-1.5 bg-linear-to-br from-amber-400 to-orange-500 text-white rounded-full p-1 shadow-sm pointer-events-none">
+                  <Lock size={10} strokeWidth={3} />
+                </div>
+              )}
+            </div>
+            
           </div>
         </div>
 

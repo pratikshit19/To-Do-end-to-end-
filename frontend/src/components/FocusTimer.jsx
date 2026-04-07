@@ -103,10 +103,26 @@ export default function FocusTimer({ closeModal }) {
     const duration = initialMinutes;
     await addFocusSession(duration);
     
-    toast.success(`Focus session complete! +${duration} mins`, {
-      icon: '🔥',
-      duration: 5000
-    });
+    // Notify buddy that we completed
+    notifyBuddyFocus("complete");
+
+    // Check if daily goal is now reached
+    const { focusSessions: updatedSessions, dailyFocusTarget: target } = useStore.getState();
+    const todayMinutes = updatedSessions
+      .filter(s => new Date(s.date).toDateString() === new Date().toDateString())
+      .reduce((acc, s) => acc + (s.duration || 0), 0);
+    
+    if (todayMinutes >= target) {
+      toast.success(`Daily goal reached! ${target}m of focus today 🏆`, {
+        icon: '🏆',
+        duration: 6000
+      });
+    } else {
+      toast.success(`Focus session complete! +${duration} mins`, {
+        icon: '🔥',
+        duration: 5000
+      });
+    }
     
     resetTimer();
   };
@@ -116,6 +132,7 @@ export default function FocusTimer({ closeModal }) {
         // Starting Focus
         notifyBuddyFocus("start");
         setIsActive(true);
+        toast("Focus session started. You've got this! 🧘", { icon: '⚡', duration: 3000 });
      } else {
         // Breaking Focus (The Multiplexer Friction)
         notifyBuddyFocus("break");

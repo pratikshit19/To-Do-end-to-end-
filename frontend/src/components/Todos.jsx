@@ -144,6 +144,8 @@ export default function Todos({ onEdit }) {
             console.error("Failed to create recurring task:", err);
           }
         }
+      } else {
+        toast("Task marked as incomplete", { icon: "↩️" });
       }
     } catch (err) {
       toast.error("Failed to update task.");

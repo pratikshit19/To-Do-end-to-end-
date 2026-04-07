@@ -12,6 +12,7 @@ import Onboarding from "./components/Onboarding";
 import Insights from "./components/Insights";
 import Teams from "./components/Teams";
 import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search, LogOut, Target, Brain, Users as UsersIcon } from "lucide-react";
 import API_BASE_URL from "./config";
 import useStore from "./store/useStore";
@@ -92,22 +93,54 @@ function AppContent() {
   }, [darkMode]);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-color-theme", colorTheme);
     localStorage.setItem("colorTheme", colorTheme);
 
-    // Clear out the obsolete inline style that the old Settings approach left stuck on your HTML tag!
-    document.documentElement.style.removeProperty("--accent");
+    if (colorTheme && colorTheme.startsWith("#")) {
+      document.documentElement.setAttribute("data-color-theme", "custom");
+      document.documentElement.style.setProperty("--accent", colorTheme);
+      document.documentElement.style.setProperty("--gradient-start", colorTheme);
+      // Mix the solid color with 40% white to create a beautiful lighting 3D effect gradient
+      document.documentElement.style.setProperty("--gradient-end", `color-mix(in srgb, ${colorTheme}, white 40%)`);
+      
+      // Calculate RGBA for blob backgrounds
+      try {
+        let hex = colorTheme.replace("#", "");
+        if (hex.length === 3) {
+          hex = hex.split("").map(char => char + char).join("");
+        }
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        
+        document.documentElement.style.setProperty("--blob-one", `rgba(${r}, ${g}, ${b}, 0.15)`);
+        document.documentElement.style.setProperty("--blob-two", `rgba(${r}, ${g}, ${b}, 0.12)`);
+      } catch (e) {
+        // fallback
+      }
+    } else {
+      document.documentElement.setAttribute("data-color-theme", colorTheme);
+      
+      // Clear out custom inline styles
+      document.documentElement.style.removeProperty("--accent");
+      document.documentElement.style.removeProperty("--gradient-start");
+      document.documentElement.style.removeProperty("--gradient-end");
+      document.documentElement.style.removeProperty("--blob-one");
+      document.documentElement.style.removeProperty("--blob-two");
+    }
   }, [colorTheme]);
 
   /* ================= TOKEN ================= */
   const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    setIsAuthenticated(false);
-    useStore.setState({ todos: [], focusSessions: [], userProfile: { username: "User", profilePhoto: "" }, currentWorkspace: "personal", teams: [] });
-    setCurrentPage("home");
+    toast("See you later! 👋", { icon: '👋', duration: 2000 });
+    setTimeout(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+      setIsAuthenticated(false);
+      useStore.setState({ todos: [], focusSessions: [], userProfile: { username: "User", profilePhoto: "" }, currentWorkspace: "personal", teams: [], notifications: [] });
+      setCurrentPage("home");
+    }, 500);
   };
 
   useEffect(() => {
