@@ -49,6 +49,11 @@ const useStore = create((set, get) => ({
     get().savePreferences({ theme });
   },
   savePreferences: async (prefs) => {
+    // Only save if we are NOT currently in a loading state. 
+    // This prevents default state values or localStorage values from 
+    // overriding remote data during initial hydration.
+    if (get().isLoading) return;
+
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) return;
     try {
@@ -197,6 +202,7 @@ const useStore = create((set, get) => ({
 
         const profile = {
           username: data.username || "User",
+          email: data.email || "",
           profilePhoto: photo,
           isPro: data.isPro || false,
           proSettings: data.proSettings || { accentColor: null, customBackground: null },

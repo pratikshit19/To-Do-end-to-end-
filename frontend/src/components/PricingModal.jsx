@@ -143,7 +143,7 @@ function PricingStep({ onSelectPro, onClose }) {
 ───────────────────────────────────────────── */
 function PaymentStep({ onBack, onSuccess }) {
   const [loading, setLoading] = useState(false);
-  const { upgradeToPro } = useStore();
+  const { upgradeToPro, userProfile } = useStore();
 
   const loadRazorpayScript = useCallback(() => {
     return new Promise((resolve) => {
@@ -231,8 +231,8 @@ function PaymentStep({ onBack, onSuccess }) {
           }
         },
         prefill: {
-          name: username,
-          email: "",
+          name: userProfile?.username || "Guest",
+          email: userProfile?.email || "",
           contact: "",
         },
         theme: {

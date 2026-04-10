@@ -527,6 +527,7 @@ app.get("/profile", authMiddleware, async (req, res) => {
 
     res.json({ 
       username: user.username,
+      email: user.email,
       profilePhoto: user.profilePhoto || "",
       isPro: user.isPro || false,
       buddyCode: user.buddyCode,
@@ -552,6 +553,7 @@ app.put("/user/preferences", authMiddleware, async (req, res) => {
     if(darkMode !== undefined) user.preferences.darkMode = darkMode;
     if(focusMode !== undefined) user.preferences.focusMode = focusMode;
     
+    user.markModified('preferences');
     await user.save();
     res.json(user.preferences);
   } catch (err) {
@@ -920,6 +922,9 @@ app.post("/create-order", authMiddleware, async (req, res) => {
       amount: 9900, // ₹99 in paise
       currency: "INR",
       receipt: `rcpt_${Date.now()}`, // max 40 chars
+      notes: {
+        userId: req.userId
+      }
     };
     const order = await razorpay.orders.create(options);
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency, key: process.env.RAZORPAY_KEY_ID });
@@ -986,15 +991,19 @@ app.post("/webhook/razorpay", async (req, res) => {
     const event = req.body.event;
     
     if (event === "payment.captured") {
-      const { email, contact } = req.body.payload.payment.entity;
-      // In a real app, find user by email or by order_id (which usually contains metadata)
-      // For this implementation, we try by email
-      const user = await User.findOneAndUpdate(
-        { email }, 
+      const { notes } = req.body.payload.payment.entity;
+      
+      if (!notes || !notes.userId) {
+        console.error("WEBHOOK: ERROR - Missing userId in payment notes");
+        return res.status(400).json({ status: "error", message: "Missing userId in notes" });
+      }
+
+      const user = await User.findByIdAndUpdate(
+        notes.userId, 
         { isPro: true },
         { new: true }
       );
-      console.log(`WEBHOOK: Upgraded user ${email} to Pro via captured payment.`);
+      console.log(`WEBHOOK: Upgraded user ${user?.username} (ID: ${notes.userId}) to Pro via captured payment.`);
     }
 
     res.json({ status: "ok" });
