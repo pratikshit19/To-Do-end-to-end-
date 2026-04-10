@@ -1,4 +1,4 @@
-import { Home, Calendar, LineChart, User, LogOut, Users, MoreHorizontal, Settings } from "lucide-react";
+import { Home, Calendar, LineChart, User, LogOut, Users, MoreHorizontal, Settings, Sparkles } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export default function Navbar({ currentPage, setCurrentPage, onLogout }) {
@@ -14,6 +14,7 @@ export default function Navbar({ currentPage, setCurrentPage, onLogout }) {
 
   const secondaryNavItems = [
     { id: "insights", label: "Insights", icon: LineChart },
+    { id: "coach", label: "AI Coach", icon: Sparkles },
     { id: "settings", label: "Settings", icon: Settings },
     { id: "logout", label: "Sign out", icon: LogOut, color: "text-red-500" },
   ];

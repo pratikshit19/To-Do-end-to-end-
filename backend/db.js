@@ -74,6 +74,17 @@ const todoSchema = new mongoose.Schema({
   reminderSent: {
     type: Boolean,
     default: false
+  },
+  
+  completedAt: {
+    type: Date,
+    default: null
+  },
+  
+  completedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
   }
   
 }, { timestamps: true });
@@ -156,12 +167,24 @@ const notificationSchema = new mongoose.Schema({
   taskId: { type: mongoose.Schema.Types.ObjectId, ref: "todos" }
 }, { timestamps: true });
 
+const auditSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  content: { type: String, required: true },
+  metricsSummary: {
+    tasksCompleted: Number,
+    focusMinutes: Number,
+    topPriority: String,
+    period: String
+  }
+}, { timestamps: true });
+
 const User = mongoose.model("User", userSchema);
 const todo = mongoose.model('todos', todoSchema);
 const FocusSession = mongoose.model('FocusSession', focusSessionSchema);
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 const Team = mongoose.model('Team', teamSchema);
 const Notification = mongoose.model('Notification', notificationSchema);
+const Audit = mongoose.model('Audit', auditSchema);
 
 module.exports = {
     todo,
@@ -169,5 +192,6 @@ module.exports = {
     FocusSession,
     Feedback,
     Team,
-    Notification
+    Notification,
+    Audit
 }

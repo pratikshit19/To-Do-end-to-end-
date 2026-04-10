@@ -13,12 +13,13 @@ import Insights from "./components/Insights";
 import Teams from "./components/Teams";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
-import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search, LogOut, Target, Brain, Users as UsersIcon } from "lucide-react";
+import { Home, Calendar, TrendingUp, User, Settings as SettingsIcon, Sun, Moon, Plus, Zap, Search, LogOut, Target, Brain, Users as UsersIcon, Sparkles } from "lucide-react";
 import API_BASE_URL from "./config";
 import useStore from "./store/useStore";
 import FocusTimer from "./components/FocusTimer";
 import FrogEater from "./components/FrogEater";
 import MindSweep from "./components/MindSweep";
+import AICoach from "./components/AICoach";
 import PricingModal from "./components/PricingModal";
 import Navbar from "./components/Navbar";
 import Notifications from "./components/Notifications";
@@ -235,6 +236,7 @@ function AppContent() {
     { id: "home", label: "Dashboard", icon: Home },
     { id: "schedule", label: "Schedule", icon: Calendar },
     { id: "insights", label: "Insights", icon: TrendingUp },
+    { id: "coach", label: "AI Coach", icon: Sparkles },
     { id: "teams", label: "Teams", icon: UsersIcon },
     { id: "profile", label: "Profile", icon: User },
     { id: "settings", label: "Settings", icon: SettingsIcon },
@@ -256,15 +258,17 @@ function AppContent() {
         />
       )}
       {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className="hidden md:flex md:flex-col w-64 bg-(--card-bg) border-r border-(--border) relative shadow-sm z-20 pt-[env(safe-area-inset-top,0px)]">
-        <div className="p-6">
-          <div className="text-2xl font-bold mb-8 flex items-center gap-3">
+      <aside className="hidden md:flex md:flex-col w-64 h-screen bg-(--card-bg) border-r border-(--border) relative shadow-sm z-20 pt-[env(safe-area-inset-top,0px)]">
+        <div className="p-6 pb-2">
+          <div className="text-2xl font-bold mb-6 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-lg shadow-lg">
               <span className="font-extrabold pb-[2px]">T</span>
             </div>
             <span className="bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">TaskFlow</span>
           </div>
+        </div>
 
+        <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-hide">
           <nav className="space-y-1.5">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -450,6 +454,7 @@ function AppContent() {
               } />
               <Route path="/schedule" element={<Schedule todos={todos} />} />
               <Route path="/insights" element={<Insights setCurrentPage={setCurrentPage} todos={todos} />} />
+              <Route path="/coach" element={<AICoach />} />
               <Route path="/teams" element={<Teams setCurrentPage={setCurrentPage} />} />
               <Route path="/profile" element={
                 <Profile

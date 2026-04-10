@@ -7,6 +7,7 @@ const useStore = create((set, get) => ({
   currentWorkspace: "personal", 
   teams: [],
   notifications: [],
+  audits: [],
   userProfile: {
     username: (() => {
       const u = localStorage.getItem("username") || sessionStorage.getItem("username");
@@ -502,7 +503,39 @@ const useStore = create((set, get) => ({
       }
       return { success: false, message: data.message };
     } catch (err) {
-      return { success: false, message: "Network error" };
+      console.error(err);
+    }
+  },
+
+  /* ================= AI COACH ================= */
+  fetchAudits: async () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/audits`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      set({ audits: data.audits || [] });
+    } catch (err) { console.error("Coach fetch failed:", err); }
+  },
+
+  generateAudit: async () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return { success: false, message: "No token" };
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/generate-audit`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        set((state) => ({ audits: [data.audit, ...state.audits] }));
+        return { success: true, audit: data.audit };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: "Coach connection lost." };
     }
   }
 }));

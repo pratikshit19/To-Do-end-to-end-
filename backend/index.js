@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 
 const { createTodo, updateTodo } = require("./types");
-const { todo, User, FocusSession, Feedback, Team, Notification } = require("./db");
+const { todo, User, FocusSession, Feedback, Team, Notification, Audit } = require("./db");
 const { authMiddleware } = require("./middleware");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -544,19 +544,21 @@ app.get("/profile", authMiddleware, async (req, res) => {
 app.put("/user/preferences", authMiddleware, async (req, res) => {
   try {
     const { theme, darkMode, focusMode } = req.body;
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const update = {};
+    if (theme !== undefined) update["preferences.theme"] = theme;
+    if (darkMode !== undefined) update["preferences.darkMode"] = darkMode;
+    if (focusMode !== undefined) update["preferences.focusMode"] = focusMode;
+    
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: update },
+      { new: true, runValidators: true }
+    );
 
-    if(!user.preferences) user.preferences = {};
-    
-    if(theme !== undefined) user.preferences.theme = theme;
-    if(darkMode !== undefined) user.preferences.darkMode = darkMode;
-    if(focusMode !== undefined) user.preferences.focusMode = focusMode;
-    
-    user.markModified('preferences');
-    await user.save();
+    if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user.preferences);
   } catch (err) {
+    console.error("PREF ERROR:", err);
     res.status(500).json({ message: "Failed to update preferences" });
   }
 });
@@ -1019,6 +1021,138 @@ app.post("/webhook/razorpay", async (req, res) => {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_GEMINI_KEY");
 
+app.get("/ai/audits", authMiddleware, async (req, res) => {
+  try {
+    const audits = await Audit.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(10);
+    res.json({ audits });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch audits" });
+  }
+});
+
+app.post("/ai/generate-audit", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 1. Check Cooldown (24 hours)
+    const latestAudit = await Audit.findOne({ userId }).sort({ createdAt: -1 });
+    if (latestAudit) {
+      const hoursSince = (new Date() - new Date(latestAudit.createdAt)) / 36e5;
+      if (hoursSince < 24) {
+        return res.status(429).json({ message: `Your coach is still analyzing. Try again in ${Math.ceil(24 - hoursSince)} hours.` });
+      }
+    }
+
+    // 2. Fetch Data (Last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const completedTasks = await todo.find({
+      userId,
+      completed: true,
+      completedAt: { $gte: thirtyDaysAgo }
+    });
+
+    const pendingTasks = await todo.find({
+      userId,
+      completed: false
+    });
+
+    const focusSessions = await FocusSession.find({
+      userId,
+      date: { $gte: thirtyDaysAgo }
+    });
+
+    // 3. Aggregate Metrics
+    const totalFocusMinutes = focusSessions.reduce((acc, s) => acc + (s.duration || 0), 0);
+    
+    // Safety check for empty data
+    if (completedTasks.length === 0 && focusSessions.length === 0) {
+      return res.json({ audit: { 
+        content: "I've started warming up the lab, but I need a few more days of data to give you a deep audit. Mark some tasks as complete and track a few focus sessions, and then check back tomorrow! 🧪",
+        createdAt: new Date(),
+        metricsSummary: { tasksCompleted: 0, focusMinutes: 0, topPriority: 'None', period: "Initial" }
+      }});
+    }
+
+    const priorities = completedTasks.reduce((acc, t) => {
+      acc[t.priority] = (acc[t.priority] || 0) + 1;
+      return acc;
+    }, {});
+    const topPriority = Object.entries(priorities).sort((a,b) => b[1] - a[1])[0]?.[0] || "medium";
+
+    const hourMap = completedTasks.reduce((acc, t) => {
+      // Use completedAt if available, fallback to updatedAt (timestamps:true)
+      const dateToUse = t.completedAt || t.updatedAt;
+      if (dateToUse) {
+        const hour = new Date(dateToUse).getHours();
+        acc[hour] = (acc[hour] || 0) + 1;
+      }
+      return acc;
+    }, {});
+    const peakHour = Object.entries(hourMap).sort((a,b) => b[1] - a[1])[0]?.[0] || "None";
+
+    // 4. Gemini Prompt
+    let advice;
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const prompt = `You are an Elite Productivity Auditor and Psychologist. Analyze the following 30-day behavioral data for ${user.username}:
+
+      - Tasks Completed: ${completedTasks.length}
+      - Tasks Pending: ${pendingTasks.length}
+      - Total Focus Time: ${totalFocusMinutes} minutes
+      - Preferred Priority: ${topPriority}
+      - Peak Productivity Hour: ${peakHour}:00
+
+      Provide a professional, high-impact audit. Format it strictly with these sections:
+      1. **Psychological Snapshot**: One paragraph describing their current work persona.
+      2. **The "Traffic Jam"**: Identify one bottleneck in their data.
+      3. **3 Actionable Magic Moves**: Clear, behavioral shifts they should make TODAY.
+
+      Keep it concise, motivating, and professional. Use bullet points for moves.`;
+
+      const result = await model.generateContent(prompt);
+      advice = (await result.response).text();
+    } catch (aiErr) {
+      console.warn("AI COACH: Gemini Quota Reached or Failed. Using local heuristics.");
+      // HEURISTIC FALLBACK
+      const velocity = completedTasks.length / 30;
+      const focusRatio = totalFocusMinutes / (completedTasks.length || 1);
+      
+      advice = `**Psychological Snapshot**
+      Based on your recent metrics, you are functioning as 'The Foundation Builder.' You are consistently logging data, but your AI Coach is currently in deep meditation (Quota Limit reached). Your local performance signature is stable but has room for more explosive growth.
+
+      **The "Traffic Jam"**
+      Your current bottleneck appears to be ${totalFocusMinutes < 100 ? "low focus depth" : "task volume management"}. You are averaging ${velocity.toFixed(1)} tasks per day, which suggests a steady rhythm, but your focus sessions could be longer to handle high-complexity tasks.
+
+      **3 Actionable Magic Moves**
+      - **The 5-Minute Rule**: Start your most avoided task for just 5 minutes today; inertia is your only enemy.
+      - **Focus Stacking**: Schedule one 45-minute deep focus session at ${peakHour === "None" ? "10:00" : peakHour + ":00"} tomorrow to capitalize on your natural peak.
+      - **Priority Audit**: Review your pending list (${pendingTasks.length} items) and delete 3 tasks that no longer align with your core goals.`;
+    }
+
+    // 5. Save & Return
+    const newAudit = await Audit.create({
+      userId,
+      content: advice,
+      metricsSummary: {
+        tasksCompleted: completedTasks.length,
+        focusMinutes: totalFocusMinutes,
+        topPriority,
+        period: "30 Days"
+      }
+    });
+
+    res.json({ audit: newAudit });
+
+  } catch (err) {
+    console.error("COACH FATAL ERROR:", err);
+    res.status(500).json({ message: "The coach is currently unavailable. Try again later." });
+  }
+});
+
 app.post("/ai/mind-sweep", authMiddleware, async (req, res) => {
   try {
     const { text } = req.body;
@@ -1050,53 +1184,25 @@ app.post("/ai/mind-sweep", authMiddleware, async (req, res) => {
       return res.json({ tasks });
     } catch (aiError) {
       console.log("AI limits reached or failed. Falling back to local heuristic extraction...");
-      
-      // Local Heuristic Fallback
-      // Split the blob of text into distinct task phrases
       const phrases = text.split(/\.\s+|\n|, and | and /i).map(p => p.trim()).filter(p => p.length > 4);
-      
       const tasks = phrases.map(phrase => {
         let priority = "medium";
         const lower = phrase.toLowerCase();
-        
-        if (lower.includes("urgent") || lower.includes("asap") || lower.includes("vital") || lower.includes("high priority")) {
-            priority = "high";
-        } else if (lower.includes("maybe") || lower.includes("someday") || lower.includes("low priority")) {
-            priority = "low";
-        }
-        
+        if (lower.includes("urgent") || lower.includes("asap")) priority = "high";
+        else if (lower.includes("maybe") || lower.includes("someday")) priority = "low";
         let dueDate = new Date();
-        if (lower.includes("tomorrow")) {
-            dueDate.setDate(dueDate.getDate() + 1);
-        } else if (lower.includes("next week")) {
-            dueDate.setDate(dueDate.getDate() + 7);
-        }
-        
+        if (lower.includes("tomorrow")) dueDate.setDate(dueDate.getDate() + 1);
         let title = phrase;
         if (title.length > 60) title = title.substring(0, 57) + "...";
-
-        return {
-          title,
-          priority,
-          dueDate: dueDate.toISOString()
-        };
+        return { title, priority, dueDate: dueDate.toISOString() };
       });
-
-      if (tasks.length === 0) {
-        return res.status(500).json({ message: "Could not extract any tasks. Try rephrasing." });
-      }
-      
       return res.json({ tasks });
     }
   } catch (err) {
     console.error("MIND SWEEP ERROR:", err);
-    res.status(500).json({ message: "Extraction failed. Try simpler phrasing." });
+    res.status(500).json({ message: "Extraction failed." });
   }
 });
-
-/* =========================
-          TEAM ROUTES
-========================= */
 
 app.post("/team", authMiddleware, async (req, res) => {
   try {
