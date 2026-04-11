@@ -24,6 +24,8 @@ const useStore = create((set, get) => ({
   isLoading: true,
   searchQuery: "",
   showPricingModal: false,
+  deferredPrompt: null,
+  setDeferredPrompt: (prompt) => set({ deferredPrompt: prompt }),
   
   // Pro Features
   isPro: false,

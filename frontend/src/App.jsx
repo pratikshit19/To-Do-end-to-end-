@@ -155,6 +155,23 @@ function AppContent() {
     }
   }, [isAuthenticated, fetchTodos, fetchUserProfile, fetchFocusSessions]);
 
+  /* ================= PWA INSTALL ================= */
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      useStore.getState().setDeferredPrompt(e);
+      console.log("PWA: Deferred prompt stashed.");
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
   /* ================= RESET DETECT ================= */
   useEffect(() => {
     const params = new URLSearchParams(location.search);

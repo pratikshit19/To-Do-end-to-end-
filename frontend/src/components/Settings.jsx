@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, Bell, Moon, Sun, Lock, Shield, HelpCircle, FileText, MessageSquare, X, Users } from "lucide-react";
+import { ChevronRight, Bell, Moon, Sun, Lock, Shield, HelpCircle, FileText, MessageSquare, X, Users, Monitor } from "lucide-react";
 import toast from "react-hot-toast";
 import API_BASE_URL from "../config";
 import useStore from "../store/useStore";
@@ -166,6 +166,12 @@ export default function Settings({
       />
     </div>
   );
+
+  const [isIOS, setIsIOS] = useState(false);
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+  }, []);
 
   return (
     <div className="w-full pb-24 md:pb-6 transition-colors duration-300">
@@ -457,6 +463,49 @@ export default function Settings({
                   )}
               </div>
            )}
+        </div>
+
+      </div>
+
+      {/* PLATFORM & APP */}
+      <h3 className="text-xl font-bold mb-4 px-2">Platform & App</h3>
+      <div className="bg-(--card-bg) rounded-3xl p-6 shadow-sm border border-(--border)/60 mb-8 space-y-6">
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+             <div className="w-10 h-10 rounded-xl bg-(--bg) flex items-center justify-center border border-(--border)/50">
+               <Monitor size={20} className="text-blue-500" />
+             </div>
+             <div>
+               <p className="font-semibold text-base">Install TaskFlow</p>
+               <p className="text-xs opacity-60">Add to your home screen or desktop.</p>
+             </div>
+          </div>
+          <button 
+            disabled={!useStore.getState().deferredPrompt && !isIOS}
+            onClick={async () => {
+              const promptEvent = useStore.getState().deferredPrompt;
+              if (isIOS) {
+                toast("On iOS? Tap the Share icon 📤 and 'Add to Home Screen'!", { icon: "🍎", duration: 5000 });
+                return;
+              }
+              if (!promptEvent) {
+                toast("Already installed or not supported.", { icon: "✅" });
+                return;
+              }
+              promptEvent.prompt();
+              const { outcome } = await promptEvent.userChoice;
+              console.log(`PWA: User response to the install prompt: ${outcome}`);
+              useStore.getState().setDeferredPrompt(null);
+            }}
+            className={`px-6 py-2 rounded-xl border font-bold text-sm transition-all
+              ${(useStore.getState().deferredPrompt || isIOS) 
+                ? "bg-blue-600 text-white border-transparent hover:bg-blue-700 shadow-lg shadow-blue-500/20" 
+                : "bg-(--bg) border-(--border)/60 text-(--text-secondary) opacity-50 cursor-not-allowed"}
+            `}
+          >
+            {isIOS ? "Show iOS Info" : useStore.getState().deferredPrompt ? "Install Now" : "Installed"}
+          </button>
         </div>
 
       </div>
