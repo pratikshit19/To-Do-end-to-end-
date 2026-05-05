@@ -22,6 +22,8 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -94,6 +96,113 @@ app.post("/signin", async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+app.post("/google-auth", async (req, res) => {
+  const { credential } = req.body;
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+
+    // 1. Check if user exists with googleId
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+      // 2. Check if user exists with email (link accounts)
+      user = await User.findOne({ email });
+
+      if (user) {
+        user.googleId = googleId;
+        if (!user.profilePhoto) user.profilePhoto = picture;
+        await user.save();
+      } else {
+        // 3. Create new user
+        // Generate a unique username
+        let baseUsername = name.replace(/\s+/g, "").toLowerCase();
+        let finalUsername = baseUsername;
+        let count = 1;
+        
+        while (await User.findOne({ username: finalUsername })) {
+          finalUsername = `${baseUsername}${count++}`;
+        }
+
+        user = await User.create({
+          username: finalUsername,
+          email,
+          googleId,
+          profilePhoto: picture,
+          isPro: false,
+        });
+      }
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token, username: user.username, userId: user._id });
+
+  } catch (err) {
+    console.error("GOOGLE AUTH ERROR:", err);
+    res.status(500).json({ message: "Google authentication failed" });
+  }
+});
+
+app.post("/google-auth-custom", async (req, res) => {
+  const { googleId, email, name, picture } = req.body;
+
+  try {
+    if (!googleId || !email) {
+      return res.status(400).json({ message: "Missing Google information" });
+    }
+
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+      user = await User.findOne({ email });
+
+      if (user) {
+        user.googleId = googleId;
+        if (!user.profilePhoto) user.profilePhoto = picture;
+        await user.save();
+      } else {
+        let baseUsername = name.replace(/\s+/g, "").toLowerCase();
+        let finalUsername = baseUsername;
+        let count = 1;
+        while (await User.findOne({ username: finalUsername })) {
+          finalUsername = `${baseUsername}${count++}`;
+        }
+
+        user = await User.create({
+          username: finalUsername,
+          email,
+          googleId,
+          profilePhoto: picture,
+          isPro: false,
+        });
+      }
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token, username: user.username, userId: user._id });
+
+  } catch (err) {
+    console.error("GOOGLE AUTH CUSTOM ERROR:", err);
+    res.status(500).json({ message: "Google authentication failed" });
   }
 });
 

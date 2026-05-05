@@ -129,6 +129,7 @@ const userSchema = new mongoose.Schema({
     darkMode: { type: Boolean, default: true },
     focusMode: { type: Boolean, default: false }
   },
+  googleId: { type: String, unique: true, sparse: true },
   buddyCode: { type: String, unique: true, sparse: true },
   buddy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   resetPasswordToken: String,

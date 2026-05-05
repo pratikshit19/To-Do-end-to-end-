@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { CreateTodo } from "./components/CreateTodo";
 import Todos from "./components/Todos";
@@ -202,24 +203,24 @@ function AppContent() {
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-(--gradient-end)/10 blur-[120px] pointer-events-none translate-x-1/2 translate-y-1/2"></div>
 
         <div className="w-full max-w-md bg-(--card-bg) shadow-2xl shadow-(--gradient-start)/5 rounded-[2rem] p-8 sm:p-10 border border-(--border)/80 relative z-10 animate-in fade-in zoom-in-95 duration-500">
-          <div className="flex flex-col items-center justify-center mb-5 space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-2xl shadow-xl shadow-(--gradient-start)/30 ring-4 ring-(--gradient-start)/10">
-              <span className="font-extrabold pb-[2px]">T</span>
-            </div>
-            <div className="text-center space-y-1.5">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">
+          <div className="text-center mb-10">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-linear-to-br from-(--gradient-start) to-(--gradient-end) text-white flex items-center justify-center text-xl shadow-lg shadow-(--gradient-start)/20 shrink-0">
+                <span className="font-extrabold pb-[1px]">T</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent tracking-tight">
                 TaskFlow
               </h1>
-              <p className="text-sm font-medium opacity-60">
-                {isLogin === true
-                  ? "Sign in to your workspace"
-                  : isLogin === false
-                    ? "Start your journey today"
-                    : isLogin === "forgot" 
-                      ? "Recover your account"
-                      : "Reset your password"}
-              </p>
             </div>
+            <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">
+              {isLogin === true
+                ? "Sign in to your workspace"
+                : isLogin === false
+                  ? "Start your journey today"
+                  : isLogin === "forgot" 
+                    ? "Recover your account"
+                    : "Reset your password"}
+            </p>
           </div>
 
           <div className="w-full">
@@ -551,9 +552,11 @@ function AppContent() {
 
 export default function App() {
   return (
-    <Router>
-      <Toaster position="bottom-center" />
-      <AppContent />
-    </Router>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <Router>
+        <Toaster position="bottom-center" />
+        <AppContent />
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
