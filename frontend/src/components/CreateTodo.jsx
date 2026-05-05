@@ -8,15 +8,16 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
   const { currentWorkspace } = useStore();
   const today = new Date().toISOString().split("T")[0];
 
+
   const [title, setTitle] = useState(currentTodo ? currentTodo.title : "");
   const [description, setDescription] = useState(currentTodo ? currentTodo.description : "");
   const [priority, setPriority] = useState(currentTodo && currentTodo.priority ? currentTodo.priority : "medium");
   const [recurrence, setRecurrence] = useState(currentTodo && currentTodo.recurrence ? currentTodo.recurrence : "none");
   const [assignedTo, setAssignedTo] = useState(currentTodo && currentTodo.assignedTo ? (currentTodo.assignedTo._id || currentTodo.assignedTo) : "");
-  
+
   const [dueDate, setDueDate] = useState(
-    currentTodo && currentTodo.dueDate 
-      ? new Date(currentTodo.dueDate).toISOString().split("T")[0] 
+    currentTodo && currentTodo.dueDate
+      ? new Date(currentTodo.dueDate).toISOString().split("T")[0]
       : today
   );
   const [dueTime, setDueTime] = useState(currentTodo && currentTodo.dueTime ? currentTodo.dueTime : "");
@@ -35,10 +36,10 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
     const toastId = toast.loading(currentTodo ? "Updating task..." : "Creating task...");
 
     try {
-      const endpoint = currentTodo 
+      const endpoint = currentTodo
         ? `${API_BASE_URL}/todos/${currentTodo._id}`
         : `${API_BASE_URL}/todo`;
-        
+
       const method = currentTodo ? "PUT" : "POST";
 
       let reminderAt = null;
@@ -101,12 +102,12 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div className="flex flex-col">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2">
-             <span className="bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">
-               {currentTodo ? "Edit Task" : "New Task"}
-             </span>
+            <span className="bg-linear-to-r from-(--gradient-start) to-(--gradient-end) bg-clip-text text-transparent">
+              {currentTodo ? "Edit Task" : "New Task"}
+            </span>
           </h2>
           <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mt-1">
-             {currentWorkspace !== "personal" && !currentTodo ? "Team Workspace" : "Personal"}
+            {currentWorkspace !== "personal" && !currentTodo ? "Team Workspace" : "Personal"}
           </span>
         </div>
         <button
@@ -259,7 +260,7 @@ export function CreateTodo({ fetchTodos, closeModal, currentTodo }) {
         {/* Recurrence */}
         <div className="pt-1">
           <label className="text-[10px] font-black tracking-[0.2em] uppercase opacity-50 ml-1 block mb-2">
-             Automation (Repeat Task)
+            Automation (Repeat Task)
           </label>
           <div className="flex gap-2 p-1 bg-(--bg)/40 rounded-xl border border-(--border)/40">
             {["none", "daily", "weekly", "monthly"].map((option) => {
